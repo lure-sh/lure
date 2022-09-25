@@ -6,6 +6,14 @@ LURE is written in pure Go and has zero dependencies after it's built. The only 
 
 ---
 
+## Installation
+
+Binary releases are not provided currently. They will be provided once I have time to set up a CI pipeline.
+
+To install LURE, you'll need Go 1.18 or newer. Once installed, clone this repo and run `go build` inside, and then run `sudo install -Dm755 lure /usr/local/bin`.
+
+---
+
 ## Why?
 
 The AUR is an amazing feature, and it's one of the main reasons I use Arch on all my daily driver devices. It is really simple while providing really useful functionality. I feel such a solution shouldn't be stuck in only a single distro, so I made LURE.
