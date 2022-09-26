@@ -29,6 +29,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -69,11 +70,14 @@ func Get(ctx context.Context, opts GetOptions) error {
 	tag := query.Get("~tag")
 	query.Del("~tag")
 
-	branch := src.Query().Get("~branch")
+	branch := query.Get("~branch")
 	query.Del("~branch")
 
-	commit := src.Query().Get("~commit")
+	commit := query.Get("~commit")
 	query.Del("~commit")
+
+	depth := query.Get("~depth")
+	query.Del("~depth")
 
 	var refName plumbing.ReferenceName
 	if tag != "" {
@@ -94,10 +98,21 @@ func Get(ctx context.Context, opts GetOptions) error {
 			dstDir = filepath.Join(opts.Destination, name)
 		}
 
-		repo, err := git.PlainCloneContext(ctx, dstDir, false, &git.CloneOptions{
+		depth, err := strconv.Atoi(depth)
+		if err != nil {
+			return err
+		}
+
+		cloneOpts := &git.CloneOptions{
 			URL:      src.String(),
 			Progress: os.Stderr,
-		})
+		}
+
+		if depth != 0 {
+			cloneOpts.Depth = depth
+		}
+
+		repo, err := git.PlainCloneContext(ctx, dstDir, false, cloneOpts)
 		if err != nil {
 			return err
 		}
