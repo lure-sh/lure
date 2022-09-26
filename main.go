@@ -65,6 +65,12 @@ func main() {
 				Action:  upgradeCmd,
 			},
 			{
+				Name:    "info",
+				Usage:   "Print information about a package",
+				Aliases: []string{"up"},
+				Action:  infoCmd,
+			},
+			{
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "script",
