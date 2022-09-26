@@ -22,7 +22,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"reflect"
 	"runtime"
 	"strings"
@@ -37,13 +36,12 @@ import (
 
 var ErrInvalidType = errors.New("val must be a pointer to a struct")
 
-type NotFoundError struct {
-	stype string
-	name  string
+type VarNotFoundError struct {
+	name string
 }
 
-func (nfe NotFoundError) Error() string {
-	return "required " + nfe.stype + " '" + nfe.name + "' could not be found"
+func (nfe VarNotFoundError) Error() string {
+	return "required variable '" + nfe.name + "' could not be found"
 }
 
 // Decoder provides methods for decoding variable values
@@ -63,7 +61,7 @@ func New(info *distro.OSRelease, runner *interp.Runner) *Decoder {
 func (d *Decoder) DecodeVar(name string, val any) error {
 	variable := d.getVar(name)
 	if variable == nil {
-		return NotFoundError{"variable", name}
+		return VarNotFoundError{name}
 	}
 
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -128,7 +126,7 @@ func (d *Decoder) DecodeVars(val any) error {
 
 		newVal := reflect.New(field.Type())
 		err := d.DecodeVar(name, newVal.Interface())
-		if _, ok := err.(NotFoundError); ok && !required {
+		if _, ok := err.(VarNotFoundError); ok && !required {
 			continue
 		} else if err != nil {
 			return err
@@ -156,31 +154,6 @@ func (d *Decoder) GetFunc(name string) (ScriptFunc, bool) {
 		interp.Dir(dir)(sub)
 		return sub.Run(ctx, fn)
 	}, true
-}
-
-// WriteFunc writes the contents of a bash function to w.
-func (d *Decoder) WriteFunc(name string, w io.Writer) error {
-	fn := d.getFunc(name)
-	if fn == nil {
-		return NotFoundError{"function", name}
-	}
-
-	printer := syntax.NewPrinter()
-
-	// Print individual statements instead of the entire block
-	block := fn.Cmd.(*syntax.Block)
-	for _, stmt := range block.Stmts {
-		err := printer.Print(w, stmt)
-		if err != nil {
-			return err
-		}
-		_, err = io.WriteString(w, "\n")
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (d *Decoder) getFunc(name string) *syntax.Stmt {
