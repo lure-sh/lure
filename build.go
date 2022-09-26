@@ -66,6 +66,18 @@ type BuildVars struct {
 	Sources       []string `sh:"sources"`
 	Checksums     []string `sh:"checksums"`
 	Backup        []string `sh:"backup"`
+	Scripts       Scripts  `sh:"scripts"`
+}
+
+type Scripts struct {
+	PreInstall  string `sh:"preinstall"`
+	PostInstall string `sh:"postinstall"`
+	PreRemove   string `sh:"preremove"`
+	PostRemove  string `sh:"postinstall"`
+	PreUpgrade  string `sh:"preupgrade"`
+	PostUpgrade string `sh:"postupgrade"`
+	PreTrans    string `sh:"pretrans"`
+	PostTrans   string `sh:"posttrans"`
 }
 
 func buildCmd(c *cli.Context) error {
@@ -220,6 +232,8 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			Depends: append(repoDeps, builtNames...),
 		},
 	}
+
+	setScripts(&vars, pkgInfo, filepath.Dir(script))
 
 	if pkgInfo.Arch == "arm" {
 		pkgInfo.Arch = checkARMVariant()
@@ -390,6 +404,42 @@ func checkARMVariant() string {
 		return "arm6"
 	} else {
 		return "arm5"
+	}
+}
+
+func setScripts(vars *BuildVars, info *nfpm.Info, scriptDir string) {
+	if vars.Scripts.PreInstall != "" {
+		info.Scripts.PreInstall = filepath.Join(scriptDir, vars.Scripts.PreInstall)
+	}
+
+	if vars.Scripts.PostInstall != "" {
+		info.Scripts.PostInstall = filepath.Join(scriptDir, vars.Scripts.PostInstall)
+	}
+
+	if vars.Scripts.PreRemove != "" {
+		info.Scripts.PreRemove = filepath.Join(scriptDir, vars.Scripts.PreRemove)
+	}
+
+	if vars.Scripts.PostRemove != "" {
+		info.Scripts.PostRemove = filepath.Join(scriptDir, vars.Scripts.PostRemove)
+	}
+
+	if vars.Scripts.PreUpgrade != "" {
+		info.ArchLinux.Scripts.PreUpgrade = filepath.Join(scriptDir, vars.Scripts.PreUpgrade)
+		info.APK.Scripts.PreUpgrade = filepath.Join(scriptDir, vars.Scripts.PreUpgrade)
+	}
+
+	if vars.Scripts.PostUpgrade != "" {
+		info.ArchLinux.Scripts.PostUpgrade = filepath.Join(scriptDir, vars.Scripts.PostUpgrade)
+		info.APK.Scripts.PostUpgrade = filepath.Join(scriptDir, vars.Scripts.PostUpgrade)
+	}
+
+	if vars.Scripts.PreTrans != "" {
+		info.RPM.Scripts.PreTrans = filepath.Join(scriptDir, vars.Scripts.PreTrans)
+	}
+
+	if vars.Scripts.PostTrans != "" {
+		info.RPM.Scripts.PostTrans = filepath.Join(scriptDir, vars.Scripts.PostTrans)
 	}
 }
 
