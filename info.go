@@ -23,6 +23,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"gopkg.in/yaml.v3"
 	"mvdan.cc/sh/v3/expand"
@@ -61,11 +62,12 @@ func infoCmd(c *cli.Context) error {
 
 	fl.Close()
 
-	env := genBuildEnv(info)
-
 	runner, err := interp.New(
-		interp.Env(expand.ListEnviron(env...)),
-		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
+		interp.Env(expand.ListEnviron()),
+		interp.ExecHandler(shutils.NopExec),
+		interp.StatHandler(shutils.NopStat),
+		interp.OpenHandler(shutils.NopOpen),
+		interp.ReadDirHandler(shutils.NopReadDir),
 	)
 	if err != nil {
 		log.Fatal("Error creating runner").Err(err).Send()
