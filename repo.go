@@ -160,9 +160,9 @@ func pkgPrompt(options []string) ([]string, error) {
 		return nil, err
 	}
 
-	var out []string
-	for _, i := range choices {
-		out = append(out, options[i])
+ 	out := make([]string, len(choices))
+	for i, choiceIndex := range choices {
+		out[i] = options[choiceIndex]
 	}
 
 	return out, nil
