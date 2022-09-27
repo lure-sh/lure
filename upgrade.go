@@ -25,8 +25,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/manager"
+	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )
@@ -82,7 +84,13 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 			return nil, err
 		}
 
-		runner, err := interp.New()
+		runner, err := interp.New(
+			interp.Env(expand.ListEnviron()),
+			interp.ExecHandler(shutils.NopExec),
+			interp.StatHandler(shutils.NopStat),
+			interp.OpenHandler(shutils.NopOpen),
+			interp.ReadDirHandler(shutils.NopReadDir),
+		)
 		if err != nil {
 			return nil, err
 		}
