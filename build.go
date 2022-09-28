@@ -242,7 +242,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	if slices.Contains(vars.Architectures, "all") {
 		pkgInfo.Arch = "all"
 	}
-	
+
 	if pkgInfo.Arch == "arm" {
 		pkgInfo.Arch = checkARMVariant()
 	}
