@@ -109,10 +109,7 @@ func Get(ctx context.Context, opts GetOptions) error {
 		cloneOpts := &git.CloneOptions{
 			URL:      src.String(),
 			Progress: os.Stderr,
-		}
-
-		if depth != 0 {
-			cloneOpts.Depth = depth
+			Depth:    depth,
 		}
 
 		repo, err := git.PlainCloneContext(ctx, dstDir, false, cloneOpts)
