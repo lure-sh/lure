@@ -67,8 +67,13 @@ func main() {
 			{
 				Name:    "info",
 				Usage:   "Print information about a package",
-				Aliases: []string{"up"},
 				Action:  infoCmd,
+			},
+			{
+				Name:    "list",
+				Usage:   "List LURE repo packages",
+				Aliases: []string{"ls"},
+				Action:  listCmd,
 			},
 			{
 				Flags: []cli.Flag{
