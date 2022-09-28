@@ -62,6 +62,7 @@ As mentioned before, LURE has zero dependencies after it's built. All functional
 - Bash: https://github.com/mvdan/sh
 - Git: https://github.com/go-git/go-git
 - Archiver: https://github.com/mholt/archiver
+- nfpm: https://github.com/goreleaser/nfpm
 
 ---
 
