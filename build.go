@@ -104,6 +104,10 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	if distID, ok := os.LookupEnv("LURE_DISTRO"); ok {
+		info.ID = distID
+	}
+
 	fl, err := os.Open(script)
 	if err != nil {
 		return nil, nil, err
@@ -307,7 +311,12 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	pkgInfo.Overridables.Contents = contents
 
-	packager, err := nfpm.Get(mgr.Format())
+	pkgFormat := mgr.Format()
+	if format, ok := os.LookupEnv("LURE_PKG_FORMAT"); ok {
+		pkgFormat = format
+	}
+
+	packager, err := nfpm.Get(pkgFormat)
 	if err != nil {
 		return nil, nil, err
 	}
