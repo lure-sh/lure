@@ -49,6 +49,19 @@ Distro detection is performed by reading the `/usr/lib/os-release` and `/etc/os-
 
 ---
 
+## Cross-packaging for other Distributions
+
+You can create packages for different distributions setting the environment variables ```LURE_DISTRO``` and  ```LURE_PKG_FORMAT```.
+
+```
+LURE_DISTRO=arch     LURE_PKG_FORMAT=archlinux lure build
+LURE_DISTRO=alpine   LURE_PKG_FORMAT=apk       lure build
+LURE_DISTRO=opensuse LURE_PKG_FORMAT=rpm       lure build
+LURE_DISTRO=debian   LURE_PKG_FORMAT=deb       lure build
+```
+
+---
+
 ## Repositories
 
 Unlike the AUR, LURE supports using multiple repos. Also unlike the AUR, LURE's repos are a single git repo containing all the build scripts. Inside each LURE repo, there should be a separate directory for each package containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Arsen6331/lure-repo.
