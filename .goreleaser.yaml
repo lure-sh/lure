@@ -1,0 +1,69 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: lure
+    env:
+      - CGO_ENABLED=0
+    binary: lure
+    goos:
+      - linux
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      - riscv64
+archives:
+  - replacements:
+      386: i386
+      amd64: x86_64
+      arm64: aarch64
+nfpms:
+  - id: lure
+    file_name_template: '{{.PackageName}}-{{.Version}}-{{.Os}}-{{.Arch}}'
+    description: "Linux User REpository"
+    replacements:
+      386: i386
+      amd64: x86_64
+      arm64: aarch64
+    homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
+    maintainer: 'Arsen Musyaelyan <arsen@arsenm.dev>'
+    license: GPLv3
+    formats:
+      - apk
+      - deb
+      - rpm
+aurs:
+  - name: lure-bin
+    homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
+    description: "Linux User REpository"
+    maintainers:
+      - 'Arsen Musyaelyan <arsen@arsenm.dev>'
+    license: GPLv3
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: 'ssh://aur@aur.archlinux.org/lure-bin.git'
+    provides:
+      - lure
+    conflicts:
+      - lure
+    depends:
+      - sudo
+      - pacman
+    package: |-
+      # binaries
+      install -Dm755 "./lure" "${pkgdir}/usr/bin/lure"
+release:
+  gitea:
+    owner: Arsen6331
+    name: lure
+gitea_urls:
+  api: 'https://gitea.arsenm.dev/api/v1/'
+  download: 'https://gitea.arsenm.dev'
+  skip_tls_verify: false
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
