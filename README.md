@@ -64,3 +64,9 @@ As mentioned before, LURE has zero dependencies after it's built. All functional
 - Archiver: https://github.com/mholt/archiver
 
 ---
+
+## Planned Features
+
+- Source patching via .patch files
+- Binary releases using goreleaser + CI
+- Automated install script
