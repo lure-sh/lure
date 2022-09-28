@@ -76,7 +76,7 @@ func Get(ctx context.Context, opts GetOptions) error {
 	commit := query.Get("~commit")
 	query.Del("~commit")
 
-	depth := query.Get("~depth")
+	depthStr := query.Get("~depth")
 	query.Del("~depth")
 
 	var refName plumbing.ReferenceName
@@ -98,9 +98,12 @@ func Get(ctx context.Context, opts GetOptions) error {
 			dstDir = filepath.Join(opts.Destination, name)
 		}
 
-		depth, err := strconv.Atoi(depth)
-		if err != nil {
-			return err
+		depth := 0
+		if depthStr != "" {
+			depth, err = strconv.Atoi(depthStr)
+			if err != nil {
+				return err
+			}
 		}
 
 		cloneOpts := &git.CloneOptions{
