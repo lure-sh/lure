@@ -65,9 +65,9 @@ func main() {
 				Action:  upgradeCmd,
 			},
 			{
-				Name:    "info",
-				Usage:   "Print information about a package",
-				Action:  infoCmd,
+				Name:   "info",
+				Usage:  "Print information about a package",
+				Action: infoCmd,
 			},
 			{
 				Name:    "list",
