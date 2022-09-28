@@ -230,6 +230,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		Arch:        runtime.GOARCH,
 		Version:     vars.Version,
 		Release:     strconv.Itoa(vars.Release),
+		Epoch:       strconv.FormatUint(uint64(vars.Epoch), 10),
 		Homepage:    vars.Homepage,
 		License:     strings.Join(vars.Licenses, ", "),
 		Overridables: nfpm.Overridables{
