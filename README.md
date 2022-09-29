@@ -61,7 +61,7 @@ Distro detection is performed by reading the `/usr/lib/os-release` and `/etc/os-
 ## File locations
 
 | Path | Description 
-| --: | :--
+| --:  | :--
 | ~/.config/lure/lure.toml | Config file
 | ~/.cache/lure/pkgs       | here the packages are built and stored
 | ~/.cache/lure/repo       | here are the git repos with all the `lure.sh` files  
