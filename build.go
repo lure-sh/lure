@@ -56,6 +56,7 @@ type BuildVars struct {
 	Epoch         uint     `sh:"epoch"`
 	Description   string   `sh:"desc"`
 	Homepage      string   `sh:"homepage"`
+	Maintainer    string   `sh:"maintainer"`
 	Architectures []string `sh:"architectures"`
 	Licenses      []string `sh:"license"`
 	Provides      []string `sh:"provides"`
@@ -233,6 +234,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		Epoch:       strconv.FormatUint(uint64(vars.Epoch), 10),
 		Homepage:    vars.Homepage,
 		License:     strings.Join(vars.Licenses, ", "),
+		Maintainer:  vars.Maintainer,
 		Overridables: nfpm.Overridables{
 			Depends: append(repoDeps, builtNames...),
 		},
