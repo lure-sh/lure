@@ -52,7 +52,7 @@ Distro detection is performed by reading the `/usr/lib/os-release` and `/etc/os-
 ## Cross-packaging for other Distributions
 
 You can create packages for different distributions  
-setting the environment variables ```LURE_DISTRO``` and ```LURE_PKG_FORMAT```.
+setting the environment variables `LURE_DISTRO` and `LURE_PKG_FORMAT`.
 
 ```
 LURE_DISTRO=arch     LURE_PKG_FORMAT=archlinux lure build
