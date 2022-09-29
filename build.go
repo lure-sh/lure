@@ -236,7 +236,10 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		License:     strings.Join(vars.Licenses, ", "),
 		Maintainer:  vars.Maintainer,
 		Overridables: nfpm.Overridables{
-			Depends: append(repoDeps, builtNames...),
+			Conflicts: vars.Conflicts,
+			Replaces:  vars.Replaces,
+			Provides:  vars.Provides,
+			Depends:   append(repoDeps, builtNames...),
 		},
 	}
 
