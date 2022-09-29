@@ -1,6 +1,7 @@
 # LURE (Linux User REpository)
 
 [![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
+[![lure-bin AUR package](https://img.shields.io/aur/version/lure-bin?label=itd-bin&logo=archlinux)](https://aur.archlinux.org/packages/lure-bin/)
 
 LURE is intended to bring the AUR to all distros. It is currently in an ***alpha*** state and may not be stable. It can download a repository, build packages in it using a bash script similar to [PKGBUILD](https://wiki.archlinux.org/title/PKGBUILD), and then install them using your system package manager.
 
@@ -10,9 +11,17 @@ LURE is written in pure Go and has zero dependencies after it's built. The only 
 
 ## Installation
 
-Binary releases are not provided currently. They will be provided once I have time to set up a CI pipeline.
+Distro packages and binary archives are provided at the latest Gitea release: https://gitea.arsenm.dev/Arsen6331/lure/releases/latest
 
-To install LURE, you'll need Go 1.18 or newer. Once installed, clone this repo and run `go build` inside, and then run `sudo install -Dm755 lure /usr/local/bin`.
+LURE is also available on the AUR as [lure-bin](https://aur.archlinux.org/packages/lure-bin)
+
+### Building from source
+
+To build LURE from source, you'll need Go 1.18 or newer. Once Go is installed, clone this repo and run:
+
+```shell
+sudo make install
+```
 
 ---
 
