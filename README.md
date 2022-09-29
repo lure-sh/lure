@@ -35,26 +35,9 @@ This means it's really easy to deploy LURE on any distro that it has support for
 
 ---
 
-## Distro Overrides
+## Documentation
 
-Allowing LURE to run on different distros provides some challenges. For example, some distros use different names for their packages. This is solved using distro overrides. Any variable or function used in a LURE build script may be overridden based on distro and CPU architecture. The way you do this is by appending the distro and/or architecture to the end of the name. For example, [ITD](https://gitea.arsenm.dev/Arsen6331/itd) depends on the `pactl` command as well as DBus and BlueZ. These are named somewhat differently on different distros. For ITD, I use the following for the dependencies:
-
-```bash
-deps=('dbus' 'bluez' 'pulseaudio-utils')
-deps_arch=('dbus' 'bluez' 'libpulse')
-deps_opensuse=('dbus-1' 'bluez' 'pulseaudio-utils')
-```
-
-Appending `arch` and `opensuse` to the end causes LURE to use the appropriate array based on the distro. If on Arch Linux, it will use `deps_arch`. If on OpenSUSE, it will use `deps_opensuse`, and if on anything else, it will use `deps`.
-
-Names are checked in the following order:
-
-- $name_$architecture_$distro
-- $name_$distro
-- $name_$architecture
-- $name
-
-Distro detection is performed by reading the `/usr/lib/os-release` and `/etc/os-release` files.
+The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ---
 
