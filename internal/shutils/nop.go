@@ -43,11 +43,11 @@ func NopOpen(context.Context, string, int, os.FileMode) (io.ReadWriteCloser, err
 type NopRWC struct{}
 
 func (NopRWC) Read([]byte) (int, error) {
-	return 0, os.ErrClosed
+	return 0, io.EOF
 }
 
 func (NopRWC) Write([]byte) (int, error) {
-	return 0, os.ErrClosed
+	return 0, io.EOF
 }
 
 func (NopRWC) Close() error {
