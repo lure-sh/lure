@@ -205,3 +205,36 @@ The `pretrans` and `posttrans` scripts are only available in `.rpm` packages.
 The rest of the scripts are available in all packages.
 
 ---
+
+## Functions
+
+Any variables marked with `(*)` are required
+
+All functions start in the `$srcdir` directory
+
+### prepare
+
+The `prepare()` function runs first. It is meant to prepare the sources for building and packaging. This is the function in which patches should be applied, for example, by the `patch` command, and where tools like `go generate` should be executed.
+
+### build
+
+The `build()` function is where the package is actually built. Use the same commands that would be used to manually compile the software. Often, this function is just one line:
+
+```bash
+build() {
+    make
+}
+```
+
+### package (*)
+
+The `package()` function is where the built files are placed into the directory that will be used by LURE to build the package.
+
+Any files that should be installed on the filesystem should go in the `$pkgdir` directory in this function. For example, if you have a binary called `bin` that should be placed in `/usr/bin` and a config file called `bin.cfg` that should be placed in `/etc`, the `package()` function might look like this:
+
+```bash
+package() {
+    install -Dm755 bin ${pkgdir}/usr/bin/bin
+    install -Dm644 bin.cfg ${pkgdir}/etc/bin.cfg
+}
+```
