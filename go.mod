@@ -1,6 +1,6 @@
 module go.arsenm.dev/lure
 
-go 1.19
+go 1.18
 
 replace github.com/goreleaser/nfpm/v2 => github.com/Arsen6331/nfpm/v2 v2.0.0-20220922210414-eae88e8ea4b5
 
