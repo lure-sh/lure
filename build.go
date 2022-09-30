@@ -227,6 +227,8 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		if err != nil {
 			return nil, nil, err
 		}
+	} else {
+		log.Fatal("The package() function is required").Send()
 	}
 
 	uniq(
