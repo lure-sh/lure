@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	_ "github.com/goreleaser/nfpm/v2/apk"
 	_ "github.com/goreleaser/nfpm/v2/arch"
 	_ "github.com/goreleaser/nfpm/v2/deb"
@@ -357,6 +358,23 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	err = packager.Package(pkgInfo, pkgFile)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if len(vars.BuildDepends) > 0 {
+		var removeBuildDeps bool
+		err = survey.AskOne(&survey.Confirm{
+			Message: "Would you like to remove build dependencies?",
+		}, &removeBuildDeps)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if removeBuildDeps {
+			err = mgr.Remove(vars.BuildDepends...)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
 	}
 
 	uniq(&pkgPaths, &pkgNames)
