@@ -1,0 +1,33 @@
+# Configuration
+
+This page describes the configuration of LURE
+
+---
+
+## Table of Contents
+
+- [Config file](#config-file)
+    - [rootCmd](#rootcmd)
+    - [repo](#repo)
+
+---
+
+## Config file
+
+### rootCmd
+
+The `rootCmd` field in the config specifies which command should be used for privilege elevation. The default value is `sudo`.
+
+### repo
+
+The `repo` array in the config specifies which repos are added to LURE. Each repo must have a name and URL. A repo looks like this in the config:
+
+```toml
+[[repo]]
+name = 'default'
+url = 'https://github.com/Arsen6331/lure-repo.git'
+```
+
+The `default` repo is added by default. Any amount of repos may be added.
+
+---
