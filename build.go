@@ -199,7 +199,17 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	fn, ok := dec.GetFunc("build")
+	fn, ok := dec.GetFunc("prepare")
+	if ok {
+		log.Info("Executing prepare()").Send()
+
+		err = fn(ctx, srcdir)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	fn, ok = dec.GetFunc("build")
 	if ok {
 		log.Info("Executing build()").Send()
 
