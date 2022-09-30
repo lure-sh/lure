@@ -21,16 +21,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/shutils"
-	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/manager"
-	"mvdan.cc/sh/v3/expand"
-	"mvdan.cc/sh/v3/interp"
-	"mvdan.cc/sh/v3/syntax"
 )
 
 func upgradeCmd(c *cli.Context) error {
@@ -74,38 +68,9 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 		// since we're not using a glob, we can assume a single item
 		script := scripts[0]
 
-		fl, err := os.Open(script)
+		vars, err := getBuildVars(ctx, script, info)
 		if err != nil {
-			return nil, err
-		}
-
-		file, err := syntax.NewParser().Parse(fl, "lure.sh")
-		if err != nil {
-			return nil, err
-		}
-
-		runner, err := interp.New(
-			interp.Env(expand.ListEnviron()),
-			interp.ExecHandler(shutils.NopExec),
-			interp.StatHandler(shutils.NopStat),
-			interp.OpenHandler(shutils.NopOpen),
-			interp.ReadDirHandler(shutils.NopReadDir),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		err = runner.Run(ctx, file)
-		if err != nil {
-			return nil, err
-		}
-
-		dec := decoder.New(info, runner)
-
-		var vars BuildVars
-		err = dec.DecodeVars(&vars)
-		if err != nil {
-			return nil, err
+			log.Fatal("Error getting build variables").Err(err).Send()
 		}
 
 		repoVer := vars.Version
