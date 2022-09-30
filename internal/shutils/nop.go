@@ -22,7 +22,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"os/exec"
 )
 
 func NopReadDir(context.Context, string) ([]os.FileInfo, error) {
@@ -34,7 +33,7 @@ func NopStat(context.Context, string, bool) (os.FileInfo, error) {
 }
 
 func NopExec(context.Context, []string) error {
-	return exec.ErrNotFound
+	return nil
 }
 
 func NopOpen(context.Context, string, int, os.FileMode) (io.ReadWriteCloser, error) {
