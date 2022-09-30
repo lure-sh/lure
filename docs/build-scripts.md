@@ -20,7 +20,7 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [provides](#provides)
     - [conflicts](#conflicts)
     - [deps](#deps)
-    - [build_deps](#builddeps)
+    - [build_deps](#build_deps)
     - [replaces](#replaces)
     - [sources](#sources)
     - [checksums](#checksums)
