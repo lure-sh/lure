@@ -47,8 +47,9 @@ func (a *APT) SetRootCmd(s string) {
 	a.rootCmd = s
 }
 
-func (a *APT) Sync() error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apt", "update", "-y")
+func (a *APT) Sync(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apt", "update")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -57,8 +58,9 @@ func (a *APT) Sync() error {
 	return nil
 }
 
-func (a *APT) Install(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apt", "install", "-y")
+func (a *APT) Install(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apt", "install")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -68,12 +70,14 @@ func (a *APT) Install(pkgs ...string) error {
 	return nil
 }
 
-func (a *APT) InstallLocal(pkgs ...string) error {
-	return a.Install(pkgs...)
+func (a *APT) InstallLocal(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	return a.Install(opts, pkgs...)
 }
 
-func (a *APT) Remove(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apt", "remove", "-y")
+func (a *APT) Remove(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apt", "remove")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -83,12 +87,14 @@ func (a *APT) Remove(pkgs ...string) error {
 	return nil
 }
 
-func (a *APT) Upgrade(pkgs ...string) error {
-	return a.Install(pkgs...)
+func (a *APT) Upgrade(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	return a.Install(opts, pkgs...)
 }
 
-func (a *APT) UpgradeAll() error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apt", "upgrade", "-y")
+func (a *APT) UpgradeAll(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apt", "upgrade")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -97,9 +103,16 @@ func (a *APT) UpgradeAll() error {
 	return nil
 }
 
-func (a *APT) ListInstalled() (map[string]string, error) {
+func (a *APT) ListInstalled(opts *Opts) (map[string]string, error) {
+	opts = ensureOpts(opts)
 	out := map[string]string{}
-	cmd := exec.Command(getRootCmd(a.rootCmd), "dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
+
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(a.rootCmd), "dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
+	} else {
+		cmd = exec.Command("dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -126,4 +139,20 @@ func (a *APT) ListInstalled() (map[string]string, error) {
 	}
 
 	return out, nil
+}
+
+func (a *APT) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(a.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, args...)
+	} else {
+		cmd = exec.Command(mgrCmd, args...)
+	}
+
+	if opts.NoConfirm {
+		cmd.Args = append(cmd.Args, "-y")
+	}
+
+	return cmd
 }

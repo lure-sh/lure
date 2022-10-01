@@ -374,7 +374,13 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		}
 
 		if removeBuildDeps {
-			err = mgr.Remove(vars.BuildDepends...)
+			err = mgr.Remove(
+				&manager.Opts{
+					AsRoot:    true,
+					NoConfirm: true,
+				},
+				vars.BuildDepends...,
+			)
 			if err != nil {
 				return nil, nil, err
 			}

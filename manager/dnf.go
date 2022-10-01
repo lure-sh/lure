@@ -47,8 +47,9 @@ func (d *DNF) SetRootCmd(s string) {
 	d.rootCmd = s
 }
 
-func (d *DNF) Sync() error {
-	cmd := exec.Command(getRootCmd(d.rootCmd), "dnf", "upgrade", "--assumeno")
+func (d *DNF) Sync(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := d.getCmd(opts, "dnf", "upgrade")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -57,8 +58,9 @@ func (d *DNF) Sync() error {
 	return nil
 }
 
-func (d *DNF) Install(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(d.rootCmd), "dnf", "install", "-y")
+func (d *DNF) Install(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := d.getCmd(opts, "dnf", "install")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -68,12 +70,14 @@ func (d *DNF) Install(pkgs ...string) error {
 	return nil
 }
 
-func (d *DNF) InstallLocal(pkgs ...string) error {
-	return d.Install(pkgs...)
+func (d *DNF) InstallLocal(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	return d.Install(opts, pkgs...)
 }
 
-func (d *DNF) Remove(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(d.rootCmd), "dnf", "remove", "-y")
+func (d *DNF) Remove(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := d.getCmd(opts, "dnf", "remove")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -83,8 +87,9 @@ func (d *DNF) Remove(pkgs ...string) error {
 	return nil
 }
 
-func (d *DNF) Upgrade(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(d.rootCmd), "dnf", "upgrade", "-y")
+func (d *DNF) Upgrade(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := d.getCmd(opts, "dnf", "upgrade")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -94,8 +99,9 @@ func (d *DNF) Upgrade(pkgs ...string) error {
 	return nil
 }
 
-func (d *DNF) UpgradeAll() error {
-	cmd := exec.Command(getRootCmd(d.rootCmd), "dnf", "upgrade", "-y")
+func (d *DNF) UpgradeAll(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := d.getCmd(opts, "dnf", "upgrade")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -104,9 +110,16 @@ func (d *DNF) UpgradeAll() error {
 	return nil
 }
 
-func (d *DNF) ListInstalled() (map[string]string, error) {
+func (d *DNF) ListInstalled(opts *Opts) (map[string]string, error) {
+	opts = ensureOpts(opts)
 	out := map[string]string{}
-	cmd := exec.Command(getRootCmd(d.rootCmd), "rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(d.rootCmd), "rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+	} else {
+		cmd = exec.Command("rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -133,4 +146,20 @@ func (d *DNF) ListInstalled() (map[string]string, error) {
 	}
 
 	return out, nil
+}
+
+func (d *DNF) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(d.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, args...)
+	} else {
+		cmd = exec.Command(mgrCmd, args...)
+	}
+
+	if opts.NoConfirm {
+		cmd.Args = append(cmd.Args, "-y")
+	}
+
+	return cmd
 }

@@ -47,8 +47,9 @@ func (p *Pacman) SetRootCmd(s string) {
 	p.rootCmd = s
 }
 
-func (p *Pacman) Sync() error {
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "--noconfirm", "-Sy")
+func (p *Pacman) Sync(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := p.getCmd(opts, "pacman", "-Sy")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -57,8 +58,9 @@ func (p *Pacman) Sync() error {
 	return nil
 }
 
-func (p *Pacman) Install(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "--noconfirm", "-S")
+func (p *Pacman) Install(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := p.getCmd(opts, "pacman", "-S")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -68,8 +70,9 @@ func (p *Pacman) Install(pkgs ...string) error {
 	return nil
 }
 
-func (p *Pacman) InstallLocal(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "--noconfirm", "-U")
+func (p *Pacman) InstallLocal(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := p.getCmd(opts, "pacman", "-U")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -79,8 +82,9 @@ func (p *Pacman) InstallLocal(pkgs ...string) error {
 	return nil
 }
 
-func (p *Pacman) Remove(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "--noconfirm", "-R")
+func (p *Pacman) Remove(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := p.getCmd(opts, "pacman", "-R")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -90,12 +94,14 @@ func (p *Pacman) Remove(pkgs ...string) error {
 	return nil
 }
 
-func (p *Pacman) Upgrade(pkgs ...string) error {
-	return p.Install(pkgs...)
+func (p *Pacman) Upgrade(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	return p.Install(opts, pkgs...)
 }
 
-func (p *Pacman) UpgradeAll() error {
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "--noconfirm", "-Su")
+func (p *Pacman) UpgradeAll(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := p.getCmd(opts, "pacman", "-Su")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -104,9 +110,16 @@ func (p *Pacman) UpgradeAll() error {
 	return nil
 }
 
-func (p *Pacman) ListInstalled() (map[string]string, error) {
+func (p *Pacman) ListInstalled(opts *Opts) (map[string]string, error) {
+	opts = ensureOpts(opts)
 	out := map[string]string{}
-	cmd := exec.Command(getRootCmd(p.rootCmd), "pacman", "-Q")
+
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(p.rootCmd), "pacman", "-Q")
+	} else {
+		cmd = exec.Command("pacman", "-Q")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -133,4 +146,20 @@ func (p *Pacman) ListInstalled() (map[string]string, error) {
 	}
 
 	return out, nil
+}
+
+func (p *Pacman) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(p.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, args...)
+	} else {
+		cmd = exec.Command(mgrCmd, args...)
+	}
+
+	if opts.NoConfirm {
+		cmd.Args = append(cmd.Args, "--noconfirm")
+	}
+
+	return cmd
 }
