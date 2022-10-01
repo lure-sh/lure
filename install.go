@@ -50,7 +50,7 @@ func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager) {
 	scripts, notFound := findPkgs(pkgs)
 
 	if len(notFound) > 0 {
-		err = mgr.Install(notFound...)
+		err = mgr.Install(nil, notFound...)
 		if err != nil {
 			log.Fatal("Error installing native packages").Err(err).Send()
 		}
@@ -66,7 +66,7 @@ func installScripts(ctx context.Context, mgr manager.Manager, scripts []string) 
 			log.Fatal("Error building package").Err(err).Send()
 		}
 
-		err = mgr.InstallLocal(builtPkgs...)
+		err = mgr.InstallLocal(nil, builtPkgs...)
 		if err != nil {
 			log.Fatal("Error installing package").Err(err).Send()
 		}
@@ -84,7 +84,7 @@ func removeCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	err := mgr.Remove(c.Args().Slice()...)
+	err := mgr.Remove(nil, c.Args().Slice()...)
 	if err != nil {
 		log.Fatal("Error removing packages").Err(err).Send()
 	}

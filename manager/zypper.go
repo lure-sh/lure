@@ -47,8 +47,9 @@ func (z *Zypper) SetRootCmd(s string) {
 	z.rootCmd = s
 }
 
-func (z *Zypper) Sync() error {
-	cmd := exec.Command(getRootCmd(z.rootCmd), "zypper", "refresh")
+func (z *Zypper) Sync(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := z.getCmd(opts, "zypper", "refresh")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -57,8 +58,9 @@ func (z *Zypper) Sync() error {
 	return nil
 }
 
-func (z *Zypper) Install(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(z.rootCmd), "zypper", "install", "-y")
+func (z *Zypper) Install(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := z.getCmd(opts, "zypper", "install", "-y")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -68,12 +70,14 @@ func (z *Zypper) Install(pkgs ...string) error {
 	return nil
 }
 
-func (z *Zypper) InstallLocal(pkgs ...string) error {
-	return z.Install(pkgs...)
+func (z *Zypper) InstallLocal(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	return z.Install(opts, pkgs...)
 }
 
-func (z *Zypper) Remove(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(z.rootCmd), "zypper", "remove", "-y")
+func (z *Zypper) Remove(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := z.getCmd(opts, "zypper", "remove", "-y")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -83,8 +87,9 @@ func (z *Zypper) Remove(pkgs ...string) error {
 	return nil
 }
 
-func (z *Zypper) Upgrade(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(z.rootCmd), "zypper", "update", "-y")
+func (z *Zypper) Upgrade(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := z.getCmd(opts, "zypper", "update", "-y")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -94,8 +99,9 @@ func (z *Zypper) Upgrade(pkgs ...string) error {
 	return nil
 }
 
-func (z *Zypper) UpgradeAll() error {
-	cmd := exec.Command(getRootCmd(z.rootCmd), "zypper", "update", "-y")
+func (z *Zypper) UpgradeAll(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := z.getCmd(opts, "zypper", "update", "-y")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -104,9 +110,16 @@ func (z *Zypper) UpgradeAll() error {
 	return nil
 }
 
-func (z *Zypper) ListInstalled() (map[string]string, error) {
+func (z *Zypper) ListInstalled(opts *Opts) (map[string]string, error) {
+	opts = ensureOpts(opts)
 	out := map[string]string{}
-	cmd := exec.Command(getRootCmd(z.rootCmd), "rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(z.rootCmd), "rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+	} else {
+		cmd = exec.Command("rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -133,4 +146,20 @@ func (z *Zypper) ListInstalled() (map[string]string, error) {
 	}
 
 	return out, nil
+}
+
+func (z *Zypper) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(z.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, args...)
+	} else {
+		cmd = exec.Command(mgrCmd, args...)
+	}
+
+	if opts.NoConfirm {
+		cmd.Args = append(cmd.Args, "-y")
+	}
+
+	return cmd
 }

@@ -47,8 +47,9 @@ func (a *APK) SetRootCmd(s string) {
 	a.rootCmd = s
 }
 
-func (a *APK) Sync() error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apk", "update")
+func (a *APK) Sync(opts *Opts) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apk", "update")
 	setCmdEnv(cmd)
 	err := cmd.Run()
 	if err != nil {
@@ -57,8 +58,9 @@ func (a *APK) Sync() error {
 	return nil
 }
 
-func (a *APK) Install(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apk", "add")
+func (a *APK) Install(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apk", "add")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -68,8 +70,9 @@ func (a *APK) Install(pkgs ...string) error {
 	return nil
 }
 
-func (a *APK) InstallLocal(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apk", "add", "--allow-untrusted")
+func (a *APK) InstallLocal(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apk", "add", "--allow-untrusted")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -79,8 +82,9 @@ func (a *APK) InstallLocal(pkgs ...string) error {
 	return nil
 }
 
-func (a *APK) Remove(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apt", "del")
+func (a *APK) Remove(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apt", "del")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -90,8 +94,9 @@ func (a *APK) Remove(pkgs ...string) error {
 	return nil
 }
 
-func (a *APK) Upgrade(pkgs ...string) error {
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apk", "upgrade")
+func (a *APK) Upgrade(opts *Opts, pkgs ...string) error {
+	opts = ensureOpts(opts)
+	cmd := a.getCmd(opts, "apk", "upgrade")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -101,13 +106,21 @@ func (a *APK) Upgrade(pkgs ...string) error {
 	return nil
 }
 
-func (a *APK) UpgradeAll() error {
-	return a.Upgrade()
+func (a *APK) UpgradeAll(opts *Opts) error {
+	opts = ensureOpts(opts)
+	return a.Upgrade(opts)
 }
 
-func (a *APK) ListInstalled() (map[string]string, error) {
+func (a *APK) ListInstalled(opts *Opts) (map[string]string, error) {
+	opts = ensureOpts(opts)
 	out := map[string]string{}
-	cmd := exec.Command(getRootCmd(a.rootCmd), "apk", "list", "-I")
+
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(a.rootCmd), "apk", "list", "-I")
+	} else {
+		cmd = exec.Command("apk", "list", "-I")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -140,4 +153,20 @@ func (a *APK) ListInstalled() (map[string]string, error) {
 	}
 
 	return out, nil
+}
+
+func (a *APK) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if opts.AsRoot {
+		cmd = exec.Command(getRootCmd(a.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, args...)
+	} else {
+		cmd = exec.Command(mgrCmd, args...)
+	}
+
+	if !opts.NoConfirm {
+		cmd.Args = append(cmd.Args, "-i")
+	}
+
+	return cmd
 }

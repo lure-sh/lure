@@ -53,7 +53,7 @@ func upgradeCmd(c *cli.Context) error {
 }
 
 func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRelease) ([]string, error) {
-	installed, err := mgr.ListInstalled()
+	installed, err := mgr.ListInstalled(nil)
 	if err != nil {
 		return nil, err
 	}

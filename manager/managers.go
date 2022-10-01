@@ -23,6 +23,16 @@ import (
 	"os/exec"
 )
 
+type Opts struct {
+	AsRoot    bool
+	NoConfirm bool
+}
+
+var DefaultOpts = &Opts{
+	AsRoot:    true,
+	NoConfirm: false,
+}
+
 // DefaultRootCmd is the command used for privilege elevation by default
 var DefaultRootCmd = "sudo"
 
@@ -52,19 +62,19 @@ type Manager interface {
 	// Sets the command used to elevate privileges. Defaults to DefaultRootCmd.
 	SetRootCmd(string)
 	// Sync fetches repositories without installing anything
-	Sync() error
+	Sync(*Opts) error
 	// Install installs packages
-	Install(...string) error
+	Install(*Opts, ...string) error
 	// Remove uninstalls packages
-	Remove(...string) error
+	Remove(*Opts, ...string) error
 	// Upgrade upgrades packages
-	Upgrade(...string) error
+	Upgrade(*Opts, ...string) error
 	// InstallLocal installs packages from local files rather than repos
-	InstallLocal(...string) error
+	InstallLocal(*Opts, ...string) error
 	// UpgradeAll upgrades all packages
-	UpgradeAll() error
+	UpgradeAll(*Opts) error
 	// ListInstalled returns all installed packages mapped to their versions
-	ListInstalled() (map[string]string, error)
+	ListInstalled(*Opts) (map[string]string, error)
 }
 
 // Detect returns the package manager detected on the system
@@ -100,4 +110,11 @@ func setCmdEnv(cmd *exec.Cmd) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+}
+
+func ensureOpts(opts *Opts) *Opts {
+	if opts == nil {
+		return DefaultOpts
+	}
+	return opts
 }
