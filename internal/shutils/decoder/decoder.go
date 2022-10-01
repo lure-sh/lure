@@ -28,6 +28,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/cpu"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
@@ -196,10 +197,33 @@ func (d *Decoder) genPossibleNames(name string) []string {
 		return []string{name}
 	}
 
-	return []string{
-		fmt.Sprintf("%s_%s_%s", name, runtime.GOARCH, d.info.ID),
-		fmt.Sprintf("%s_%s", name, d.info.ID),
-		fmt.Sprintf("%s_%s", name, runtime.GOARCH),
-		name,
+	architectures := []string{runtime.GOARCH}
+
+	if runtime.GOARCH == "arm" {
+		// More specific goes first
+		architectures[0] = cpu.ARMVariant()
+		architectures = append(architectures, "arm")
 	}
+
+	distros := []string{d.info.ID}
+	distros = append(distros, d.info.Like...)
+
+	var out []string
+	for _, arch := range architectures {
+		for _, distro := range distros {
+			out = append(
+				out,
+				fmt.Sprintf("%s_%s_%s", name, arch, distro),
+				fmt.Sprintf("%s_%s", name, distro),
+			)
+		}
+		out = append(out, fmt.Sprintf("%s_%s", name, arch))
+	}
+	out = append(out, name)
+
+	for index, item := range out {
+		out[index] = strings.ReplaceAll(item, "-", "_")
+	}
+
+	return out
 }

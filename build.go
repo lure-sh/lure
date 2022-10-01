@@ -35,13 +35,13 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/rpm"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
-	"golang.org/x/sys/cpu"
 
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/download"
 	"go.arsenm.dev/lure/internal/shutils"
+	"go.arsenm.dev/lure/internal/cpu"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/manager"
 	"mvdan.cc/sh/v3/expand"
@@ -264,7 +264,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if pkgInfo.Arch == "arm" {
-		pkgInfo.Arch = checkARMVariant()
+		pkgInfo.Arch = cpu.ARMVariant()
 	}
 
 	contents := []*files.Content{}
@@ -437,24 +437,6 @@ func setDirVars(ctx context.Context, runner *interp.Runner, srcdir, pkgdir strin
 		return err
 	}
 	return runner.Run(ctx, fl)
-}
-
-// checkARMVariant checks which variant of ARM lure is running
-// on, by using the same detection method as Go itself
-func checkARMVariant() string {
-	armEnv := os.Getenv("LURE_ARM_VARIANT")
-	// ensure value has "arm" prefix, such as arm5 or arm6
-	if strings.HasPrefix(armEnv, "arm") {
-		return armEnv
-	}
-
-	if cpu.ARM.HasVFPv3 {
-		return "arm7"
-	} else if cpu.ARM.HasVFP {
-		return "arm6"
-	} else {
-		return "arm5"
-	}
 }
 
 func setScripts(vars *BuildVars, info *nfpm.Info, scriptDir string) {

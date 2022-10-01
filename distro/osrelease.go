@@ -22,6 +22,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 
 	"go.arsenm.dev/lure/internal/shutils"
 	"mvdan.cc/sh/v3/expand"
@@ -35,6 +36,7 @@ type OSRelease struct {
 	Name             string
 	PrettyName       string
 	ID               string
+	Like             []string
 	BuildID          string
 	ANSIColor        string
 	HomeURL          string
@@ -80,7 +82,7 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 		return nil, ErrParse
 	}
 
-	return &OSRelease{
+	out := &OSRelease{
 		Name:             runner.Vars["NAME"].Str,
 		PrettyName:       runner.Vars["PRETTY_NAME"].Str,
 		ID:               runner.Vars["ID"].Str,
@@ -91,5 +93,11 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 		SupportURL:       runner.Vars["SUPPORT_URL"].Str,
 		BugReportURL:     runner.Vars["BUG_REPORT_URL"].Str,
 		Logo:             runner.Vars["LOGO"].Str,
-	}, nil
+	}
+
+	if runner.Vars["ID_LIKE"].IsSet() {
+		out.Like = strings.Split(runner.Vars["ID_LIKE"].Str, " ")
+	}
+
+	return out, nil
 }
