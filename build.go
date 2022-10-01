@@ -146,6 +146,20 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	if !archMatches(vars.Architectures) {
+		var buildAnyway bool
+		survey.AskOne(
+			&survey.Confirm{
+				Message: "Your system's CPU architecture doesn't match this package. Do you want to build anyway?",
+				Default: true,
+			},
+			&buildAnyway,
+		)
+		if !buildAnyway {
+			os.Exit(1)
+		}
+	}
+
 	log.Info("Building package").Str("name", vars.Name).Str("version", vars.Version).Send()
 
 	baseDir := filepath.Join(cacheDir, "pkgs", vars.Name)
@@ -523,6 +537,20 @@ func getBuildVars(ctx context.Context, script string, info *distro.OSRelease) (*
 	}
 
 	return &vars, nil
+}
+
+func archMatches(architectures []string) bool {
+	arch := runtime.GOARCH
+
+	if arch == "arm" {
+		arch = cpu.ARMVariant()
+	}
+
+	if slices.Contains(architectures, "arm") {
+		architectures = append(architectures, cpu.ARMVariant())
+	}
+
+	return slices.Contains(architectures, arch)
 }
 
 func uniq(ss ...*[]string) {
