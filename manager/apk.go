@@ -84,7 +84,7 @@ func (a *APK) InstallLocal(opts *Opts, pkgs ...string) error {
 
 func (a *APK) Remove(opts *Opts, pkgs ...string) error {
 	opts = ensureOpts(opts)
-	cmd := a.getCmd(opts, "apt", "del")
+	cmd := a.getCmd(opts, "apk", "del")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
