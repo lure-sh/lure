@@ -245,7 +245,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		Arch:        runtime.GOARCH,
 		Version:     vars.Version,
 		Release:     strconv.Itoa(vars.Release),
-		Epoch:       strconv.FormatUint(uint64(vars.Epoch), 10),
 		Homepage:    vars.Homepage,
 		License:     strings.Join(vars.Licenses, ", "),
 		Maintainer:  vars.Maintainer,
@@ -255,6 +254,10 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			Provides:  vars.Provides,
 			Depends:   append(repoDeps, builtNames...),
 		},
+	}
+
+	if vars.Epoch != 0 {
+		pkgInfo.Epoch = strconv.FormatUint(uint64(vars.Epoch), 10)
 	}
 
 	setScripts(&vars, pkgInfo, filepath.Dir(script))
