@@ -107,8 +107,10 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	var distroChanged bool
 	if distID, ok := os.LookupEnv("LURE_DISTRO"); ok {
 		info.ID = distID
+		distroChanged = true
 	}
 
 	fl, err := os.Open(script)
@@ -139,6 +141,12 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	dec := decoder.New(info, runner)
+
+	// If distro was changed, the list of like distros
+	// no longer applies, so disable its use
+	if distroChanged {
+		dec.LikeDistros = false
+	}
 
 	var vars BuildVars
 	err = dec.DecodeVars(&vars)
