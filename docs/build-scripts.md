@@ -50,6 +50,15 @@ Names are checked in the following order:
 
 Distro detection is performed by reading the `/usr/lib/os-release` and `/etc/os-release` files.
 
+### Like distros
+
+Inside the `os-release` file, there is a list of "like" distros. LURE takes this into account. For example, if a script contains `deps_debian` but not `deps_ubuntu`, Ubuntu builds will use `deps_debian` because Ubuntu is based on debian.
+
+Most specificity is preferred, so if both `deps_debian` and `deps_ubuntu` is provided, Ubuntu and all Ubuntu-based distros will use `deps_ubuntu` while Debian and all Debian-based distros 
+that are not Ubuntu-based will use `deps_debian`.
+
+Like distros are disabled when using the `LURE_DISTRO` environment variable.
+
 ## Variables
 
 Any variables marked with `(*)` are required
