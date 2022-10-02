@@ -111,6 +111,8 @@ Example:
 lure ref
 ```
 
+---
+
 ## Environment Variables
 
 ### LURE_DISTRO
@@ -138,3 +140,21 @@ The `LURE_ARM_VARIANT` environment variable dictates which ARM variant to build 
 - `arm5`
 - `arm6`
 - `arm7`
+
+---
+
+## Cross-packaging for other Distributions
+
+You can create packages for different distributions  
+setting the environment variables `LURE_DISTRO` and `LURE_PKG_FORMAT` as mentioned above.
+
+Examples:
+
+```
+LURE_DISTRO=arch     LURE_PKG_FORMAT=archlinux lure build
+LURE_DISTRO=alpine   LURE_PKG_FORMAT=apk       lure build
+LURE_DISTRO=opensuse LURE_PKG_FORMAT=rpm       lure build
+LURE_DISTRO=debian   LURE_PKG_FORMAT=deb       lure build
+```
+
+---
