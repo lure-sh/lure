@@ -47,14 +47,17 @@ func (nfe VarNotFoundError) Error() string {
 
 // Decoder provides methods for decoding variable values
 type Decoder struct {
-	info      *distro.OSRelease
-	runner    *interp.Runner
+	info   *distro.OSRelease
+	runner *interp.Runner
+	// Enable distro overrides (true by default)
 	Overrides bool
+	// Enable using like distros for overrides (true by default)
+	LikeDistros bool
 }
 
 // New creates a new variable decoder
 func New(info *distro.OSRelease, runner *interp.Runner) *Decoder {
-	return &Decoder{info, runner, true}
+	return &Decoder{info, runner, true, true}
 }
 
 // DecodeVar decodes a variable to val using reflection.
@@ -206,7 +209,9 @@ func (d *Decoder) genPossibleNames(name string) []string {
 	}
 
 	distros := []string{d.info.ID}
-	distros = append(distros, d.info.Like...)
+	if d.LikeDistros {
+		distros = append(distros, d.info.Like...)
+	}
 
 	var out []string
 	for _, arch := range architectures {
