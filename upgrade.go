@@ -38,13 +38,18 @@ func upgradeCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
+	err = pullRepos(c.Context)
+	if err != nil {
+		log.Fatal("Error pulling repos").Err(err).Send()
+	}
+
 	updates, err := checkForUpdates(c.Context, mgr, info)
 	if err != nil {
 		log.Fatal("Error checking for updates").Err(err).Send()
 	}
 
 	if len(updates) > 0 {
-		installPkgs(c.Context, updates, mgr)
+		installPkgs(c.Context, updates, mgr, false)
 	} else {
 		log.Info("There is nothing to do.").Send()
 	}
