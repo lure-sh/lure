@@ -26,6 +26,11 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [checksums](#checksums)
     - [backup](#backup)
     - [scripts](#scripts)
+- [Functions](#functions)
+    - [prepare](#prepare)
+    - [version](#version-1)
+    - [build](#build)
+    - [package](#package)
 
 ---
 
@@ -224,6 +229,21 @@ All functions start in the `$srcdir` directory
 ### prepare
 
 The `prepare()` function runs first. It is meant to prepare the sources for building and packaging. This is the function in which patches should be applied, for example, by the `patch` command, and where tools like `go generate` should be executed.
+
+### version
+
+The `version()` function updates the `version` variable. This allows for automatically deriving the version from sources. This is most useful for git packages, which usually don't need to be changed, so their `version` variable stays the same.
+
+An example of using this for git:
+
+```bash
+version() {
+	cd "$srcdir/itd"
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+```
+
+The AUR equivalent is the [`pkgver()` function](https://wiki.archlinux.org/title/VCS_package_guidelines#The_pkgver()_function)
 
 ### build
 
