@@ -142,7 +142,7 @@ func (d *Decoder) DecodeVars(val any) error {
 	return nil
 }
 
-type ScriptFunc func(ctx context.Context, sir string, args ...string) error
+type ScriptFunc func(ctx context.Context, opts ...interp.RunnerOption) error
 
 // GetFunc returns a function corresponding to a bash function
 // with the given name
@@ -152,10 +152,11 @@ func (d *Decoder) GetFunc(name string) (ScriptFunc, bool) {
 		return nil, false
 	}
 
-	return func(ctx context.Context, dir string, args ...string) error {
+	return func(ctx context.Context, opts ...interp.RunnerOption) error {
 		sub := d.runner.Subshell()
-		interp.Params(args...)(sub)
-		interp.Dir(dir)(sub)
+		for _, opt := range opts {
+			opt(sub)
+		}
 		return sub.Run(ctx, fn)
 	}, true
 }
