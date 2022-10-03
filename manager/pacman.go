@@ -60,7 +60,7 @@ func (p *Pacman) Sync(opts *Opts) error {
 
 func (p *Pacman) Install(opts *Opts, pkgs ...string) error {
 	opts = ensureOpts(opts)
-	cmd := p.getCmd(opts, "pacman", "-S")
+	cmd := p.getCmd(opts, "pacman", "-S", "--needed")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -72,7 +72,7 @@ func (p *Pacman) Install(opts *Opts, pkgs ...string) error {
 
 func (p *Pacman) InstallLocal(opts *Opts, pkgs ...string) error {
 	opts = ensureOpts(opts)
-	cmd := p.getCmd(opts, "pacman", "-U")
+	cmd := p.getCmd(opts, "pacman", "-U", "--needed")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
