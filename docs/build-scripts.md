@@ -168,6 +168,7 @@ If the URL scheme starts with `git+`, the source will be downloaded as a git rep
 - `~branch`: Specify which branch of the repo to check out.
 - `~commit`: Specify which commit of the repo to check out.
 - `~depth`: Specify what depth should be used when cloning the repo. Must be an integer.
+- `~name`: Specify the name of the directory into which the git repo should be cloned.
 
 Examples:
 
