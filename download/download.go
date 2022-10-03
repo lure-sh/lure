@@ -23,6 +23,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"hash"
 	"io"
 	"net/http"
 	"net/url"
@@ -67,6 +68,22 @@ func Get(ctx context.Context, opts GetOptions) error {
 	}
 	query := src.Query()
 
+	if strings.HasPrefix(src.Scheme, "git+") {
+		err = getGit(ctx, src, query, opts)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = getFile(ctx, src, query, opts)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func getGit(ctx context.Context, src *url.URL, query url.Values, opts GetOptions) (err error) {
 	tag := query.Get("~tag")
 	query.Del("~tag")
 
@@ -79,6 +96,9 @@ func Get(ctx context.Context, opts GetOptions) error {
 	depthStr := query.Get("~depth")
 	query.Del("~depth")
 
+	name := query.Get("~name")
+	query.Del("~name")
+
 	var refName plumbing.ReferenceName
 	if tag != "" {
 		refName = plumbing.NewTagReferenceName(tag)
@@ -86,169 +106,180 @@ func Get(ctx context.Context, opts GetOptions) error {
 		refName = plumbing.NewBranchReferenceName(branch)
 	}
 
-	if strings.HasPrefix(src.Scheme, "git+") {
-		src.Scheme = strings.TrimPrefix(src.Scheme, "git+")
-		src.RawQuery = query.Encode()
+	src.Scheme = strings.TrimPrefix(src.Scheme, "git+")
+	src.RawQuery = query.Encode()
 
-		name := path.Base(src.Path)
+	if name == "" {
+		name = path.Base(src.Path)
 		name = strings.TrimSuffix(name, ".git")
+	}
 
-		dstDir := opts.Destination
-		if opts.EncloseGit {
-			dstDir = filepath.Join(opts.Destination, name)
-		}
+	dstDir := opts.Destination
+	if opts.EncloseGit {
+		dstDir = filepath.Join(opts.Destination, name)
+	}
 
-		depth := 0
-		if depthStr != "" {
-			depth, err = strconv.Atoi(depthStr)
-			if err != nil {
-				return err
-			}
-		}
-
-		cloneOpts := &git.CloneOptions{
-			URL:      src.String(),
-			Progress: os.Stderr,
-			Depth:    depth,
-		}
-
-		repo, err := git.PlainCloneContext(ctx, dstDir, false, cloneOpts)
+	depth := 0
+	if depthStr != "" {
+		depth, err = strconv.Atoi(depthStr)
 		if err != nil {
 			return err
 		}
+	}
 
-		w, err := repo.Worktree()
-		if err != nil {
-			return err
-		}
+	cloneOpts := &git.CloneOptions{
+		URL:      src.String(),
+		Progress: os.Stderr,
+		Depth:    depth,
+	}
 
-		checkoutOpts := &git.CheckoutOptions{}
-		if refName != "" {
-			checkoutOpts.Branch = refName
-		} else if commit != "" {
-			checkoutOpts.Hash = plumbing.NewHash(commit)
-		} else {
-			return nil
-		}
+	repo, err := git.PlainCloneContext(ctx, dstDir, false, cloneOpts)
+	if err != nil {
+		return err
+	}
 
-		return w.Checkout(checkoutOpts)
+	w, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	checkoutOpts := &git.CheckoutOptions{}
+	if refName != "" {
+		checkoutOpts.Branch = refName
+	} else if commit != "" {
+		checkoutOpts.Hash = plumbing.NewHash(commit)
 	} else {
-		name := query.Get("~name")
-		query.Del("~name")
+		return nil
+	}
 
-		archive := query.Get("~archive")
-		query.Del("~archive")
+	return w.Checkout(checkoutOpts)
+}
 
-		src.RawQuery = query.Encode()
+func getFile(ctx context.Context, src *url.URL, query url.Values, opts GetOptions) error {
+	name := query.Get("~name")
+	query.Del("~name")
 
-		if name == "" {
-			name = path.Base(src.Path)
-		}
+	archive := query.Get("~archive")
+	query.Del("~archive")
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, src.String(), nil)
+	src.RawQuery = query.Encode()
+
+	if name == "" {
+		name = path.Base(src.Path)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, src.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	hash := sha256.New()
+
+	format, input, err := archiver.Identify(name, res.Body)
+	if err == archiver.ErrNoMatch || archive == "false" {
+		fl, err := os.Create(filepath.Join(opts.Destination, name))
 		if err != nil {
 			return err
 		}
 
-		res, err := http.DefaultClient.Do(req)
+		w := io.MultiWriter(hash, fl)
+
+		_, err = io.Copy(w, input)
 		if err != nil {
 			return err
 		}
 
-		hash := sha256.New()
+		res.Body.Close()
+		fl.Close()
 
-		format, input, err := archiver.Identify(name, res.Body)
-		if err == archiver.ErrNoMatch || archive == "false" {
-			fl, err := os.Create(filepath.Join(opts.Destination, name))
-			if err != nil {
-				return err
+		if opts.SHA256Sum != nil {
+			sum := hash.Sum(nil)
+			if !bytes.Equal(opts.SHA256Sum, sum) {
+				return ErrChecksumMismatch
 			}
-
-			w := io.MultiWriter(hash, fl)
-
-			_, err = io.Copy(w, input)
-			if err != nil {
-				return err
-			}
-
-			res.Body.Close()
-			fl.Close()
-
-			if opts.SHA256Sum != nil {
-				sum := hash.Sum(nil)
-				if !bytes.Equal(opts.SHA256Sum, sum) {
-					return ErrChecksumMismatch
-				}
-			}
-		} else if err != nil {
+		}
+	} else if err != nil {
+		return err
+	} else {
+		err = extractFile(ctx, input, hash, format, name, opts)
+		if err != nil {
 			return err
-		} else {
-			r := io.TeeReader(input, hash)
-			fname := format.Name()
+		}
+	}
 
-			switch format := format.(type) {
-			case archiver.Extractor:
-				err = format.Extract(ctx, r, nil, func(ctx context.Context, f archiver.File) error {
-					fr, err := f.Open()
-					if err != nil {
-						return err
-					}
-					defer fr.Close()
+	return nil
+}
 
-					path := filepath.Join(opts.Destination, f.NameInArchive)
+func extractFile(ctx context.Context, input io.Reader, hash hash.Hash, format archiver.Format, name string, opts GetOptions) (err error) {
+	r := io.TeeReader(input, hash)
+	fname := format.Name()
 
-					err = os.MkdirAll(filepath.Dir(path), 0o755)
-					if err != nil {
-						return err
-					}
+	switch format := format.(type) {
+	case archiver.Extractor:
+		err = format.Extract(ctx, r, nil, func(ctx context.Context, f archiver.File) error {
+			fr, err := f.Open()
+			if err != nil {
+				return err
+			}
+			defer fr.Close()
 
-					if f.IsDir() {
-						err = os.Mkdir(path, 0o755)
-						if err != nil {
-							return err
-						}
-					} else {
-						outFl, err := os.Create(path)
-						if err != nil {
-							return err
-						}
-						defer outFl.Close()
+			path := filepath.Join(opts.Destination, f.NameInArchive)
 
-						_, err = io.Copy(outFl, fr)
-						return err
-					}
-					return nil
-				})
+			err = os.MkdirAll(filepath.Dir(path), 0o755)
+			if err != nil {
+				return err
+			}
+
+			if f.IsDir() {
+				err = os.Mkdir(path, 0o755)
 				if err != nil {
 					return err
 				}
-			case archiver.Decompressor:
-				rc, err := format.OpenReader(r)
-				if err != nil {
-					return err
-				}
-				defer rc.Close()
-
-				path := filepath.Join(opts.Destination, name)
-				path = strings.TrimSuffix(path, fname)
-
+			} else {
 				outFl, err := os.Create(path)
 				if err != nil {
 					return err
 				}
+				defer outFl.Close()
 
-				_, err = io.Copy(outFl, rc)
-				if err != nil {
-					return err
-				}
+				_, err = io.Copy(outFl, fr)
+				return err
 			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	case archiver.Decompressor:
+		rc, err := format.OpenReader(r)
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
 
-			if opts.SHA256Sum != nil {
-				sum := hash.Sum(nil)
-				if !bytes.Equal(opts.SHA256Sum, sum) {
-					return ErrChecksumMismatch
-				}
-			}
+		path := filepath.Join(opts.Destination, name)
+		path = strings.TrimSuffix(path, fname)
+
+		outFl, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(outFl, rc)
+		if err != nil {
+			return err
+		}
+	}
+
+	if opts.SHA256Sum != nil {
+		sum := hash.Sum(nil)
+		if !bytes.Equal(opts.SHA256Sum, sum) {
+			return ErrChecksumMismatch
 		}
 	}
 
