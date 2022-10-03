@@ -227,7 +227,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	if ok {
 		log.Info("Executing prepare()").Send()
 
-		err = fn(ctx, srcdir)
+		err = fn(ctx, interp.Dir(srcdir))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -237,7 +237,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	if ok {
 		log.Info("Executing build()").Send()
 
-		err = fn(ctx, srcdir)
+		err = fn(ctx, interp.Dir(srcdir))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -247,7 +247,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	if ok {
 		log.Info("Executing package()").Send()
 
-		err = fn(ctx, srcdir)
+		err = fn(ctx, interp.Dir(srcdir))
 		if err != nil {
 			return nil, nil, err
 		}
