@@ -36,21 +36,23 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	installPkgs(c.Context, args.Slice(), mgr)
+	installPkgs(c.Context, args.Slice(), mgr, true)
 
 	return nil
 }
 
-func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager) {
-	err := pullRepos(ctx)
-	if err != nil {
-		log.Fatal("Error pulling repositories").Err(err).Send()
+func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull bool) {
+	if pull {
+		err := pullRepos(ctx)
+		if err != nil {
+			log.Fatal("Error pulling repositories").Err(err).Send()
+		}
 	}
 
 	scripts, notFound := findPkgs(pkgs)
 
 	if len(notFound) > 0 {
-		err = mgr.Install(nil, notFound...)
+		err := mgr.Install(nil, notFound...)
 		if err != nil {
 			log.Fatal("Error installing native packages").Err(err).Send()
 		}

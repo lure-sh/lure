@@ -192,7 +192,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	if len(vars.BuildDepends) > 0 {
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, vars.BuildDepends, mgr)
+		installPkgs(ctx, vars.BuildDepends, mgr, false)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
