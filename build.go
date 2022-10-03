@@ -19,6 +19,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"io"
@@ -231,6 +232,26 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		if err != nil {
 			return nil, nil, err
 		}
+	}
+
+	fn, ok = dec.GetFunc("version")
+	if ok {
+		log.Info("Executing version()").Send()
+
+		buf := &bytes.Buffer{}
+
+		err = fn(
+			ctx,
+			interp.Dir(srcdir),
+			interp.StdIO(os.Stdin, buf, os.Stderr),
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		vars.Version = strings.TrimSpace(buf.String())
+
+		log.Info("Updating version").Str("new", vars.Version).Send()
 	}
 
 	fn, ok = dec.GetFunc("build")
