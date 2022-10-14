@@ -92,12 +92,23 @@ func buildCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	_, pkgNames, err := buildPackage(c.Context, script, mgr)
+	pkgPaths, _, err := buildPackage(c.Context, script, mgr)
 	if err != nil {
 		log.Fatal("Error building package").Err(err).Send()
 	}
 
-	log.Info("Package(s) built successfully").Any("names", pkgNames).Send()
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Error getting working directory").Err(err).Send()
+	}
+
+	for _, pkgPath := range pkgPaths {
+		name := filepath.Base(pkgPath)
+		err = os.Rename(pkgPath, filepath.Join(wd, name))
+		if err != nil {
+			log.Fatal("Error moving the package").Err(err).Send()
+		}
+	}
 
 	return nil
 }
