@@ -246,7 +246,7 @@ func extractFile(ctx context.Context, input io.Reader, hash hash.Hash, format ar
 					return err
 				}
 			} else {
-				outFl, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, fm.Perm())
+				outFl, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fm.Perm())
 				if err != nil {
 					return err
 				}
