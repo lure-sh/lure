@@ -124,7 +124,7 @@ LURE_ARM_VARIANT=arm5 lure install ...
 
 ### licenses
 
-The `licenses` array contains the licenses used by this package. Some valid values include `GPLv3` and `MIT`.
+The `licenses` array contains the licenses used by this package. In order to standardize license names, values should be [SPDX Identifiers](https://spdx.org/licenses/) such as `Apache-2.0`, `MIT`, and `GPL-3.0-only`. If the project uses a license that is not standardized in SPDX, use the value `Custom`. If the project has multiple nonstandard licenses, include `Custom` as many times as there are nonstandard licenses.
 
 ### provides
 
