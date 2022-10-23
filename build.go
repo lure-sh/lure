@@ -77,7 +77,7 @@ type Scripts struct {
 	PreInstall  string `sh:"preinstall"`
 	PostInstall string `sh:"postinstall"`
 	PreRemove   string `sh:"preremove"`
-	PostRemove  string `sh:"postinstall"`
+	PostRemove  string `sh:"postremove"`
 	PreUpgrade  string `sh:"preupgrade"`
 	PostUpgrade string `sh:"postupgrade"`
 	PreTrans    string `sh:"pretrans"`
