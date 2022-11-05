@@ -21,6 +21,7 @@ archives:
       arm64: aarch64
 nfpms:
   - id: lure
+    package_name: linux-user-repository
     file_name_template: '{{.PackageName}}-{{.Version}}-{{.Os}}-{{.Arch}}'
     description: "Linux User REpository"
     replacements:
@@ -33,7 +34,7 @@ nfpms:
     formats:
       - apk
       - deb
-      - rpm
+      - rpm        
 aurs:
   - name: lure-bin
     homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
