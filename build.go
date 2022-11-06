@@ -474,7 +474,7 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 			EncloseGit:  true,
 		}
 
-		if bv.Checksums[i] != "SKIP" {
+		if !strings.EqualFold(bv.Checksums[i], "SKIP") {
 			checksum, err := hex.DecodeString(bv.Checksums[i])
 			if err != nil {
 				return err
