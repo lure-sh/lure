@@ -34,7 +34,11 @@ nfpms:
     formats:
       - apk
       - deb
-      - rpm        
+      - rpm
+    provides:
+      - lure
+    conflicts:
+      - lure   
 aurs:
   - name: lure-bin
     homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
