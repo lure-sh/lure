@@ -242,7 +242,9 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	err = setDirVars(ctx, runner, srcdir, pkgdir)
+	repodir := filepath.Dir(script)
+
+	err = setDirVars(ctx, runner, srcdir, pkgdir, repodir)
 	if err != nil {
 		return nil, nil, err
 	}
