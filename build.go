@@ -201,9 +201,21 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	if len(vars.BuildDepends) > 0 {
+	installed, err := mgr.ListInstalled(nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var buildDeps []string
+	for _, pkgName := range vars.BuildDepends {
+		if _, ok := installed[pkgName]; !ok {
+			buildDeps = append(buildDeps, pkgName)
+		}
+	}
+
+	if len(buildDeps) > 0 {
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, vars.BuildDepends, mgr, false)
+		installPkgs(ctx, buildDeps, mgr, false)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -418,7 +430,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	if len(vars.BuildDepends) > 0 {
+	if len(buildDeps) > 0 {
 		var removeBuildDeps bool
 		err = survey.AskOne(&survey.Confirm{
 			Message: "Would you like to remove build dependencies?",
@@ -433,7 +445,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 					AsRoot:    true,
 					NoConfirm: true,
 				},
-				vars.BuildDepends...,
+				buildDeps...,
 			)
 			if err != nil {
 				return nil, nil, err
