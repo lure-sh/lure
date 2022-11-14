@@ -137,6 +137,7 @@ func (z *Zypper) ListInstalled(opts *Opts) (map[string]string, error) {
 		if !ok {
 			continue
 		}
+		version = strings.TrimPrefix(version, "0:")
 		out[name] = version
 	}
 
