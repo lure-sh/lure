@@ -146,7 +146,9 @@ func findPkg(pkg string) ([]string, error) {
 func pkgPrompt(options []string) ([]string, error) {
 	names := make([]string, len(options))
 	for i, option := range options {
-		names[i] = filepath.Base(filepath.Dir(option))
+		pkgDir := filepath.Dir(option)
+		repoDir := filepath.Dir(pkgDir)
+		names[i] = filepath.Base(repoDir) + "/" + filepath.Base(pkgDir)
 	}
 
 	prompt := &survey.MultiSelect{
