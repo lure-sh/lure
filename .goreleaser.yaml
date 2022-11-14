@@ -29,7 +29,7 @@ nfpms:
       amd64: x86_64
       arm64: aarch64
     homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
-    maintainer: 'Arsen Musyaelyan <arsen@arsenm.dev>'
+    maintainer: 'Arsen Musayelyan <arsen@arsenm.dev>'
     license: GPLv3
     formats:
       - apk
@@ -44,7 +44,7 @@ aurs:
     homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
     description: "Linux User REpository"
     maintainers:
-      - 'Arsen Musyaelyan <arsen@arsenm.dev>'
+      - 'Arsen Musayelyan <arsen@arsenm.dev>'
     license: GPLv3
     private_key: '{{ .Env.AUR_KEY }}'
     git_url: 'ssh://aur@aur.archlinux.org/lure-bin.git'
