@@ -1,7 +1,7 @@
 # LURE (Linux User REpository)
 
 [![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
-[![Build status](https://ci.appveyor.com/api/projects/status/7anjwy7xcp4dxfu6?svg=true)](https://ci.appveyor.com/project/moussaelianarsen/lure)
+[![status-badge](https://ci.arsenm.dev/api/badges/Arsen6331/lure/status.svg)](https://ci.arsenm.dev/Arsen6331/lure)
 [![lure-bin AUR package](https://img.shields.io/aur/version/lure-bin?label=lure-bin&logo=archlinux)](https://aur.archlinux.org/packages/lure-bin/)
 
 LURE is intended to bring the AUR to all distros. It is currently in an ***alpha*** state and may not be stable. It can download a repository, build packages in it using a bash script similar to [PKGBUILD](https://wiki.archlinux.org/title/PKGBUILD), and then install them using your system package manager.
