@@ -462,6 +462,12 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 func genBuildEnv(info *distro.OSRelease) []string {
 	env := os.Environ()
+
+	arch := runtime.GOARCH
+	if arch == "arm" {
+		arch = cpu.ARMVariant()
+	}
+
 	env = append(
 		env,
 		"DISTRO_NAME="+info.Name,
@@ -469,7 +475,7 @@ func genBuildEnv(info *distro.OSRelease) []string {
 		"DISTRO_ID="+info.ID,
 		"DISTRO_VERSION_ID="+info.VersionID,
 
-		"ARCH="+runtime.GOARCH,
+		"ARCH="+arch,
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
 	)
 
