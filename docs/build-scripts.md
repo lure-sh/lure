@@ -31,6 +31,7 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [version](#version-1)
     - [build](#build)
     - [package](#package)
+- [Environment Variables](#environment-variables)
 
 ---
 
@@ -223,9 +224,9 @@ The rest of the scripts are available in all packages.
 
 ## Functions
 
-Any variables marked with `(*)` are required
+This section documents user-defined functions that can be added to build scripts. Any functions marked with `(*)` are required.
 
-All functions start in the `$srcdir` directory
+All functions are executed in the `$srcdir` directory
 
 ### prepare
 
@@ -268,3 +269,41 @@ package() {
     install -Dm644 bin.cfg ${pkgdir}/etc/bin.cfg
 }
 ```
+
+---
+
+## Environment Variables
+ 
+LURE exposes several values as environment variables for use in build scripts.
+
+### DISTRO_NAME
+
+The `DISTRO_NAME` variable is the name of the distro as defined in its `os-release` file.
+
+For example, it's set to `Fedora Linux` in a Fedora 36 docker image
+
+### DISTRO_PRETTY_NAME
+
+The `DISTRO_PRETTY_NAME` variable is the "pretty" name of the distro as defined in its `os-release` file.
+
+For example, it's set to `Fedora Linux 36 (Container Image)` in a Fedora 36 docker image
+
+### DISTRO_ID
+
+The `DISTRO_ID` variable is the identifier of the distro as defined in its `os-release` file. This is the same as what LURE uses for overrides.
+
+For example, it's set to `fedora` in a Fedora 36 docker image
+
+### DISTRO_VERSION_ID
+
+The `DISTRO_VERSION_ID` variable is the version identifier of the distro as defined in its `os-release` file.
+
+For example, it's set to `36` in a Fedora 36 docker image and `11` in a Debian Bullseye docker image
+
+### ARCH
+
+The `ARCH` variable is the architecture of the machine running the script. It uses the same naming convention as the values in the `architectures` array
+
+### NCPU
+
+The `NCPU` variable is the amount of CPUs available on the machine running the script. It will be set to `8` on a quad core machine with hyperthreading, for example.
