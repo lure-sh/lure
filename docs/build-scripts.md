@@ -226,15 +226,11 @@ The rest of the scripts are available in all packages.
 
 This section documents user-defined functions that can be added to build scripts. Any functions marked with `(*)` are required.
 
-All functions are executed in the `$srcdir` directory
-
-### prepare
-
-The `prepare()` function runs first. It is meant to prepare the sources for building and packaging. This is the function in which patches should be applied, for example, by the `patch` command, and where tools like `go generate` should be executed.
+All functions except for `version()` are executed in the `$srcdir` directory
 
 ### version
 
-The `version()` function updates the `version` variable. This allows for automatically deriving the version from sources. This is most useful for git packages, which usually don't need to be changed, so their `version` variable stays the same.
+The `version()` function is the first to run. It updates the `version` variable. This allows for automatically deriving the version from sources. This is most useful for git packages, which usually don't need to be changed, so their `version` variable stays the same.
 
 An example of using this for git:
 
@@ -246,6 +242,12 @@ version() {
 ```
 
 The AUR equivalent is the [`pkgver()` function](https://wiki.archlinux.org/title/VCS_package_guidelines#The_pkgver()_function)
+
+This function does not run in `$srcdir` because it is executed before the source directory is even created. Instead, it runs in `$repodir`.
+
+### prepare
+
+The `prepare()` function is meant to prepare the sources for building and packaging. This is the function in which patches should be applied, for example, by the `patch` command, and where tools like `go generate` should be executed.
 
 ### build
 

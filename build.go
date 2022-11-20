@@ -160,6 +160,30 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		dec.LikeDistros = false
 	}
 
+	fn, ok := dec.GetFunc("version")
+	if ok {
+		log.Info("Executing version()").Send()
+
+		buf := &bytes.Buffer{}
+
+		err = fn(
+			ctx,
+			interp.Dir(filepath.Dir(script)),
+			interp.StdIO(os.Stdin, buf, os.Stderr),
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		newVer := strings.TrimSpace(buf.String())
+		err = setVersion(ctx, runner, newVer)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		log.Info("Updating version").Str("new", newVer).Send()
+	}
+
 	var vars BuildVars
 	err = dec.DecodeVars(&vars)
 	if err != nil {
@@ -249,7 +273,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	fn, ok := dec.GetFunc("prepare")
+	fn, ok = dec.GetFunc("prepare")
 	if ok {
 		log.Info("Executing prepare()").Send()
 
@@ -257,26 +281,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		if err != nil {
 			return nil, nil, err
 		}
-	}
-
-	fn, ok = dec.GetFunc("version")
-	if ok {
-		log.Info("Executing version()").Send()
-
-		buf := &bytes.Buffer{}
-
-		err = fn(
-			ctx,
-			interp.Dir(srcdir),
-			interp.StdIO(os.Stdin, buf, os.Stderr),
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		vars.Version = strings.TrimSpace(buf.String())
-
-		log.Info("Updating version").Str("new", vars.Version).Send()
 	}
 
 	fn, ok = dec.GetFunc("build")
@@ -615,6 +619,14 @@ func archMatches(architectures []string) bool {
 	}
 
 	return slices.Contains(architectures, arch)
+}
+
+func setVersion(ctx context.Context, r *interp.Runner, to string) error {
+	fl, err := syntax.NewParser().Parse(strings.NewReader("version='"+to+"'"), "")
+	if err != nil {
+		return err
+	}
+	return r.Run(ctx, fl)
 }
 
 func uniq(ss ...*[]string) {
