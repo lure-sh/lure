@@ -594,6 +594,10 @@ func getBuildVars(ctx context.Context, script string, info *distro.OSRelease) (*
 }
 
 func archMatches(architectures []string) bool {
+	if slices.Contains(architectures, "all") {
+		return true
+	}
+
 	arch := runtime.GOARCH
 
 	if arch == "arm" {
