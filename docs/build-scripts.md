@@ -32,7 +32,12 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [build](#build)
     - [package](#package)
 - [Environment Variables](#environment-variables)
-
+    - [DISTRO_NAME](#distro_name)
+    - [DISTRO_PRETTY_NAME](#distro_pretty_name)
+    - [DISTRO_ID](#distro_id)
+    - [DISTRO_VERSION_ID](#distro_version_id)
+    - [ARCH](#arch)
+    - [NCPU](#ncpu)
 ---
 
 ## Distro Overrides
