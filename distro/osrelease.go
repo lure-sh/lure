@@ -37,7 +37,7 @@ type OSRelease struct {
 	PrettyName       string
 	ID               string
 	Like             []string
-	BuildID          string
+	VersionID        string
 	ANSIColor        string
 	HomeURL          string
 	DocumentationURL string
@@ -86,7 +86,7 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 		Name:             runner.Vars["NAME"].Str,
 		PrettyName:       runner.Vars["PRETTY_NAME"].Str,
 		ID:               runner.Vars["ID"].Str,
-		BuildID:          runner.Vars["BUILD_ID"].Str,
+		VersionID:        runner.Vars["VERSION_ID"].Str,
 		ANSIColor:        runner.Vars["ANSI_COLOR"].Str,
 		HomeURL:          runner.Vars["HOME_URL"].Str,
 		DocumentationURL: runner.Vars["DOCUMENTATION_URL"].Str,
