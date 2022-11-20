@@ -467,7 +467,7 @@ func genBuildEnv(info *distro.OSRelease) []string {
 		"DISTRO_NAME="+info.Name,
 		"DISTRO_PRETTY_NAME="+info.PrettyName,
 		"DISTRO_ID="+info.ID,
-		"DISTRO_BUILD_ID="+info.BuildID,
+		"DISTRO_VERSION_ID="+info.VersionID,
 
 		"ARCH="+runtime.GOARCH,
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
