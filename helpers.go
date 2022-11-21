@@ -11,7 +11,7 @@ import (
 )
 
 var helpers = shutils.ExecFuncs{
-	"install-bin":          installHelperCmd("/usr/bin", 0o755),
+	"install-binary":       installHelperCmd("/usr/bin", 0o755),
 	"install-systemd-user": installHelperCmd("/usr/lib/systemd/user", 0o644),
 	"install-systemd":      installHelperCmd("/usr/lib/systemd/system", 0o644),
 	"install-config":       installHelperCmd("/etc", 0o644),
