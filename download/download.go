@@ -227,6 +227,11 @@ func extractFile(ctx context.Context, input io.Reader, hash hash.Hash, format ar
 				return err
 			}
 			defer fr.Close()
+			fi, err := f.Stat()
+			if err != nil {
+				return err
+			}
+			fm := fi.Mode()
 
 			path := filepath.Join(opts.Destination, f.NameInArchive)
 
@@ -241,7 +246,7 @@ func extractFile(ctx context.Context, input io.Reader, hash hash.Hash, format ar
 					return err
 				}
 			} else {
-				outFl, err := os.Create(path)
+				outFl, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fm.Perm())
 				if err != nil {
 					return err
 				}
