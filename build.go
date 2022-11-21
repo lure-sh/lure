@@ -142,6 +142,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	runner, err := interp.New(
 		interp.Env(expand.ListEnviron(env...)),
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
+		interp.ExecHandler(helpers.ExecHandler),
 	)
 	if err != nil {
 		return nil, nil, err

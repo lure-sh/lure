@@ -20,21 +20,34 @@ package shutils
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"mvdan.cc/sh/v3/interp"
 )
 
-type ExecFuncs map[string]func(interp.HandlerContext, []string) uint8
+func InsufficientArgsError(cmd string, exp, got int) error {
+	argsWord := "arguments"
+	if exp == 1 {
+		argsWord = "argument"
+	}
+
+	return fmt.Errorf("%s: command requires at least %d %s, got %d", cmd, exp, argsWord, got)
+}
+
+type ExecFunc func(hc interp.HandlerContext, name string, args []string) error
+
+type ExecFuncs map[string]ExecFunc
 
 func (ef ExecFuncs) ExecHandler(ctx context.Context, args []string) error {
 	name := args[0]
 
 	if fn, ok := ef[name]; ok {
 		hctx := interp.HandlerCtx(ctx)
-		ec := fn(hctx, args)
-		if ec != 0 {
-			return interp.NewExitStatus(ec)
+		if len(args) > 1 {
+			return fn(hctx, args[0], args[1:])
+		} else {
+			return fn(hctx, args[0], nil)
 		}
 	}
 
