@@ -6,12 +6,17 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"go.arsenm.dev/lure/internal/shutils"
 	"mvdan.cc/sh/v3/interp"
 )
 
-var ErrNoPipe = errors.New("command requires data to be piped in")
+var (
+	ErrNoPipe         = errors.New("command requires data to be piped in")
+	ErrNoDetectManNum = errors.New("manual number cannot be detected from the filename")
+)
 
 var helpers = shutils.ExecFuncs{
 	"install-binary":       installHelperCmd("/usr/bin", 0o755),
@@ -19,8 +24,8 @@ var helpers = shutils.ExecFuncs{
 	"install-systemd":      installHelperCmd("/usr/lib/systemd/system", 0o644),
 	"install-config":       installHelperCmd("/etc", 0o644),
 	"install-license":      installHelperCmd("/usr/share/licenses", 0o644),
-	"install-manual":       installHelperCmd("/usr/share/man/man1", 0o644),
 	"install-desktop":      installHelperCmd("/usr/share/applications", 0o644),
+	"install-manual":       installManualCmd,
 	"install-completion":   installCompletionCmd,
 }
 
@@ -44,6 +49,30 @@ func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
 		}
 		return nil
 	}
+}
+
+func installManualCmd(hc interp.HandlerContext, cmd string, args []string) error {
+	if len(args) < 1 {
+		return shutils.InsufficientArgsError(cmd, 1, len(args))
+	}
+
+	from := args[0]
+	number := filepath.Base(from)
+	// The man page may be compressed with gzip.
+	// If it is, the .gz extension must be removed to properly
+	// detect the number at the end of the filename.
+	number = strings.TrimSuffix(number, ".gz")
+	number = strings.TrimPrefix(filepath.Ext(number), ".")
+
+	// If number is not actually a number, return an error
+	if _, err := strconv.Atoi(number); err != nil {
+		return fmt.Errorf("install-manual: %w", ErrNoDetectManNum)
+	}
+
+	prefix := "/usr/share/man/man" + number
+	to := filepath.Join(hc.Env.Get("pkgdir").Str, prefix, filepath.Base(from))
+
+	return helperInstall(from, to, 0o644)
 }
 
 func installCompletionCmd(hc interp.HandlerContext, cmd string, args []string) error {
