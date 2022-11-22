@@ -301,6 +301,12 @@ The `DISTRO_ID` variable is the identifier of the distro as defined in its `os-r
 
 For example, it's set to `fedora` in a Fedora 36 docker image
 
+### DISTRO_ID_LIKE
+
+The `DISTRO_ID_LIKE` variable contains identifiers of similar distros to the one running, separated by spaces.
+
+For example, it's set to `opensuse suse` in an OpenSUSE Tumbleweed docker image and `rhel fedora` in a CentOS 8 docker image.
+
 ### DISTRO_VERSION_ID
 
 The `DISTRO_VERSION_ID` variable is the version identifier of the distro as defined in its `os-release` file.
