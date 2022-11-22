@@ -128,6 +128,11 @@ func main() {
 				Aliases: []string{"ref"},
 				Action:  refreshCmd,
 			},
+			{
+				Name:   "version",
+				Usage:  "Display the current LURE version and exit",
+				Action: displayVersion,
+			},
 		},
 	}
 
@@ -135,4 +140,9 @@ func main() {
 	if err != nil {
 		log.Error("Error while running app").Err(err).Send()
 	}
+}
+
+func displayVersion(c *cli.Context) error {
+	print(version)
+	return nil
 }
