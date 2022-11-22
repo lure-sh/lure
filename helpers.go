@@ -8,8 +8,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unsafe"
 
 	"go.arsenm.dev/lure/internal/shutils"
+	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/interp"
 )
 
@@ -27,6 +29,7 @@ var helpers = shutils.ExecFuncs{
 	"install-desktop":      installHelperCmd("/usr/share/applications", 0o644),
 	"install-manual":       installManualCmd,
 	"install-completion":   installCompletionCmd,
+	"install-library":      installLibraryCmd,
 }
 
 func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
@@ -116,6 +119,57 @@ func installCompletionCmd(hc interp.HandlerContext, cmd string, args []string) e
 
 	_, err = io.Copy(dst, hc.Stdin)
 	return err
+}
+
+func installLibraryCmd(hc interp.HandlerContext, cmd string, args []string) error {
+	prefix := getLibPrefix(hc)
+	fn := installHelperCmd(prefix, 0o755)
+	return fn(hc, cmd, args)
+}
+
+// See https://wiki.debian.org/Multiarch/Tuples
+var multiarchTupleMap = map[string]string{
+	"386":      "i386-linux-gnu",
+	"amd64":    "x86_64-linux-gnu",
+	"arm5":     "arm-linux-gnueabi",
+	"arm6":     "arm-linux-gnueabihf",
+	"arm7":     "arm-linux-gnueabihf",
+	"arm64":    "aarch64-linux-gnu",
+	"mips":     "mips-linux-gnu",
+	"mipsle":   "mipsel-linux-gnu",
+	"mips64":   "mips64-linux-gnuabi64",
+	"mips64le": "mips64el-linux-gnuabi64",
+	"ppc64":    "powerpc64-linux-gnu",
+	"ppc64le":  "powerpc64le-linux-gnu",
+	"s390x":    "s390x-linux-gnu",
+	"riscv64":  "riscv64-linux-gnu",
+	"loong64":  "loongarch64-linux-gnu",
+}
+
+func getLibPrefix(hc interp.HandlerContext) string {
+	if dir, ok := os.LookupEnv("LURE_LIB_DIR"); ok {
+		return dir
+	}
+
+	out := "/usr/lib"
+
+	wordSize := unsafe.Sizeof(uintptr(0))
+	if wordSize == 8 {
+		out = "/usr/lib64"
+	}
+
+	architecture := hc.Env.Get("ARCH").Str
+	distroID := hc.Env.Get("DISTRO_ID").Str
+	distroLike := strings.Split(hc.Env.Get("DISTRO_ID_LIKE").Str, " ")
+
+	if distroID == "debian" || slices.Contains(distroLike, "debian") {
+		triple, ok := multiarchTupleMap[architecture]
+		if ok {
+			out = filepath.Join("/usr/lib", triple)
+		}
+	}
+
+	return out
 }
 
 func helperInstall(from, to string, perms os.FileMode) error {

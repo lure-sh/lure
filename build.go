@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
