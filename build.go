@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -122,6 +123,9 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	var distroChanged bool
 	if distID, ok := os.LookupEnv("LURE_DISTRO"); ok {
 		info.ID = distID
+		// Since the distro was overwritten, we don't know what the
+		// like distros are, so set to nil
+		info.Like = nil
 		distroChanged = true
 	}
 
@@ -479,6 +483,7 @@ func genBuildEnv(info *distro.OSRelease) []string {
 		"DISTRO_PRETTY_NAME="+info.PrettyName,
 		"DISTRO_ID="+info.ID,
 		"DISTRO_VERSION_ID="+info.VersionID,
+		"DISTRO_ID_LIKE="+strings.Join(info.Like, " "),
 
 		"ARCH="+arch,
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
