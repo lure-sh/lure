@@ -424,7 +424,7 @@ Examples:
 
 ```bash
 ./k9s completion fish | install-completion fish k9s
-install-completion bash k9s <./k9s/completions/k9s.fish
+install-completion bash k9s <./k9s/completions/k9s.bash
 ```
 
 ### install-manual
