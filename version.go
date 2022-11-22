@@ -19,11 +19,17 @@
 package main
 
 import (
+	_ "embed"
 	"strconv"
 	"strings"
 
 	"golang.org/x/exp/slices"
 )
+
+//go:generate scripts/gen-version.sh
+
+//go:embed version.txt
+var version string
 
 // vercmp compares two version strings.
 // It returns 1 if v1 is greater,
