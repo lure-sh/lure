@@ -38,6 +38,17 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [DISTRO_VERSION_ID](#distro_version_id)
     - [ARCH](#arch)
     - [NCPU](#ncpu)
+- [Helper Commands](#helper-commands)
+    - [install-binary](#install-binary)
+    - [install-systemd](#install-systemd)
+    - [install-systemd-user](#install-systemd-user)
+    - [install-config](#install-config)
+    - [install-license](#install-license)
+    - [install-completion](#install-completion)
+    - [install-manual](#install-manual)
+    - [install-desktop](#install-desktop)
+    - [install-library](#install-library)
+
 ---
 
 ## Distro Overrides
@@ -320,3 +331,140 @@ The `ARCH` variable is the architecture of the machine running the script. It us
 ### NCPU
 
 The `NCPU` variable is the amount of CPUs available on the machine running the script. It will be set to `8` on a quad core machine with hyperthreading, for example.
+
+---
+
+## Helper Commands
+
+LURE provides various commands to help packagers create proper cross-distro packages. These commands should be used wherever possible instead of doing the tasks manually.
+
+### install-binary
+
+`install-binary` accepts 1-2 arguments. The first argument is the binary you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-binary ./itd
+install-binary ./itd itd-2
+```
+
+### install-systemd
+
+`install-systemd` installs regular systemd system services (see `install-systemd-user` for user services)
+
+It accepts 1-2 arguments. The first argument is the service you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-systemd ./syncthing@.service
+install-systemd-user ./syncthing@.service sync-thing@.service
+```
+
+### install-systemd-user
+
+`install-systemd-user` installs systemd user services (services like `itd` meant to be started with `--user`).
+
+It accepts 1-2 arguments. The first argument is the service you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-systemd-user ./itd.service
+install-systemd-user ./itd.service infinitime-daemon.service
+```
+
+### install-config
+
+`install-config` installs configuration files into the `/etc` directory
+
+It accepts 1-2 arguments. The first argument is the config you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-config ./itd.toml
+install-config ./itd.example.toml itd.toml
+```
+
+### install-license
+
+`install-license` installs a license file
+
+It accepts 1-2 arguments. The first argument is the config you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-license ./LICENSE itd/LICENSE
+```
+
+### install-completion
+
+`install-completion` installs shell completions
+
+It currently supports `bash`, `zsh`, and `fish`
+
+Completions are read from stdin, so they can either be piped in or retrieved from files
+
+Two arguments are required for this function. The first one is the name of the shell and the second is the name of the completion.
+
+Examples:
+
+```bash
+./k9s completion fish | install-completion fish k9s
+install-completion bash k9s <./k9s/completions/k9s.fish
+```
+
+### install-manual
+
+`install-manual` installs manpages. It accepts a single argument, which is the path to the manpage.
+
+The install path will be determined based on the number at the end of the filename. If a number cannot be extracted, an error will be returned.
+
+Examples:
+
+```bash
+install-manual ./man/strelaysrv.1
+install-manual ./mdoc.7
+```
+
+### install-desktop
+
+`install-desktop` installs desktop files for applications. It accepts 1-2 arguments. The first argument is the config you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-desktop ./${name}/share/admc.desktop
+install-desktop ./${name}/share/admc.desktop admc-app.desktop
+```
+
+### install-library
+
+`install-library` installs shared and static libraries to the correct location.
+
+This is the most important helper as it contains logic to figure out where to install libraries based on the target distro and CPU architecture. It should almost always be used to install all libraries.
+
+It accepts 1-2 arguments. The first argument is the config you'd like to install. The second is the filename that should be used.
+
+If the filename argument is not provided, tha name of the input file will be used.
+
+Examples:
+
+```bash
+install-library ./${name}/build/libadldap.so
+```
