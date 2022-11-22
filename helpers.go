@@ -146,6 +146,15 @@ var multiarchTupleMap = map[string]string{
 	"loong64":  "loongarch64-linux-gnu",
 }
 
+// usrLibDistros is a list of distros that don't support
+// /usr/lib64, and must use /usr/lib
+var usrLibDistros = []string{
+	"arch",
+	"alpine",
+	"void",
+	"chimera",
+}
+
 // Based on CMake's GNUInstallDirs
 func getLibPrefix(hc interp.HandlerContext) string {
 	if dir, ok := os.LookupEnv("LURE_LIB_DIR"); ok {
@@ -154,20 +163,21 @@ func getLibPrefix(hc interp.HandlerContext) string {
 
 	out := "/usr/lib"
 
-	architecture := hc.Env.Get("ARCH").Str
 	distroID := hc.Env.Get("DISTRO_ID").Str
 	distroLike := strings.Split(hc.Env.Get("DISTRO_ID_LIKE").Str, " ")
 
-	if distroID == "arch" || slices.Contains(distroLike, "arch") ||
-		distroID == "alpine" || slices.Contains(distroLike, "alpine") ||
-		distroID == "void" || slices.Contains(distroLike, "void") {
-		return out
+	for _, usrLibDistro := range usrLibDistros {
+		if distroID == usrLibDistro || slices.Contains(distroLike, usrLibDistro) {
+			return out
+		}
 	}
 
 	wordSize := unsafe.Sizeof(uintptr(0))
 	if wordSize == 8 {
 		out = "/usr/lib64"
 	}
+
+	architecture := hc.Env.Get("ARCH").Str
 
 	if distroID == "debian" || slices.Contains(distroLike, "debian") {
 		triple, ok := multiarchTupleMap[architecture]
