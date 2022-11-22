@@ -41,6 +41,12 @@ func (p PkgNotFoundError) Error() string {
 	return "package '" + p.pkgName + "' could not be found in any repository"
 }
 
+type RepoConfig struct {
+	Repo struct {
+		MinVersion string `toml:"minVersion"`
+	}
+}
+
 func addrepoCmd(c *cli.Context) error {
 	name := c.String("name")
 	repoURL := c.String("url")
@@ -223,6 +229,26 @@ func pullRepos(ctx context.Context) error {
 			} else if err != nil {
 				return err
 			}
+
+			fl, err := w.Filesystem.Open("lure-repo.toml")
+			if err != nil {
+				log.Warn("Git repository does not appear to be a valid LURE repo").Str("repo", repo.Name).Send()
+				continue
+			}
+
+			var repoCfg RepoConfig
+			err = toml.NewDecoder(fl).Decode(&repoCfg)
+			if err != nil {
+				return err
+			}
+			fl.Close()
+
+			currentVer, _, _ := strings.Cut(version, "-")
+			if vercmp(currentVer, repoCfg.Repo.MinVersion) == -1 {
+				log.Warn("LURE repo's minumum LURE version is greater than the current version. Try updating LURE if something doesn't work.").Str("repo", repo.Name).Send()
+			}
+
+			continue
 		}
 
 		err = os.RemoveAll(repoDir)
@@ -245,6 +271,23 @@ func pullRepos(ctx context.Context) error {
 		})
 		if err != nil {
 			return err
+		}
+
+		fl, err := os.Open(filepath.Join(repoDir, "lure-repo.toml"))
+		if err != nil {
+			log.Warn("Git repository does not appear to be a valid LURE repo").Str("repo", repo.Name).Send()
+		}
+
+		var repoCfg RepoConfig
+		err = toml.NewDecoder(fl).Decode(&repoCfg)
+		if err != nil {
+			return err
+		}
+		fl.Close()
+
+		currentVer, _, _ := strings.Cut(version, "-")
+		if vercmp(currentVer, repoCfg.Repo.MinVersion) == -1 {
+			log.Warn("LURE repo's minumum LURE version is greater than the current version. Try updating LURE if something doesn't work.").Str("repo", repo.Name).Send()
 		}
 	}
 

@@ -1,4 +1,4 @@
-lure:
+lure: version.txt
 	go build
 
 clean:
@@ -9,5 +9,8 @@ install: lure
 
 uninstall:
 	rm -f /usr/local/bin/lure
+	
+version.txt:
+	go generate
 
 .PHONY: install clean uninstall
