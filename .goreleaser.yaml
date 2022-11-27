@@ -36,6 +36,7 @@ nfpms:
       - apk
       - deb
       - rpm
+      - archlinux
     provides:
       - lure
     conflicts:
