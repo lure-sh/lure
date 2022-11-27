@@ -12,6 +12,18 @@ LURE is written in pure Go and has zero dependencies after it's built. The only 
 
 ## Installation
 
+### Install script
+
+The LURE install script will automatically download and install the appropriate LURE package on your system. To use it, simply run the following command:
+
+```bash
+curl https://www.arsenm.dev/lure.sh | bash
+```
+
+**IMPORTANT**: This method is not recommended as it executes whatever code is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
+
+### Packages
+
 Distro packages and binary archives are provided at the latest Gitea release: https://gitea.arsenm.dev/Arsen6331/lure/releases/latest
 
 LURE is also available on the AUR as [lure-bin](https://aur.archlinux.org/packages/lure-bin)
@@ -61,6 +73,5 @@ As mentioned before, LURE has zero dependencies after it's built. All functional
 
 ## Planned Features
 
-- Automated install script
 - Automated docker-based testing tool
 - Web interface for repos
