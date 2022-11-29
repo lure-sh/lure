@@ -466,3 +466,20 @@ Examples:
 ```bash
 install-library ./${name}/build/libadldap.so
 ```
+
+### git-version
+
+`git-version` returns a version number based on the git revision of a repository.
+
+If an argument is provided, it will be used as the path to the repo. Otherwise, the current directory will be used.
+
+The version number will be the amount of revisions, a dot, and the short hash of the current revision. For example: `118.e4b8348`.
+
+The AUR's convention includes an `r` at the beginning of the version number. This is ommitted because some distros expect the version number to start with a digit.
+
+Examples:
+
+```bash
+git-version
+git-version "$srcdir/itd"
+```

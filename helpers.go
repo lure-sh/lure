@@ -10,6 +10,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"go.arsenm.dev/lure/internal/shutils"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/interp"
@@ -30,6 +32,7 @@ var helpers = shutils.ExecFuncs{
 	"install-manual":       installManualCmd,
 	"install-completion":   installCompletionCmd,
 	"install-library":      installLibraryCmd,
+	"git-version":          gitVersionCmd,
 }
 
 func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
@@ -187,6 +190,40 @@ func getLibPrefix(hc interp.HandlerContext) string {
 	}
 
 	return out
+}
+
+func gitVersionCmd(hc interp.HandlerContext, cmd string, args []string) error {
+	path := hc.Dir
+	if len(args) > 0 {
+		path = resolvePath(hc, args[0])
+	}
+
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return fmt.Errorf("git-version: %w", err)
+	}
+
+	revNum := 0
+	commits, err := r.Log(&git.LogOptions{})
+	if err != nil {
+		return fmt.Errorf("git-version: %w", err)
+	}
+
+	commits.ForEach(func(*object.Commit) error {
+		revNum++
+		return nil
+	})
+
+	HEAD, err := r.Head()
+	if err != nil {
+		return fmt.Errorf("git-version: %w", err)
+	}
+
+	hash := HEAD.Hash().String()
+
+	fmt.Fprintf(hc.Stdout, "%d.%s", revNum, hash[:7])
+
+	return nil
 }
 
 func helperInstall(from, to string, perms os.FileMode) error {
