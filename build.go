@@ -261,7 +261,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 		err = fn(
 			ctx,
-			interp.Dir(filepath.Dir(script)),
+			interp.Dir(srcdir),
 			interp.StdIO(os.Stdin, buf, os.Stderr),
 		)
 		if err != nil {
