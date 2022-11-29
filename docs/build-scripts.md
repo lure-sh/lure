@@ -48,6 +48,7 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [install-manual](#install-manual)
     - [install-desktop](#install-desktop)
     - [install-library](#install-library)
+    - [git-version](#git-version)
 
 ---
 
