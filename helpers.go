@@ -38,7 +38,7 @@ func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
 			return shutils.InsufficientArgsError(cmd, 1, len(args))
 		}
 
-		from := args[0]
+		from := resolvePath(hc, args[0])
 		to := ""
 		if len(args) > 1 {
 			to = filepath.Join(hc.Env.Get("pkgdir").Str, prefix, args[1])
@@ -59,7 +59,7 @@ func installManualCmd(hc interp.HandlerContext, cmd string, args []string) error
 		return shutils.InsufficientArgsError(cmd, 1, len(args))
 	}
 
-	from := args[0]
+	from := resolvePath(hc, args[0])
 	number := filepath.Base(from)
 	// The man page may be compressed with gzip.
 	// If it is, the .gz extension must be removed to properly
@@ -209,4 +209,11 @@ func helperInstall(from, to string, perms os.FileMode) error {
 
 	_, err = io.Copy(dst, src)
 	return err
+}
+
+func resolvePath(hc interp.HandlerContext, path string) string {
+	if !filepath.IsAbs(path) {
+		return filepath.Join(hc.Dir, path)
+	}
+	return path
 }
