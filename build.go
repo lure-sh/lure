@@ -164,30 +164,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		dec.LikeDistros = false
 	}
 
-	fn, ok := dec.GetFunc("version")
-	if ok {
-		log.Info("Executing version()").Send()
-
-		buf := &bytes.Buffer{}
-
-		err = fn(
-			ctx,
-			interp.Dir(filepath.Dir(script)),
-			interp.StdIO(os.Stdin, buf, os.Stderr),
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		newVer := strings.TrimSpace(buf.String())
-		err = setVersion(ctx, runner, newVer)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		log.Info("Updating version").Str("new", newVer).Send()
-	}
-
 	var vars BuildVars
 	err = dec.DecodeVars(&vars)
 	if err != nil {
@@ -275,6 +251,31 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	err = setDirVars(ctx, runner, srcdir, pkgdir, repodir)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	fn, ok := dec.GetFunc("version")
+	if ok {
+		log.Info("Executing version()").Send()
+
+		buf := &bytes.Buffer{}
+
+		err = fn(
+			ctx,
+			interp.Dir(filepath.Dir(script)),
+			interp.StdIO(os.Stdin, buf, os.Stderr),
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		newVer := strings.TrimSpace(buf.String())
+		err = setVersion(ctx, runner, newVer)
+		if err != nil {
+			return nil, nil, err
+		}
+		vars.Version = newVer
+
+		log.Info("Updating version").Str("new", newVer).Send()
 	}
 
 	fn, ok = dec.GetFunc("prepare")
