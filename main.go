@@ -27,9 +27,12 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
+	"go.arsenm.dev/logger/log"
 )
 
-var log = logger.NewPretty(os.Stderr)
+func init() {
+	log.Logger = logger.NewPretty(os.Stderr)
+}
 
 func main() {
 	ctx := context.Background()

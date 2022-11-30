@@ -39,6 +39,7 @@ import (
 
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/download"
 	"go.arsenm.dev/lure/internal/cpu"
