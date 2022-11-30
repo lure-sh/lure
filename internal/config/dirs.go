@@ -14,6 +14,7 @@ var (
 	CacheDir   string
 	RepoDir    string
 	PkgsDir    string
+	DBPath     string
 )
 
 func init() {
@@ -63,4 +64,6 @@ func init() {
 	if err != nil {
 		log.Fatal("Unable to create package cache directory").Err(err).Send()
 	}
+
+	DBPath = filepath.Join(CacheDir, "db")
 }

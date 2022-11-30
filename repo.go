@@ -104,7 +104,7 @@ func removerepoCmd(c *cli.Context) error {
 }
 
 func refreshCmd(c *cli.Context) error {
-	err := repos.Pull(c.Context, cfg.Repos)
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
 	if err != nil {
 		log.Fatal("Error pulling repos").Err(err).Send()
 	}

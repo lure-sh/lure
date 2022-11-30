@@ -45,6 +45,7 @@ func main() {
 		<-ctx.Done()
 		// Exit the program after a maximum of 200ms
 		time.Sleep(200 * time.Millisecond)
+		gdb.Close()
 		os.Exit(0)
 	}()
 
@@ -139,6 +140,9 @@ func main() {
 				Usage:  "Display the current LURE version and exit",
 				Action: displayVersion,
 			},
+		},
+		After: func(ctx *cli.Context) error {
+			return gdb.Close()
 		},
 	}
 
