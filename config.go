@@ -21,10 +21,11 @@ package main
 import (
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
+	"go.arsenm.dev/lure/internal/types"
 	"go.arsenm.dev/lure/manager"
 )
 
-var cfg config.Config
+var cfg types.Config
 
 func init() {
 	err := config.Decode(&cfg)

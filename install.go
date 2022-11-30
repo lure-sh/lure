@@ -20,9 +20,11 @@ package main
 
 import (
 	"context"
+
 	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
 )
 
@@ -44,7 +46,7 @@ func installCmd(c *cli.Context) error {
 
 func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull bool) {
 	if pull {
-		err := pullRepos(ctx)
+		err := repos.Pull(ctx, cfg.Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
