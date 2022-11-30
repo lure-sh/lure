@@ -42,6 +42,7 @@ import (
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/download"
+	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
 	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
@@ -187,7 +188,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	log.Info("Building package").Str("name", vars.Name).Str("version", vars.Version).Send()
 
-	baseDir := filepath.Join(cacheDir, "pkgs", vars.Name)
+	baseDir := filepath.Join(config.PkgsDir, vars.Name)
 	srcdir := filepath.Join(baseDir, "src")
 	pkgdir := filepath.Join(baseDir, "pkg")
 
