@@ -20,6 +20,7 @@ package main
 
 import (
 	"context"
+	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/manager"

@@ -29,6 +29,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/download"
 	"golang.org/x/exp/slices"
 )

@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/manager"
 )
 

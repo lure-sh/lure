@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/manager"
 )

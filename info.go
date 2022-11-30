@@ -19,6 +19,7 @@
 package main
 
 import (
+	"go.arsenm.dev/logger/log"
 	"os"
 
 	"github.com/urfave/cli/v2"
