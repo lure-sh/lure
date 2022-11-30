@@ -46,7 +46,7 @@ func installCmd(c *cli.Context) error {
 
 func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull bool) {
 	if pull {
-		err := repos.Pull(ctx, cfg.Repos)
+		err := repos.Pull(ctx, gdb, cfg.Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}

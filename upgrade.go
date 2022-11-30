@@ -41,7 +41,7 @@ func upgradeCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	err = repos.Pull(c.Context, cfg.Repos)
+	err = repos.Pull(c.Context, gdb, cfg.Repos)
 	if err != nil {
 		log.Fatal("Error pulling repos").Err(err).Send()
 	}
