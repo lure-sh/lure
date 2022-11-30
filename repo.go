@@ -31,6 +31,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/download"
+	"go.arsenm.dev/lure/internal/config"
 	"golang.org/x/exp/slices"
 )
 
@@ -52,23 +53,23 @@ func addrepoCmd(c *cli.Context) error {
 	name := c.String("name")
 	repoURL := c.String("url")
 
-	for _, repo := range config.Repos {
+	for _, repo := range cfg.Repos {
 		if repo.URL == repoURL {
 			log.Fatal("Repo already exists").Str("name", repo.Name).Send()
 		}
 	}
 
-	config.Repos = append(config.Repos, Repo{
+	cfg.Repos = append(cfg.Repos, config.Repo{
 		Name: name,
 		URL:  repoURL,
 	})
 
-	cfgFl, err := os.Create(cfgPath)
+	cfgFl, err := os.Create(config.ConfigPath)
 	if err != nil {
 		log.Fatal("Error opening config file").Err(err).Send()
 	}
 
-	err = toml.NewEncoder(cfgFl).Encode(&config)
+	err = toml.NewEncoder(cfgFl).Encode(&cfg)
 	if err != nil {
 		log.Fatal("Error encoding config").Err(err).Send()
 	}
@@ -81,7 +82,7 @@ func removerepoCmd(c *cli.Context) error {
 
 	found := false
 	index := 0
-	for i, repo := range config.Repos {
+	for i, repo := range cfg.Repos {
 		if repo.Name == name {
 			index = i
 			found = true
@@ -91,19 +92,19 @@ func removerepoCmd(c *cli.Context) error {
 		log.Fatal("Repo does not exist").Str("name", name).Send()
 	}
 
-	config.Repos = slices.Delete(config.Repos, index, index+1)
+	cfg.Repos = slices.Delete(cfg.Repos, index, index+1)
 
-	cfgFl, err := os.Create(cfgPath)
+	cfgFl, err := os.Create(config.ConfigPath)
 	if err != nil {
 		log.Fatal("Error opening config file").Err(err).Send()
 	}
 
-	err = toml.NewEncoder(cfgFl).Encode(&config)
+	err = toml.NewEncoder(cfgFl).Encode(&cfg)
 	if err != nil {
 		log.Fatal("Error encoding config").Err(err).Send()
 	}
 
-	err = os.RemoveAll(filepath.Join(cacheDir, "repo", name))
+	err = os.RemoveAll(filepath.Join(config.RepoDir, name))
 	if err != nil {
 		log.Fatal("Error removing repo directory").Err(err).Send()
 	}
@@ -120,11 +121,9 @@ func refreshCmd(c *cli.Context) error {
 }
 
 func findPkg(pkg string) ([]string, error) {
-	baseRepoDir := filepath.Join(cacheDir, "repo")
-
 	var out []string
-	for _, repo := range config.Repos {
-		repoDir := filepath.Join(baseRepoDir, repo.Name)
+	for _, repo := range cfg.Repos {
+		repoDir := filepath.Join(config.RepoDir, repo.Name)
 		err := os.MkdirAll(repoDir, 0o755)
 		if err != nil {
 			return nil, err
@@ -200,16 +199,14 @@ func findPkgs(pkgs []string) (scripts, notFound []string) {
 }
 
 func pullRepos(ctx context.Context) error {
-	baseRepoDir := filepath.Join(cacheDir, "repo")
-
-	for _, repo := range config.Repos {
+	for _, repo := range cfg.Repos {
 		repoURL, err := url.Parse(repo.URL)
 		if err != nil {
 			return err
 		}
 
 		log.Info("Pulling repository").Str("name", repo.Name).Send()
-		repoDir := filepath.Join(baseRepoDir, repo.Name)
+		repoDir := filepath.Join(config.RepoDir, repo.Name)
 
 		gitDir := filepath.Join(repoDir, ".git")
 		if fi, err := os.Stat(gitDir); err == nil && fi.IsDir() {
