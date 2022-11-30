@@ -28,7 +28,10 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
 	"go.arsenm.dev/logger/log"
+	"go.arsenm.dev/lure/internal/config"
 )
+
+//go:generate scripts/gen-version.sh
 
 func init() {
 	log.Logger = logger.NewPretty(os.Stderr)
@@ -146,6 +149,6 @@ func main() {
 }
 
 func displayVersion(c *cli.Context) error {
-	print(version)
+	print(config.Version)
 	return nil
 }

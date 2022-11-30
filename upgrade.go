@@ -25,7 +25,9 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
+	"go.arsenm.dev/lure/vercmp"
 )
 
 func upgradeCmd(c *cli.Context) error {
@@ -39,7 +41,7 @@ func upgradeCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	err = pullRepos(c.Context)
+	err = repos.Pull(c.Context, cfg.Repos)
 	if err != nil {
 		log.Fatal("Error pulling repos").Err(err).Send()
 	}
@@ -86,7 +88,7 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 			repoVer = fmt.Sprintf("%d:%s-%d", vars.Epoch, vars.Version, vars.Release)
 		}
 
-		c := vercmp(repoVer, version)
+		c := vercmp.Compare(repoVer, version)
 		if c == 0 || c == -1 {
 			continue
 		} else if c == 1 {
