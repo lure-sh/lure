@@ -262,9 +262,9 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	repodir := filepath.Dir(script)
+	scriptdir := filepath.Dir(script)
 
-	err = setDirVars(ctx, runner, srcdir, pkgdir, repodir)
+	err = setDirVars(ctx, runner, srcdir, pkgdir, scriptdir)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -527,8 +527,8 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 
 // setDirVars sets srcdir and pkgdir. It's a very hacky way of doing so,
 // but setting the runner's Env and Vars fields doesn't seem to work.
-func setDirVars(ctx context.Context, runner *interp.Runner, srcdir, pkgdir, repodir string) error {
-	cmd := "srcdir='" + srcdir + "'\npkgdir='" + pkgdir + "'\nrepodir='" + repodir + "'\n"
+func setDirVars(ctx context.Context, runner *interp.Runner, srcdir, pkgdir, scriptdir string) error {
+	cmd := "srcdir='" + srcdir + "'\npkgdir='" + pkgdir + "'\nscriptdir='" + scriptdir + "'\n"
 	fl, err := syntax.NewParser().Parse(strings.NewReader(cmd), "vars")
 	if err != nil {
 		return err
