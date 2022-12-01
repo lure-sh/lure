@@ -44,6 +44,7 @@ import (
 	"go.arsenm.dev/lure/download"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/manager"
@@ -220,15 +221,25 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
+		found, notFound, err := repos.FindPkgs(gdb, buildDeps)
+		if err != nil {
+			return nil, nil, err
+		}
+
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, buildDeps, mgr, false)
+		installPkgs(ctx, flattenFoundPkgs(found), notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
 	if len(vars.Depends) > 0 {
 		log.Info("Installing dependencies").Send()
 
-		scripts, notFound := findPkgs(vars.Depends)
+		found, notFound, err := repos.FindPkgs(gdb, vars.Depends)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		scripts := getScriptPaths(flattenFoundPkgs(found))
 		for _, script := range scripts {
 			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
 			if err != nil {

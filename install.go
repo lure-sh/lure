@@ -20,10 +20,13 @@ package main
 
 import (
 	"context"
+	"path/filepath"
 
 	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/lure/internal/config"
+	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
 )
@@ -39,21 +42,21 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	installPkgs(c.Context, args.Slice(), mgr, true)
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repositories").Err(err).Send()
+	}
 
+	found, notFound, err := repos.FindPkgs(gdb, args.Slice())
+	if err != nil {
+		log.Fatal("Error finding packages").Err(err).Send()
+	}
+
+	installPkgs(c.Context, flattenFoundPkgs(found), notFound, mgr)
 	return nil
 }
 
-func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull bool) {
-	if pull {
-		err := repos.Pull(ctx, gdb, cfg.Repos)
-		if err != nil {
-			log.Fatal("Error pulling repositories").Err(err).Send()
-		}
-	}
-
-	scripts, notFound := findPkgs(pkgs)
-
+func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager) {
 	if len(notFound) > 0 {
 		err := mgr.Install(nil, notFound...)
 		if err != nil {
@@ -61,7 +64,32 @@ func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull b
 		}
 	}
 
-	installScripts(ctx, mgr, scripts)
+	installScripts(ctx, mgr, getScriptPaths(pkgs))
+}
+
+func getScriptPaths(pkgs []db.Package) []string {
+	var scripts []string
+	for _, pkg := range pkgs {
+		scriptPath := filepath.Join(config.RepoDir, pkg.Repository, pkg.Name, "lure.sh")
+		scripts = append(scripts, scriptPath)
+	}
+	return scripts
+}
+
+func flattenFoundPkgs(found map[string][]db.Package) []db.Package {
+	var outPkgs []db.Package
+	for _, pkgs := range found {
+		if len(pkgs) > 1 {
+			choices, err := pkgPrompt(pkgs)
+			if err != nil {
+				log.Fatal("Error prompting for choice of package").Send()
+			}
+			outPkgs = append(outPkgs, choices...)
+		} else if len(pkgs) == 1 {
+			outPkgs = append(outPkgs, pkgs[0])
+		}
+	}
+	return outPkgs
 }
 
 func installScripts(ctx context.Context, mgr manager.Manager, scripts []string) {
