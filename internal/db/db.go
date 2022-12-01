@@ -18,9 +18,9 @@ type Package struct {
 	Licenses      []string `sh:"license"`
 	Provides      []string `sh:"provides"`
 	Conflicts     []string `sh:"conflicts"`
+	Replaces      []string `sh:"replaces"`
 	Depends       map[string][]string
 	BuildDepends  map[string][]string
-	Replaces      []string `sh:"replaces"`
 	Repository    string
 }
 
@@ -28,10 +28,22 @@ type Package struct {
 func Init(db *genji.DB) error {
 	return db.Exec(`
 		CREATE TABLE IF NOT EXISTS pkgs (
-			name       TEXT,
+			name       TEXT NOT NULL,
 			repository TEXT NOT NULL,
-			UNIQUE(name, repository),
-			...
+			version    TEXT NOT NULL,
+			release    INT  NOT NULL,
+			epoch      INT,
+			description TEXT,
+			homepage TEXT,
+			maintainer TEXT,
+			architectures ARRAY,
+			licenses ARRAY,
+			provides ARRAY,
+			conflicts ARRAY,
+			replaces ARRAY,
+			depends (...),
+			builddepends (...),
+			UNIQUE(name, repository)
 		);
 	`)
 }
