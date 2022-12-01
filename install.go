@@ -52,7 +52,7 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Error finding packages").Err(err).Send()
 	}
 
-	installPkgs(c.Context, flattenFoundPkgs(found), notFound, mgr)
+	installPkgs(c.Context, flattenFoundPkgs(found, "install"), notFound, mgr)
 	return nil
 }
 
@@ -76,11 +76,11 @@ func getScriptPaths(pkgs []db.Package) []string {
 	return scripts
 }
 
-func flattenFoundPkgs(found map[string][]db.Package) []db.Package {
+func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
 	var outPkgs []db.Package
 	for _, pkgs := range found {
 		if len(pkgs) > 1 {
-			choices, err := pkgPrompt(pkgs)
+			choices, err := pkgPrompt(pkgs, verb)
 			if err != nil {
 				log.Fatal("Error prompting for choice of package").Send()
 			}

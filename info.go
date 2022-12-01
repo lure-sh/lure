@@ -44,7 +44,7 @@ func infoCmd(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	pkgs := flattenFoundPkgs(found)
+	pkgs := flattenFoundPkgs(found, "show")
 
 	for _, pkg := range pkgs {
 		err = yaml.NewEncoder(os.Stdout).Encode(pkg)

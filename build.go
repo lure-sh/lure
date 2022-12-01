@@ -227,7 +227,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		}
 
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, flattenFoundPkgs(found), notFound, mgr)
+		installPkgs(ctx, flattenFoundPkgs(found, "install"), notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -239,7 +239,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			return nil, nil, err
 		}
 
-		scripts := getScriptPaths(flattenFoundPkgs(found))
+		scripts := getScriptPaths(flattenFoundPkgs(found, "install"))
 		for _, script := range scripts {
 			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
 			if err != nil {
