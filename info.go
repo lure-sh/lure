@@ -35,6 +35,11 @@ func infoCmd(c *cli.Context) error {
 		log.Fatalf("Command info expected at least 1 argument, got %d", args.Len()).Send()
 	}
 
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repositories").Err(err).Send()
+	}
+
 	found, _, err := repos.FindPkgs(gdb, args.Slice())
 	if err != nil {
 		log.Fatal("Error finding packages").Err(err).Send()
@@ -55,4 +60,3 @@ func infoCmd(c *cli.Context) error {
 	}
 
 	return nil
-}

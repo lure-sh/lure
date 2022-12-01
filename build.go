@@ -89,6 +89,11 @@ type Scripts struct {
 func buildCmd(c *cli.Context) error {
 	script := c.String("script")
 
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repositories").Err(err).Send()
+	}
+
 	mgr := manager.Detect()
 	if mgr == nil {
 		log.Fatal("Unable to detect supported package manager on system").Send()

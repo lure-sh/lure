@@ -26,10 +26,16 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
 )
 
 func listCmd(c *cli.Context) error {
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repositories").Err(err).Send()
+	}
+
 	result, err := db.GetPkgs(gdb, "true")
 	if err != nil {
 		log.Fatal("Error getting packages").Err(err).Send()
