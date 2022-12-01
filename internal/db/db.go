@@ -28,21 +28,21 @@ type Package struct {
 func Init(db *genji.DB) error {
 	return db.Exec(`
 		CREATE TABLE IF NOT EXISTS pkgs (
-			name       TEXT NOT NULL,
-			repository TEXT NOT NULL,
-			version    TEXT NOT NULL,
-			release    INT  NOT NULL,
-			epoch      INT,
-			description TEXT,
-			homepage TEXT,
-			maintainer TEXT,
+			name          TEXT NOT NULL,
+			repository    TEXT NOT NULL,
+			version       TEXT NOT NULL,
+			release       INT  NOT NULL,
+			epoch         INT,
+			description   TEXT,
+			homepage      TEXT,
+			maintainer    TEXT,
 			architectures ARRAY,
-			licenses ARRAY,
-			provides ARRAY,
-			conflicts ARRAY,
-			replaces ARRAY,
-			depends (...),
-			builddepends (...),
+			licenses      ARRAY,
+			provides      ARRAY,
+			conflicts     ARRAY,
+			replaces      ARRAY,
+			depends       (...),
+			builddepends  (...),
 			UNIQUE(name, repository)
 		);
 	`)
