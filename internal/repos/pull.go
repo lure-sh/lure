@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/pelletier/go-toml/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
@@ -174,6 +175,11 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 	var actions []action
 	for _, fp := range patch.FilePatches() {
 		from, to := fp.Files()
+
+		if !isValid(from, to) {
+			continue
+		}
+
 		if to == nil {
 			actions = append(actions, action{
 				Type: actionDelete,
@@ -272,6 +278,21 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 	}
 
 	return nil
+}
+
+// isValid makes sure the path of the file being updated is valid.
+// It checks to make sure the file is not within a nested directory
+// and that it is called lure.sh.
+func isValid(from, to diff.File) bool {
+	var path string
+	if from != nil {
+		path = from.Path()
+	}
+	if to != nil {
+		path = to.Path()
+	}
+
+	return strings.Count(path, "/") == 1 && strings.HasSuffix(path, "lure.sh")
 }
 
 func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *genji.DB) error {
