@@ -174,14 +174,11 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if !archMatches(vars.Architectures) {
-		var buildAnyway bool
-		survey.AskOne(
-			&survey.Confirm{
-				Message: "Your system's CPU architecture doesn't match this package. Do you want to build anyway?",
-				Default: true,
-			},
-			&buildAnyway,
-		)
+		buildAnyway, err := yesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
+		if err != nil {
+			return nil, nil, err
+		}
+
 		if !buildAnyway {
 			os.Exit(1)
 		}
@@ -455,10 +452,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
-		var removeBuildDeps bool
-		err = survey.AskOne(&survey.Confirm{
-			Message: "Would you like to remove build dependencies?",
-		}, &removeBuildDeps)
+		removeBuildDeps, err := yesNoPrompt("Would you like to remove build dependencies?", false)
 		if err != nil {
 			return nil, nil, err
 		}

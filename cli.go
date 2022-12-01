@@ -29,3 +29,15 @@ func pkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
 
 	return out, nil
 }
+
+func yesNoPrompt(msg string, def bool) (bool, error) {
+	var answer bool
+	err := survey.AskOne(
+		&survey.Confirm{
+			Message: msg,
+			Default: def,
+		},
+		&answer,
+	)
+	return answer, err
+}
