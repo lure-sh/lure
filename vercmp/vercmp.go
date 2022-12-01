@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main
+package vercmp
 
 import (
 	_ "embed"
@@ -26,16 +26,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-//go:generate scripts/gen-version.sh
-
-//go:embed version.txt
-var version string
-
-// vercmp compares two version strings.
+// Compare compares two version strings.
 // It returns 1 if v1 is greater,
 // 0 if the versions are equal,
 // and -1 if v2 is greater
-func vercmp(v1, v2 string) int {
+func Compare(v1, v2 string) int {
 	if v1 == v2 {
 		return 0
 	}

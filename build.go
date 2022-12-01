@@ -29,7 +29,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	_ "github.com/goreleaser/nfpm/v2/apk"
 	_ "github.com/goreleaser/nfpm/v2/arch"
 	_ "github.com/goreleaser/nfpm/v2/deb"
@@ -39,9 +38,12 @@ import (
 
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/download"
+	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/manager"
@@ -113,6 +115,8 @@ func buildCmd(c *cli.Context) error {
 	return nil
 }
 
+// buildPackage builds the script at the given path. It returns two slices. One contains the paths
+// to the built package(s), the other contains the names of the built package(s).
 func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]string, []string, error) {
 	info, err := distro.ParseOSRelease(ctx)
 	if err != nil {
@@ -171,14 +175,11 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if !archMatches(vars.Architectures) {
-		var buildAnyway bool
-		survey.AskOne(
-			&survey.Confirm{
-				Message: "Your system's CPU architecture doesn't match this package. Do you want to build anyway?",
-				Default: true,
-			},
-			&buildAnyway,
-		)
+		buildAnyway, err := yesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
+		if err != nil {
+			return nil, nil, err
+		}
+
 		if !buildAnyway {
 			os.Exit(1)
 		}
@@ -186,7 +187,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	log.Info("Building package").Str("name", vars.Name).Str("version", vars.Version).Send()
 
-	baseDir := filepath.Join(cacheDir, "pkgs", vars.Name)
+	baseDir := filepath.Join(config.PkgsDir, vars.Name)
 	srcdir := filepath.Join(baseDir, "src")
 	pkgdir := filepath.Join(baseDir, "pkg")
 
@@ -218,15 +219,25 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
+		found, notFound, err := repos.FindPkgs(gdb, buildDeps)
+		if err != nil {
+			return nil, nil, err
+		}
+
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, buildDeps, mgr, false)
+		installPkgs(ctx, flattenFoundPkgs(found, "install"), notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
 	if len(vars.Depends) > 0 {
 		log.Info("Installing dependencies").Send()
 
-		scripts, notFound := findPkgs(vars.Depends)
+		found, notFound, err := repos.FindPkgs(gdb, vars.Depends)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		scripts := getScriptPaths(flattenFoundPkgs(found, "install"))
 		for _, script := range scripts {
 			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
 			if err != nil {
@@ -319,7 +330,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	pkgInfo := &nfpm.Info{
 		Name:        vars.Name,
 		Description: vars.Description,
-		Arch:        runtime.GOARCH,
+		Arch:        cpu.Arch(),
 		Version:     vars.Version,
 		Release:     strconv.Itoa(vars.Release),
 		Homepage:    vars.Homepage,
@@ -341,10 +352,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	if slices.Contains(vars.Architectures, "all") {
 		pkgInfo.Arch = "all"
-	}
-
-	if pkgInfo.Arch == "arm" {
-		pkgInfo.Arch = cpu.ARMVariant()
 	}
 
 	contents := []*files.Content{}
@@ -442,10 +449,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
-		var removeBuildDeps bool
-		err = survey.AskOne(&survey.Confirm{
-			Message: "Would you like to remove build dependencies?",
-		}, &removeBuildDeps)
+		removeBuildDeps, err := yesNoPrompt("Would you like to remove build dependencies?", false)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -472,11 +476,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 func genBuildEnv(info *distro.OSRelease) []string {
 	env := os.Environ()
 
-	arch := runtime.GOARCH
-	if arch == "arm" {
-		arch = cpu.ARMVariant()
-	}
-
 	env = append(
 		env,
 		"DISTRO_NAME="+info.Name,
@@ -485,7 +484,7 @@ func genBuildEnv(info *distro.OSRelease) []string {
 		"DISTRO_VERSION_ID="+info.VersionID,
 		"DISTRO_ID_LIKE="+strings.Join(info.Like, " "),
 
-		"ARCH="+arch,
+		"ARCH="+cpu.Arch(),
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
 	)
 
@@ -609,22 +608,18 @@ func getBuildVars(ctx context.Context, script string, info *distro.OSRelease) (*
 	return &vars, nil
 }
 
+// archMatches checks if your system architecture matches
+// one of the provided architectures
 func archMatches(architectures []string) bool {
 	if slices.Contains(architectures, "all") {
 		return true
-	}
-
-	arch := runtime.GOARCH
-
-	if arch == "arm" {
-		arch = cpu.ARMVariant()
 	}
 
 	if slices.Contains(architectures, "arm") {
 		architectures = append(architectures, cpu.ARMVariant())
 	}
 
-	return slices.Contains(architectures, arch)
+	return slices.Contains(architectures, cpu.Arch())
 }
 
 func setVersion(ctx context.Context, r *interp.Runner, to string) error {
@@ -635,6 +630,7 @@ func setVersion(ctx context.Context, r *interp.Runner, to string) error {
 	return r.Run(ctx, fl)
 }
 
+// uniq removes all duplicates from string slices
 func uniq(ss ...*[]string) {
 	for _, s := range ss {
 		slices.Sort(*s)
