@@ -49,7 +49,7 @@ func listCmd(c *cli.Context) error {
 			log.Fatal("Unable to detect supported package manager on system").Send()
 		}
 
-		installed, err = mgr.ListInstalled(nil)
+		installed, err = mgr.ListInstalled(&manager.Opts{AsRoot: false})
 		if err != nil {
 			log.Fatal("Error listing installed packages").Err(err).Send()
 		}
