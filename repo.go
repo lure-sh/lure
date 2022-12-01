@@ -27,6 +27,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
+	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/internal/types"
 	"golang.org/x/exp/slices"
@@ -111,41 +112,10 @@ func refreshCmd(c *cli.Context) error {
 	return nil
 }
 
-func findPkg(pkg string) ([]string, error) {
-	var out []string
-	for _, repo := range cfg.Repos {
-		repoDir := filepath.Join(config.RepoDir, repo.Name)
-		err := os.MkdirAll(repoDir, 0o755)
-		if err != nil {
-			return nil, err
-		}
-
-		glob := filepath.Join(repoDir, pkg, "lure.sh")
-		matches, err := filepath.Glob(glob)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(matches) == 0 {
-			continue
-		}
-
-		out = append(out, matches...)
-	}
-
-	if len(out) == 0 {
-		return nil, PkgNotFoundError{pkgName: pkg}
-	}
-
-	return out, nil
-}
-
-func pkgPrompt(options []string) ([]string, error) {
+func pkgPrompt(options []db.Package) ([]db.Package, error) {
 	names := make([]string, len(options))
 	for i, option := range options {
-		pkgDir := filepath.Dir(option)
-		repoDir := filepath.Dir(pkgDir)
-		names[i] = filepath.Base(repoDir) + "/" + filepath.Base(pkgDir)
+		names[i] = option.Repository + "/" + option.Name + " " + option.Version
 	}
 
 	prompt := &survey.MultiSelect{
@@ -159,32 +129,10 @@ func pkgPrompt(options []string) ([]string, error) {
 		return nil, err
 	}
 
-	out := make([]string, len(choices))
+	out := make([]db.Package, len(choices))
 	for i, choiceIndex := range choices {
 		out[i] = options[choiceIndex]
 	}
 
 	return out, nil
-}
-
-func findPkgs(pkgs []string) (scripts, notFound []string) {
-	for _, pkg := range pkgs {
-		found, err := findPkg(pkg)
-		if _, ok := err.(PkgNotFoundError); ok {
-			notFound = append(notFound, pkg)
-			continue
-		}
-
-		if len(found) == 1 {
-			scripts = append(scripts, found...)
-		} else {
-			choices, err := pkgPrompt(found)
-			if err != nil {
-				log.Fatal("Error prompting for package choices").Err(err).Send()
-			}
-
-			scripts = append(scripts, choices...)
-		}
-	}
-	return
 }

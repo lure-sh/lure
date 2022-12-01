@@ -25,9 +25,12 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
 	"go.arsenm.dev/lure/vercmp"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 func upgradeCmd(c *cli.Context) error {
@@ -52,7 +55,7 @@ func upgradeCmd(c *cli.Context) error {
 	}
 
 	if len(updates) > 0 {
-		installPkgs(c.Context, updates, mgr, false)
+		installPkgs(c.Context, updates, nil, mgr)
 	} else {
 		log.Info("There is nothing to do.").Send()
 	}
@@ -60,41 +63,43 @@ func upgradeCmd(c *cli.Context) error {
 	return nil
 }
 
-func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRelease) ([]string, error) {
+func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRelease) ([]db.Package, error) {
 	installed, err := mgr.ListInstalled(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var out []string
-	for name, version := range installed {
-		scripts, err := findPkg(name)
-		if err != nil {
-			continue
+	pkgNames := maps.Keys(installed)
+	found, _, err := repos.FindPkgs(gdb, pkgNames)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []db.Package
+	for pkgName, pkgs := range found {
+		if len(pkgs) > 1 {
+			// Puts the element with the highest version first
+			slices.SortFunc(pkgs, func(a, b db.Package) bool {
+				return vercmp.Compare(a.Version, b.Version) == 1
+			})
 		}
 
-		// since we're not using a glob, we can assume a single item
-		script := scripts[0]
+		// First element is the package we want to install
+		pkg := pkgs[0]
 
-		vars, err := getBuildVars(ctx, script, info)
-		if err != nil {
-			log.Fatal("Error getting build variables").Err(err).Send()
+		repoVer := pkg.Version
+		if pkg.Release != 0 && pkg.Epoch == 0 {
+			repoVer = fmt.Sprintf("%s-%d", pkg.Version, pkg.Release)
+		} else if pkg.Release != 0 && pkg.Epoch != 0 {
+			repoVer = fmt.Sprintf("%d:%s-%d", pkg.Epoch, pkg.Version, pkg.Release)
 		}
 
-		repoVer := vars.Version
-		if vars.Release != 0 && vars.Epoch == 0 {
-			repoVer = fmt.Sprintf("%s-%d", vars.Version, vars.Release)
-		} else if vars.Release != 0 && vars.Epoch != 0 {
-			repoVer = fmt.Sprintf("%d:%s-%d", vars.Epoch, vars.Version, vars.Release)
-		}
-
-		c := vercmp.Compare(repoVer, version)
+		c := vercmp.Compare(repoVer, installed[pkgName])
 		if c == 0 || c == -1 {
 			continue
 		} else if c == 1 {
-			out = append(out, name)
+			out = append(out, pkg)
 		}
 	}
-
 	return out, nil
 }

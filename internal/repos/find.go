@@ -7,13 +7,14 @@ import (
 	"go.arsenm.dev/lure/internal/db"
 )
 
-func FindPkgs(gdb *genji.DB, pkgs []string) (map[string][]db.Package, error) {
+func FindPkgs(gdb *genji.DB, pkgs []string) (map[string][]db.Package, []string, error) {
 	found := map[string][]db.Package{}
+	notFound := []string(nil)
 
 	for _, pkgName := range pkgs {
 		result, err := db.GetPkgs(gdb, "name LIKE ?", pkgName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		added := 0
@@ -30,13 +31,13 @@ func FindPkgs(gdb *genji.DB, pkgs []string) (map[string][]db.Package, error) {
 		})
 		result.Close()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		if added == 0 {
 			result, err := db.GetPkgs(gdb, "? IN provides", pkgName)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			err = result.Iterate(func(d types.Document) error {
@@ -52,10 +53,14 @@ func FindPkgs(gdb *genji.DB, pkgs []string) (map[string][]db.Package, error) {
 			})
 			result.Close()
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
+		}
+
+		if added == 0 {
+			notFound = append(notFound, pkgName)
 		}
 	}
 
-	return found, nil
+	return found, notFound, nil
 }
