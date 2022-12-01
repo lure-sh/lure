@@ -62,13 +62,17 @@ func listCmd(c *cli.Context) error {
 			return err
 		}
 
+		version := pkg.Version
 		if c.Bool("installed") {
-			if _, ok := installed[pkg.Name]; !ok {
+			instVersion, ok := installed[pkg.Name]
+			if !ok {
 				return nil
+			} else {
+				version = instVersion
 			}
 		}
 
-		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, pkg.Version)
+		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, version)
 		return nil
 	})
 	if err != nil {
