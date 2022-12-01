@@ -222,7 +222,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 				return err
 			}
 
-			err = db.DeletePkg(gdb, "name = ? AND repository = ?", pkg.Name, repo.Name)
+			err = db.DeletePkgs(gdb, "name = ? AND repository = ?", pkg.Name, repo.Name)
 			if err != nil {
 				return err
 			}

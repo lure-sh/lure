@@ -66,6 +66,11 @@ func addrepoCmd(c *cli.Context) error {
 		log.Fatal("Error encoding config").Err(err).Send()
 	}
 
+	err = repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repos").Err(err).Send()
+	}
+
 	return nil
 }
 
@@ -99,6 +104,11 @@ func removerepoCmd(c *cli.Context) error {
 	err = os.RemoveAll(filepath.Join(config.RepoDir, name))
 	if err != nil {
 		log.Fatal("Error removing repo directory").Err(err).Send()
+	}
+
+	err = db.DeletePkgs(gdb, "repository = ?", name)
+	if err != nil {
+		log.Fatal("Error removing packages from database").Err(err).Send()
 	}
 
 	return nil
