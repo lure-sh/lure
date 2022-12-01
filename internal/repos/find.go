@@ -7,6 +7,9 @@ import (
 	"go.arsenm.dev/lure/internal/db"
 )
 
+// FindPkgs looks for packages matching the inputs inside the database.
+// It returns a map that maps the package name input to the packages found for it.
+// It also returns a slice that contains the names of all packages that were not found.
 func FindPkgs(gdb *genji.DB, pkgs []string) (map[string][]db.Package, []string, error) {
 	found := map[string][]db.Package{}
 	notFound := []string(nil)

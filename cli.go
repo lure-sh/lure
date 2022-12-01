@@ -5,6 +5,8 @@ import (
 	"go.arsenm.dev/lure/internal/db"
 )
 
+// pkgPrompt asks the user to choose between multiple packages.
+// The user may choose multiple packages.
 func pkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
 	names := make([]string, len(options))
 	for i, option := range options {
@@ -30,6 +32,7 @@ func pkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
 	return out, nil
 }
 
+// yesNoPrompt asks the user a yes or no question, using def as the default answer
 func yesNoPrompt(msg string, def bool) (bool, error) {
 	var answer bool
 	err := survey.AskOne(

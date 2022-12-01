@@ -56,6 +56,8 @@ func installCmd(c *cli.Context) error {
 	return nil
 }
 
+// installPkgs installs non-LURE packages via the package manager, then builds and installs LURE
+// packages
 func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager) {
 	if len(notFound) > 0 {
 		err := mgr.Install(nil, notFound...)
@@ -67,6 +69,8 @@ func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr 
 	installScripts(ctx, mgr, getScriptPaths(pkgs))
 }
 
+// getScriptPaths generates a slice of script paths corresponding to the
+// given packages
 func getScriptPaths(pkgs []db.Package) []string {
 	var scripts []string
 	for _, pkg := range pkgs {
@@ -76,6 +80,8 @@ func getScriptPaths(pkgs []db.Package) []string {
 	return scripts
 }
 
+// flattenFoundPkgs attempts to flatten the map of slices of packages into a single slice
+// of packages by prompting the users if multiple packages match.
 func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
 	var outPkgs []db.Package
 	for _, pkgs := range found {
@@ -92,6 +98,7 @@ func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
 	return outPkgs
 }
 
+// installScripts builds and installs LURE build scripts
 func installScripts(ctx context.Context, mgr manager.Manager, scripts []string) {
 	for _, script := range scripts {
 		builtPkgs, _, err := buildPackage(ctx, script, mgr)
