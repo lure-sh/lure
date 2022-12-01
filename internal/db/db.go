@@ -2,7 +2,6 @@ package db
 
 import (
 	"github.com/genjidb/genji"
-	"github.com/genjidb/genji/document"
 )
 
 // Package is a LURE package's database representation
@@ -60,17 +59,6 @@ func GetPkgs(db *genji.DB, where string, args ...any) (*genji.Result, error) {
 		return nil, err
 	}
 	return stream, nil
-}
-
-// GetPkg returns a single package matching the where conditions
-func GetPkg(db *genji.DB, where string, args ...any) (*Package, error) {
-	doc, err := db.QueryDocument("SELECT * FROM pkgs WHERE "+where, args...)
-	if err != nil {
-		return nil, err
-	}
-	out := &Package{}
-	err = document.StructScan(doc, out)
-	return out, err
 }
 
 // DeletePkgs deletes all packages matching the where conditions
