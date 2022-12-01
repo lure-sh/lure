@@ -22,7 +22,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
