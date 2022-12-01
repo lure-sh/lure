@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main
+package vercmp
 
 import (
 	"testing"
@@ -67,13 +67,13 @@ func TestVerCmp(t *testing.T) {
 
 	for _, it := range table {
 		t.Run(it.v1+"/"+it.v2, func(t *testing.T) {
-			c := vercmp(it.v1, it.v2)
+			c := Compare(it.v1, it.v2)
 			if c != it.expected {
 				t.Errorf("Expected %d, got %d", it.expected, c)
 			}
 
 			// Ensure opposite comparison gives opposite value
-			c = -vercmp(it.v2, it.v1)
+			c = -Compare(it.v2, it.v1)
 			if c != it.expected {
 				t.Errorf("Expected %d, got %d (opposite)", it.expected, c)
 			}

@@ -20,6 +20,7 @@ package cpu
 
 import (
 	"os"
+	"runtime"
 	"strings"
 
 	"golang.org/x/sys/cpu"
@@ -41,4 +42,13 @@ func ARMVariant() string {
 	} else {
 		return "arm5"
 	}
+}
+
+// Arch returns the canonical CPU architecture of the system
+func Arch() string {
+	arch := runtime.GOARCH
+	if arch == "arm" {
+		arch = ARMVariant()
+	}
+	return arch
 }

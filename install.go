@@ -20,8 +20,14 @@ package main
 
 import (
 	"context"
+	"path/filepath"
+
+	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/lure/internal/config"
+	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
 )
 
@@ -36,21 +42,23 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	installPkgs(c.Context, args.Slice(), mgr, true)
+	err := repos.Pull(c.Context, gdb, cfg.Repos)
+	if err != nil {
+		log.Fatal("Error pulling repositories").Err(err).Send()
+	}
 
+	found, notFound, err := repos.FindPkgs(gdb, args.Slice())
+	if err != nil {
+		log.Fatal("Error finding packages").Err(err).Send()
+	}
+
+	installPkgs(c.Context, flattenFoundPkgs(found, "install"), notFound, mgr)
 	return nil
 }
 
-func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull bool) {
-	if pull {
-		err := pullRepos(ctx)
-		if err != nil {
-			log.Fatal("Error pulling repositories").Err(err).Send()
-		}
-	}
-
-	scripts, notFound := findPkgs(pkgs)
-
+// installPkgs installs non-LURE packages via the package manager, then builds and installs LURE
+// packages
+func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager) {
 	if len(notFound) > 0 {
 		err := mgr.Install(nil, notFound...)
 		if err != nil {
@@ -58,9 +66,39 @@ func installPkgs(ctx context.Context, pkgs []string, mgr manager.Manager, pull b
 		}
 	}
 
-	installScripts(ctx, mgr, scripts)
+	installScripts(ctx, mgr, getScriptPaths(pkgs))
 }
 
+// getScriptPaths generates a slice of script paths corresponding to the
+// given packages
+func getScriptPaths(pkgs []db.Package) []string {
+	var scripts []string
+	for _, pkg := range pkgs {
+		scriptPath := filepath.Join(config.RepoDir, pkg.Repository, pkg.Name, "lure.sh")
+		scripts = append(scripts, scriptPath)
+	}
+	return scripts
+}
+
+// flattenFoundPkgs attempts to flatten the map of slices of packages into a single slice
+// of packages by prompting the users if multiple packages match.
+func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
+	var outPkgs []db.Package
+	for _, pkgs := range found {
+		if len(pkgs) > 1 {
+			choices, err := pkgPrompt(pkgs, verb)
+			if err != nil {
+				log.Fatal("Error prompting for choice of package").Send()
+			}
+			outPkgs = append(outPkgs, choices...)
+		} else if len(pkgs) == 1 {
+			outPkgs = append(outPkgs, pkgs[0])
+		}
+	}
+	return outPkgs
+}
+
+// installScripts builds and installs LURE build scripts
 func installScripts(ctx context.Context, mgr manager.Manager, scripts []string) {
 	for _, script := range scripts {
 		builtPkgs, _, err := buildPackage(ctx, script, mgr)

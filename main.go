@@ -27,9 +27,15 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
+	"go.arsenm.dev/logger/log"
+	"go.arsenm.dev/lure/internal/config"
 )
 
-var log = logger.NewPretty(os.Stderr)
+//go:generate scripts/gen-version.sh
+
+func init() {
+	log.Logger = logger.NewPretty(os.Stderr)
+}
 
 func main() {
 	ctx := context.Background()
@@ -39,6 +45,7 @@ func main() {
 		<-ctx.Done()
 		// Exit the program after a maximum of 200ms
 		time.Sleep(200 * time.Millisecond)
+		gdb.Close()
 		os.Exit(0)
 	}()
 
@@ -70,6 +77,12 @@ func main() {
 				Action: infoCmd,
 			},
 			{
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "installed",
+						Aliases: []string{"I"},
+					},
+				},
 				Name:    "list",
 				Usage:   "List LURE repo packages",
 				Aliases: []string{"ls"},
@@ -134,6 +147,9 @@ func main() {
 				Action: displayVersion,
 			},
 		},
+		After: func(ctx *cli.Context) error {
+			return gdb.Close()
+		},
 	}
 
 	err := app.RunContext(ctx, os.Args)
@@ -143,6 +159,6 @@ func main() {
 }
 
 func displayVersion(c *cli.Context) error {
-	print(version)
+	print(config.Version)
 	return nil
 }

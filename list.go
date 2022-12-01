@@ -21,28 +21,52 @@ package main
 import (
 	"fmt"
 
+	"github.com/genjidb/genji/document"
+	"github.com/genjidb/genji/types"
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/logger/log"
+	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/manager"
 )
 
 func listCmd(c *cli.Context) error {
-	info, err := distro.ParseOSRelease(c.Context)
+	result, err := db.GetPkgs(gdb, "true")
 	if err != nil {
-		log.Fatal("Error parsing os-release").Err(err).Send()
+		log.Fatal("Error getting packages").Err(err).Send()
 	}
+	defer result.Close()
 
-	pkgs, err := findPkg("*")
-	if err != nil {
-		log.Fatal("Error finding packages").Err(err).Send()
-	}
-
-	for _, script := range pkgs {
-		vars, err := getBuildVars(c.Context, script, info)
-		if err != nil {
-			log.Fatal("Error getting build variables").Err(err).Send()
+	var installed map[string]string
+	if c.Bool("installed") {
+		mgr := manager.Detect()
+		if mgr == nil {
+			log.Fatal("Unable to detect supported package manager on system").Send()
 		}
 
-		fmt.Println(vars.Name, vars.Version)
+		installed, err = mgr.ListInstalled(nil)
+		if err != nil {
+			log.Fatal("Error listing installed packages").Err(err).Send()
+		}
+	}
+
+	err = result.Iterate(func(d types.Document) error {
+		var pkg db.Package
+		err := document.StructScan(d, &pkg)
+		if err != nil {
+			return err
+		}
+
+		if c.Bool("installed") {
+			if _, ok := installed[pkg.Name]; !ok {
+				return nil
+			}
+		}
+
+		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, pkg.Version)
+		return nil
+	})
+	if err != nil {
+		log.Fatal("Error iterating over packages").Err(err).Send()
 	}
 
 	return nil

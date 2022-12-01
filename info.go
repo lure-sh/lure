@@ -19,10 +19,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
+	"go.arsenm.dev/logger/log"
+
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/repos"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,27 +35,23 @@ func infoCmd(c *cli.Context) error {
 		log.Fatalf("Command info expected at least 1 argument, got %d", args.Len()).Send()
 	}
 
-	info, err := distro.ParseOSRelease(c.Context)
+	found, _, err := repos.FindPkgs(gdb, args.Slice())
 	if err != nil {
-		log.Fatal("Error parsing os-release").Err(err).Send()
+		log.Fatal("Error finding packages").Err(err).Send()
 	}
 
-	found, err := findPkg(args.First())
-	if err != nil {
-		log.Fatal("Error finding package").Err(err).Send()
+	if len(found) == 0 {
+		os.Exit(1)
 	}
 
-	// if multiple are matched, only use the first one
-	script := found[0]
+	pkgs := flattenFoundPkgs(found, "show")
 
-	vars, err := getBuildVars(c.Context, script, info)
-	if err != nil {
-		log.Fatal("Error getting build variables").Err(err).Send()
-	}
-
-	err = yaml.NewEncoder(os.Stdout).Encode(vars)
-	if err != nil {
-		log.Fatal("Error encoding script variables").Err(err).Send()
+	for _, pkg := range pkgs {
+		err = yaml.NewEncoder(os.Stdout).Encode(pkg)
+		if err != nil {
+			log.Fatal("Error encoding script variables").Err(err).Send()
+		}
+		fmt.Println("---")
 	}
 
 	return nil
