@@ -17,6 +17,10 @@ var (
 	DBPath     string
 )
 
+// DBPresent is true if the database
+// was present when LURE was started
+var DBPresent bool
+
 func init() {
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
@@ -66,4 +70,7 @@ func init() {
 	}
 
 	DBPath = filepath.Join(CacheDir, "db")
+
+	_, err = os.ReadDir(DBPath)
+	DBPresent = err == nil
 }
