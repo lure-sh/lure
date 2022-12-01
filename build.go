@@ -329,7 +329,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	pkgInfo := &nfpm.Info{
 		Name:        vars.Name,
 		Description: vars.Description,
-		Arch:        runtime.GOARCH,
+		Arch:        cpu.Arch(),
 		Version:     vars.Version,
 		Release:     strconv.Itoa(vars.Release),
 		Homepage:    vars.Homepage,
@@ -351,10 +351,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	if slices.Contains(vars.Architectures, "all") {
 		pkgInfo.Arch = "all"
-	}
-
-	if pkgInfo.Arch == "arm" {
-		pkgInfo.Arch = cpu.ARMVariant()
 	}
 
 	contents := []*files.Content{}
@@ -479,11 +475,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 func genBuildEnv(info *distro.OSRelease) []string {
 	env := os.Environ()
 
-	arch := runtime.GOARCH
-	if arch == "arm" {
-		arch = cpu.ARMVariant()
-	}
-
 	env = append(
 		env,
 		"DISTRO_NAME="+info.Name,
@@ -492,7 +483,7 @@ func genBuildEnv(info *distro.OSRelease) []string {
 		"DISTRO_VERSION_ID="+info.VersionID,
 		"DISTRO_ID_LIKE="+strings.Join(info.Like, " "),
 
-		"ARCH="+arch,
+		"ARCH="+cpu.Arch(),
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
 	)
 
@@ -621,17 +612,11 @@ func archMatches(architectures []string) bool {
 		return true
 	}
 
-	arch := runtime.GOARCH
-
-	if arch == "arm" {
-		arch = cpu.ARMVariant()
-	}
-
 	if slices.Contains(architectures, "arm") {
 		architectures = append(architectures, cpu.ARMVariant())
 	}
 
-	return slices.Contains(architectures, arch)
+	return slices.Contains(architectures, cpu.Arch())
 }
 
 func setVersion(ctx context.Context, r *interp.Runner, to string) error {
