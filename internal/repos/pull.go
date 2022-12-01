@@ -28,6 +28,9 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
+// Pull pulls the provided repositories. If a repo doesn't exist, it will be cloned
+// and its packages will be written to the DB. If it does exist, it will be pulled.
+// In this case, only changed packages will be processed.
 func Pull(ctx context.Context, gdb *genji.DB, repos []types.Repo) error {
 	for _, repo := range repos {
 		repoURL, err := url.Parse(repo.URL)

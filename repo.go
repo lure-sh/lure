@@ -122,7 +122,7 @@ func refreshCmd(c *cli.Context) error {
 	return nil
 }
 
-func pkgPrompt(options []db.Package) ([]db.Package, error) {
+func pkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
 	names := make([]string, len(options))
 	for i, option := range options {
 		names[i] = option.Repository + "/" + option.Name + " " + option.Version
@@ -130,7 +130,7 @@ func pkgPrompt(options []db.Package) ([]db.Package, error) {
 
 	prompt := &survey.MultiSelect{
 		Options: names,
-		Message: "Choose which package(s) to install",
+		Message: "Choose which package(s) to " + verb,
 	}
 
 	var choices []int
