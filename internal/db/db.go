@@ -5,6 +5,7 @@ import (
 	"github.com/genjidb/genji/document"
 )
 
+// Package is a LURE package's database representation
 type Package struct {
 	Name          string   `sh:"name,required"`
 	Version       string   `sh:"version,required"`

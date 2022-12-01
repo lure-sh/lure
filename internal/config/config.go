@@ -17,6 +17,8 @@ var defaultConfig = types.Config{
 	},
 }
 
+// Decode decodes the config file into the given
+// pointer
 func Decode(cfg *types.Config) error {
 	cfgFl, err := os.Open(ConfigPath)
 	if err != nil {

@@ -29,7 +29,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	_ "github.com/goreleaser/nfpm/v2/apk"
 	_ "github.com/goreleaser/nfpm/v2/arch"
 	_ "github.com/goreleaser/nfpm/v2/deb"
@@ -116,6 +115,8 @@ func buildCmd(c *cli.Context) error {
 	return nil
 }
 
+// buildPackage builds the script at the given path. It returns two slices. One contains the paths
+// to the built package(s), the other contains the names of the built package(s).
 func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]string, []string, error) {
 	info, err := distro.ParseOSRelease(ctx)
 	if err != nil {
@@ -607,6 +608,8 @@ func getBuildVars(ctx context.Context, script string, info *distro.OSRelease) (*
 	return &vars, nil
 }
 
+// archMatches checks if your system architecture matches
+// one of the provided architectures
 func archMatches(architectures []string) bool {
 	if slices.Contains(architectures, "all") {
 		return true
@@ -627,6 +630,7 @@ func setVersion(ctx context.Context, r *interp.Runner, to string) error {
 	return r.Run(ctx, fl)
 }
 
+// uniq removes all duplicates from string slices
 func uniq(ss ...*[]string) {
 	for _, s := range ss {
 		slices.Sort(*s)
