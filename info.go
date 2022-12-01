@@ -60,3 +60,4 @@ func infoCmd(c *cli.Context) error {
 	}
 
 	return nil
+}
