@@ -33,14 +33,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type PkgNotFoundError struct {
-	pkgName string
-}
-
-func (p PkgNotFoundError) Error() string {
-	return "package '" + p.pkgName + "' could not be found in any repository"
-}
-
 func addrepoCmd(c *cli.Context) error {
 	name := c.String("name")
 	repoURL := c.String("url")
