@@ -68,15 +68,26 @@ func Pull(ctx context.Context, gdb *genji.DB, repos []types.Repo) error {
 			}
 			repoFS = w.Filesystem
 
-			if !errors.Is(err, git.NoErrAlreadyUpToDate) {
+			// Make sure the DB is created even if the repo is up to date
+			if !errors.Is(err, git.NoErrAlreadyUpToDate) || !config.DBPresent {
 				new, err := r.Head()
 				if err != nil {
 					return err
 				}
 
-				err = processRepoChanges(ctx, repo, r, old, new, gdb)
-				if err != nil {
-					return err
+				// If the DB was not present at startup, that means it's
+				// empty. In this case, we need to update the DB fully
+				// rather than just incrementally.
+				if config.DBPresent {
+					err = processRepoChanges(ctx, repo, r, old, new, gdb)
+					if err != nil {
+						return err
+					}
+				} else {
+					err = processRepoFull(ctx, repo, repoDir, gdb)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		} else {
