@@ -132,15 +132,15 @@ func Pull(ctx context.Context, gdb *genji.DB, repos []types.Repo) error {
 	return nil
 }
 
-type ActionType uint8
+type actionType uint8
 
 const (
-	ActionDelete ActionType = iota
-	ActionUpdate
+	actionDelete actionType = iota
+	actionUpdate
 )
 
-type Action struct {
-	Type ActionType
+type action struct {
+	Type actionType
 	File string
 }
 
@@ -160,34 +160,34 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 		return err
 	}
 
-	var actions []Action
+	var actions []action
 	for _, fp := range patch.FilePatches() {
 		from, to := fp.Files()
 		if to == nil {
-			actions = append(actions, Action{
-				Type: ActionDelete,
+			actions = append(actions, action{
+				Type: actionDelete,
 				File: from.Path(),
 			})
 		} else if from == nil {
-			actions = append(actions, Action{
-				Type: ActionUpdate,
+			actions = append(actions, action{
+				Type: actionUpdate,
 				File: to.Path(),
 			})
 		} else {
 			if from.Path() != to.Path() {
 				actions = append(actions,
-					Action{
-						Type: ActionDelete,
+					action{
+						Type: actionDelete,
 						File: from.Path(),
 					},
-					Action{
-						Type: ActionUpdate,
+					action{
+						Type: actionUpdate,
 						File: to.Path(),
 					},
 				)
 			} else {
-				actions = append(actions, Action{
-					Type: ActionUpdate,
+				actions = append(actions, action{
+					Type: actionUpdate,
 					File: to.Path(),
 				})
 			}
@@ -208,7 +208,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 
 	for _, action := range actions {
 		switch action.Type {
-		case ActionDelete:
+		case actionDelete:
 			scriptFl, err := oldCommit.File(action.File)
 			if err != nil {
 				return nil
@@ -229,7 +229,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 			if err != nil {
 				return err
 			}
-		case ActionUpdate:
+		case actionUpdate:
 			scriptFl, err := newCommit.File(action.File)
 			if err != nil {
 				return nil
