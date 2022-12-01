@@ -77,6 +77,12 @@ func main() {
 				Action: infoCmd,
 			},
 			{
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "installed",
+						Aliases: []string{"I"},
+					},
+				},
 				Name:    "list",
 				Usage:   "List LURE repo packages",
 				Aliases: []string{"ls"},

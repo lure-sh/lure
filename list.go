@@ -26,6 +26,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/manager"
 )
 
 func listCmd(c *cli.Context) error {
@@ -35,11 +36,30 @@ func listCmd(c *cli.Context) error {
 	}
 	defer result.Close()
 
+	var installed map[string]string
+	if c.Bool("installed") {
+		mgr := manager.Detect()
+		if mgr == nil {
+			log.Fatal("Unable to detect supported package manager on system").Send()
+		}
+
+		installed, err = mgr.ListInstalled(nil)
+		if err != nil {
+			log.Fatal("Error listing installed packages").Err(err).Send()
+		}
+	}
+
 	err = result.Iterate(func(d types.Document) error {
 		var pkg db.Package
 		err := document.StructScan(d, &pkg)
 		if err != nil {
 			return err
+		}
+
+		if c.Bool("installed") {
+			if _, ok := installed[pkg.Name]; !ok {
+				return nil
+			}
 		}
 
 		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, pkg.Version)
