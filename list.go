@@ -36,7 +36,14 @@ func listCmd(c *cli.Context) error {
 		log.Fatal("Error pulling repositories").Err(err).Send()
 	}
 
-	result, err := db.GetPkgs(gdb, "true")
+	where := "true"
+	args := []any(nil)
+	if c.NArg() > 0 {
+		where = "name LIKE ? OR ? IN provides"
+		args = []any{c.Args().First(), c.Args().First()}
+	}
+
+	result, err := db.GetPkgs(gdb, where, args...)
 	if err != nil {
 		log.Fatal("Error getting packages").Err(err).Send()
 	}
