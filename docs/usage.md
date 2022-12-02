@@ -12,6 +12,8 @@
     - [addrepo](#addrepo)
     - [removerepo](#removerepo)
     - [refresh](#refresh)
+    - [fix](#fix)
+    - [version](#version)
 - [Environment Variables](#environment-variables)
     - [LURE_DISTRO](#lure_distro)
     - [LURE_PKG_FORMAT](#lure_pkg_format)
