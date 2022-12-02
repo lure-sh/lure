@@ -147,6 +147,11 @@ func main() {
 				Action:  refreshCmd,
 			},
 			{
+				Name:   "fix",
+				Usage:  "Attempt to fix problems with LURE",
+				Action: fixCmd,
+			},
+			{
 				Name:   "version",
 				Usage:  "Display the current LURE version and exit",
 				Action: displayVersion,
