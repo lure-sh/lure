@@ -98,7 +98,7 @@ func installCompletionCmd(hc interp.HandlerContext, cmd string, args []string) e
 	var prefix string
 	switch shell {
 	case "bash":
-		prefix = "/usr/share/bash-completion/completion"
+		prefix = "/usr/share/bash-completion/completions"
 	case "zsh":
 		prefix = "/usr/share/zsh/site-functions"
 		name = "_" + name
