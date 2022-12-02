@@ -20,15 +20,19 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/genjidb/genji/document"
+	"github.com/genjidb/genji/types"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
+	"go.arsenm.dev/lure/internal/db"
 )
 
 //go:generate scripts/gen-version.sh
@@ -54,10 +58,11 @@ func main() {
 		Usage: "Linux User REpository",
 		Commands: []*cli.Command{
 			{
-				Name:    "install",
-				Usage:   "Install a new package",
-				Aliases: []string{"in"},
-				Action:  installCmd,
+				Name:         "install",
+				Usage:        "Install a new package",
+				Aliases:      []string{"in"},
+				Action:       installCmd,
+				BashComplete: completionInstall,
 			},
 			{
 				Name:    "remove",
@@ -150,6 +155,7 @@ func main() {
 		After: func(ctx *cli.Context) error {
 			return gdb.Close()
 		},
+		EnableBashCompletion: true,
 	}
 
 	err := app.RunContext(ctx, os.Args)
@@ -161,4 +167,27 @@ func main() {
 func displayVersion(c *cli.Context) error {
 	print(config.Version)
 	return nil
+}
+
+func completionInstall(c *cli.Context) {
+	result, err := db.GetPkgs(gdb, "true")
+	if err != nil {
+		log.Fatal("Error getting packages").Err(err).Send()
+	}
+	defer result.Close()
+
+	err = result.Iterate(func(d types.Document) error {
+		var pkg db.Package
+		err = document.StructScan(d, &pkg)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(pkg.Name)
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal("Error iterating over packages").Err(err).Send()
+	}
 }
