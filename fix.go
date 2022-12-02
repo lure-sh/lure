@@ -14,10 +14,14 @@ import (
 func fixCmd(c *cli.Context) error {
 	gdb.Close()
 
+	log.Info("Removing cache directory").Send()
+
 	err := os.RemoveAll(config.CacheDir)
 	if err != nil {
 		log.Fatal("Unable to remove cache directory").Err(err).Send()
 	}
+
+	log.Info("Rebuilding cache").Send()
 
 	err = os.MkdirAll(config.CacheDir, 0o755)
 	if err != nil {
@@ -41,6 +45,8 @@ func fixCmd(c *cli.Context) error {
 	if err != nil {
 		log.Fatal("Error pulling repos").Err(err).Send()
 	}
+
+	log.Info("Done").Send()
 
 	return nil
 }
