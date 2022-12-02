@@ -23,12 +23,18 @@
 
 ### install
 
-The install command installs a command from the LURE repos. Any packages that aren't found in LURE's repos get forwarded to the system package manager for installation.
+The install command installs a package from the LURE repos. Any packages that aren't found in LURE's repos get forwarded to the system package manager for installation.
 
-Example:
+The package arguments do not have to be exact. LURE will check the `provides` array if an exact match is not found. There is also support for using "%" as a wildcard.
+
+If multiple packages are found, you will be prompted to select which you want to install.
+
+Examples:
 
 ```shell
-lure in itd-bin
+lure in itd-bin # only finds itd-bin
+lure in itd # finds itd-bin and itd-git
+lure in it% # finds itd-bin, itd-git, and itgui-git
 ```
 
 ### remove
@@ -55,20 +61,36 @@ lure up
 
 The info command displays information about a package in LURE's repos.
 
+The package arguments do not have to be exact. LURE will check the `provides` array if an exact match is not found. There is also support for using "%" as a wildcard.
+
+If multiple packages are found, you will be prompted to select which you want to show.
+
 Example:
 
 ```shell
-lure info itd-bin
+lure info itd-bin # only finds itd-bin
+lure info itd # finds itd-bin and itd-git
+lure info it% # finds itd-bin, itd-git, and itgui-git
 ```
 
 ### list
 
 The list command lists all LURE repo packages as well as their versions
 
-Example:
+This command accepts a single optional argument. This argument is a pattern to filter found packages against.
+
+The pattern does not have to be exact. LURE will check the `provides` array if an exact match is not found. There is also support for using "%" as a wildcard.
+
+There is a `-I` or `--installed` flag that filters out any packages that are not installed on the system
+
+Examples:
 
 ```shell
-lure ls
+lure ls # lists all LURE packages
+lure ls -I # lists all installed packages
+lure ls i% # lists all packages starting with "i"
+lure ls %d # lists all packages ending with "d"
+lure ls -I i% # lists all installed packages that start with "i"
 ```
 
 ### build
@@ -109,6 +131,26 @@ Example:
 
 ```shell
 lure ref
+```
+
+### fix
+
+The fix command attempts to fix issues with LURE by deleting and rebuilding LURE's cache
+
+Example:
+
+```shell
+lure fix
+```
+
+### version
+
+The version command returns the current LURE version and exits
+
+Example:
+
+```shell
+lure version
 ```
 
 ---
