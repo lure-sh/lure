@@ -35,6 +35,11 @@ var helpers = shutils.ExecFuncs{
 	"git-version":          gitVersionCmd,
 }
 
+// rHelpers contains restricted read-only helpers that don't modify any state
+var rHelpers = shutils.ExecFuncs{
+	"git-version": gitVersionCmd,
+}
+
 func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
 	return func(hc interp.HandlerContext, cmd string, args []string) error {
 		if len(args) < 1 {

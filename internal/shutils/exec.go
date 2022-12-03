@@ -39,18 +39,25 @@ type ExecFunc func(hc interp.HandlerContext, name string, args []string) error
 
 type ExecFuncs map[string]ExecFunc
 
-func (ef ExecFuncs) ExecHandler(ctx context.Context, args []string) error {
-	name := args[0]
+// ExecHandler returns a new ExecHandlerFunc that falls back to fallback
+// if the command cannot be found in the map. If fallback is nil, the default
+// handler is used.
+func (ef ExecFuncs) ExecHandler(fallback interp.ExecHandlerFunc) interp.ExecHandlerFunc {
+	return func(ctx context.Context, args []string) error {
+		name := args[0]
 
-	if fn, ok := ef[name]; ok {
-		hctx := interp.HandlerCtx(ctx)
-		if len(args) > 1 {
-			return fn(hctx, args[0], args[1:])
-		} else {
-			return fn(hctx, args[0], nil)
+		if fn, ok := ef[name]; ok {
+			hctx := interp.HandlerCtx(ctx)
+			if len(args) > 1 {
+				return fn(hctx, args[0], args[1:])
+			} else {
+				return fn(hctx, args[0], nil)
+			}
 		}
-	}
 
-	defExec := interp.DefaultExecHandler(2 * time.Second)
-	return defExec(ctx, args)
+		if fallback == nil {
+			fallback = interp.DefaultExecHandler(2 * time.Second)
+		}
+		return fallback(ctx, args)
+	}
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/AlecAivazis/survey/v2"
 	"go.arsenm.dev/logger/log"
@@ -50,16 +49,14 @@ func yesNoPrompt(msg string, def bool) (bool, error) {
 	return answer, err
 }
 
-func promptViewScript(script string) error {
-	name := filepath.Base(filepath.Dir(script))
-
+func promptViewScript(script string, name string) error {
 	view, err := yesNoPrompt("Would you like to view the build script for "+name, false)
 	if err != nil {
 		return err
 	}
 
 	if view {
-		err = showScript(script)
+		err = showScript(script, name)
 		if err != nil {
 			return err
 		}
@@ -77,7 +74,7 @@ func promptViewScript(script string) error {
 	return nil
 }
 
-func showScript(path string) error {
+func showScript(path, name string) error {
 	scriptFl, err := os.Open(path)
 	if err != nil {
 		return err
@@ -89,6 +86,6 @@ func showScript(path string) error {
 		return err
 	}
 
-	pgr := pager.New(filepath.Base(filepath.Dir(path)), str)
+	pgr := pager.New(name, str)
 	return pgr.Run()
 }

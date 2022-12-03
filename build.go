@@ -151,10 +151,18 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	env := genBuildEnv(info)
 
+	scriptDir := filepath.Dir(script)
+
+	// The first pass is just used to get variable values and runs before
+	// the script is displayed, so it is restricted so as to prevent malicious
+	// code from executing.
 	runner, err := interp.New(
 		interp.Env(expand.ListEnviron(env...)),
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
-		interp.ExecHandler(helpers.ExecHandler),
+		interp.ExecHandler(rHelpers.ExecHandler(shutils.RestrictedExec("source"))),
+		interp.ReadDirHandler(shutils.RestrictedReadDir(scriptDir)),
+		interp.StatHandler(shutils.RestrictedStat(scriptDir)),
+		interp.OpenHandler(shutils.RestrictedOpen(scriptDir)),
 	)
 	if err != nil {
 		return nil, nil, err
@@ -179,6 +187,11 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	err = promptViewScript(script, vars.Name)
+	if err != nil {
+		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
+	}
+
 	if !archMatches(vars.Architectures) {
 		buildAnyway, err := yesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
 		if err != nil {
@@ -191,6 +204,31 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	log.Info("Building package").Str("name", vars.Name).Str("version", vars.Version).Send()
+
+	// The second pass will be used to execute the actual functions,
+	// so it cannot be restricted. The script has already been displayed
+	// to the user by this point, so it should be safe
+	runner, err = interp.New(
+		interp.Env(expand.ListEnviron(env...)),
+		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
+		interp.ExecHandler(helpers.ExecHandler(nil)),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = runner.Run(ctx, file)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dec = decoder.New(info, runner)
+
+	// If distro was changed, the list of like distros
+	// no longer applies, so disable its use
+	if distroChanged {
+		dec.LikeDistros = false
+	}
 
 	baseDir := filepath.Join(config.PkgsDir, vars.Name)
 	srcdir := filepath.Join(baseDir, "src")
