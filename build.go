@@ -137,11 +137,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		distroChanged = true
 	}
 
-	err = promptViewScript(script)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	fl, err := os.Open(script)
 	if err != nil {
 		return nil, nil, err

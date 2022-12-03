@@ -101,6 +101,11 @@ func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
 // installScripts builds and installs LURE build scripts
 func installScripts(ctx context.Context, mgr manager.Manager, scripts []string) {
 	for _, script := range scripts {
+		err := promptViewScript(script)
+		if err != nil {
+			log.Fatal("Failed to prompt user to view build script").Err(err).Send()
+		}
+
 		builtPkgs, _, err := buildPackage(ctx, script, mgr)
 		if err != nil {
 			log.Fatal("Error building package").Err(err).Send()
