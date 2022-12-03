@@ -1,8 +1,13 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/AlecAivazis/survey/v2"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/internal/pager"
 )
 
 // pkgPrompt asks the user to choose between multiple packages.
@@ -43,4 +48,47 @@ func yesNoPrompt(msg string, def bool) (bool, error) {
 		&answer,
 	)
 	return answer, err
+}
+
+func promptViewScript(script string) error {
+	name := filepath.Base(filepath.Dir(script))
+
+	view, err := yesNoPrompt("Would you like to view the build script for "+name, false)
+	if err != nil {
+		return err
+	}
+
+	if view {
+		err = showScript(script)
+		if err != nil {
+			return err
+		}
+
+		cont, err := yesNoPrompt("Would you still like to continue?", false)
+		if err != nil {
+			return err
+		}
+
+		if !cont {
+			log.Fatal("User chose not to continue after reading script").Send()
+		}
+	}
+
+	return nil
+}
+
+func showScript(path string) error {
+	scriptFl, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer scriptFl.Close()
+
+	str, err := pager.SyntaxHighlightBash(scriptFl, cfg.PagerStyle)
+	if err != nil {
+		return err
+	}
+
+	pgr := pager.New(filepath.Base(filepath.Dir(path)), str)
+	return pgr.Run()
 }

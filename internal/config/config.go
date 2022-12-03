@@ -8,7 +8,8 @@ import (
 )
 
 var defaultConfig = types.Config{
-	RootCmd: "sudo",
+	RootCmd:    "sudo",
+	PagerStyle: "native",
 	Repos: []types.Repo{
 		{
 			Name: "default",
@@ -26,5 +27,9 @@ func Decode(cfg *types.Config) error {
 	}
 	defer cfgFl.Close()
 
+	// Write defaults to pointer in case some values are not set in the config
+	*cfg = defaultConfig
+	// Set repos to nil so as to avoid a duplicate default
+	cfg.Repos = nil
 	return toml.NewDecoder(cfgFl).Decode(cfg)
 }
