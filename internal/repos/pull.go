@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"go.arsenm.dev/lure/internal/shutils/decoder"
 	"go.arsenm.dev/lure/internal/types"
 	"go.arsenm.dev/lure/vercmp"
+	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )
@@ -80,7 +82,7 @@ func Pull(ctx context.Context, gdb *genji.DB, repos []types.Repo) error {
 				// empty. In this case, we need to update the DB fully
 				// rather than just incrementally.
 				if config.DBPresent {
-					err = processRepoChanges(ctx, repo, r, old, new, gdb)
+					err = processRepoChanges(ctx, repo, r, w, old, new, gdb)
 					if err != nil {
 						return err
 					}
@@ -156,7 +158,7 @@ type action struct {
 	File string
 }
 
-func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, old, new *plumbing.Reference, gdb *genji.DB) error {
+func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, w *git.Worktree, old, new *plumbing.Reference, gdb *genji.DB) error {
 	oldCommit, err := r.CommitObject(old.Hash())
 	if err != nil {
 		return err
@@ -211,21 +213,29 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 		}
 	}
 
+	repoDir := w.Filesystem.Root()
 	parser := syntax.NewParser()
-	runner, err := interp.New(
-		interp.StatHandler(shutils.NopStat),
-		interp.ExecHandler(shutils.NopExec),
-		interp.OpenHandler(shutils.NopOpen),
-		interp.ReadDirHandler(shutils.NopReadDir),
-		interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
-	)
-	if err != nil {
-		return err
-	}
 
 	for _, action := range actions {
+		env := append(os.Environ(), "scriptdir="+filepath.Dir(filepath.Join(repoDir, action.File)))
+		runner, err := interp.New(
+			interp.Env(expand.ListEnviron(env...)),
+			interp.ExecHandler(shutils.NopExec),
+			interp.ReadDirHandler(shutils.RestrictedReadDir(repoDir)),
+			interp.StatHandler(shutils.RestrictedStat(repoDir)),
+			interp.OpenHandler(shutils.RestrictedOpen(repoDir)),
+			interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
+		)
+		if err != nil {
+			return err
+		}
+
 		switch action.Type {
 		case actionDelete:
+			if filepath.Base(action.File) != "lure.sh" {
+				continue
+			}
+
 			scriptFl, err := oldCommit.File(action.File)
 			if err != nil {
 				return nil
@@ -247,6 +257,10 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 				return err
 			}
 		case actionUpdate:
+			if filepath.Base(action.File) != "lure.sh" {
+				action.File = filepath.Join(filepath.Dir(action.File), "lure.sh")
+			}
+
 			scriptFl, err := newCommit.File(action.File)
 			if err != nil {
 				return nil
@@ -292,7 +306,8 @@ func isValid(from, to diff.File) bool {
 		path = to.Path()
 	}
 
-	return strings.Count(path, "/") == 1 && strings.HasSuffix(path, "lure.sh")
+	match, _ := filepath.Match("*/*.sh", path)
+	return match
 }
 
 func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *genji.DB) error {
@@ -303,18 +318,21 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *
 	}
 
 	parser := syntax.NewParser()
-	runner, err := interp.New(
-		interp.StatHandler(shutils.NopStat),
-		interp.ExecHandler(shutils.NopExec),
-		interp.OpenHandler(shutils.NopOpen),
-		interp.ReadDirHandler(shutils.NopReadDir),
-		interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
-	)
-	if err != nil {
-		return err
-	}
 
 	for _, match := range matches {
+		env := append(os.Environ(), "scriptdir="+filepath.Dir(match))
+		runner, err := interp.New(
+			interp.Env(expand.ListEnviron(env...)),
+			interp.ExecHandler(shutils.NopExec),
+			interp.ReadDirHandler(shutils.RestrictedReadDir(repoDir)),
+			interp.StatHandler(shutils.RestrictedStat(repoDir)),
+			interp.OpenHandler(shutils.RestrictedOpen(repoDir)),
+			interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
+		)
+		if err != nil {
+			return err
+		}
+
 		scriptFl, err := os.Open(match)
 		if err != nil {
 			return err
