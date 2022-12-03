@@ -149,9 +149,8 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	fl.Close()
 
-	env := genBuildEnv(info)
-
 	scriptDir := filepath.Dir(script)
+	env := genBuildEnv(info, scriptDir)
 
 	// The first pass is just used to get variable values and runs before
 	// the script is displayed, so it is restricted so as to prevent malicious
@@ -159,7 +158,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	runner, err := interp.New(
 		interp.Env(expand.ListEnviron(env...)),
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
-		interp.ExecHandler(rHelpers.ExecHandler(shutils.RestrictedExec("source"))),
+		interp.ExecHandler(rHelpers.ExecHandler(shutils.NopExec)),
 		interp.ReadDirHandler(shutils.RestrictedReadDir(scriptDir)),
 		interp.StatHandler(shutils.RestrictedStat(scriptDir)),
 		interp.OpenHandler(shutils.RestrictedOpen(scriptDir)),
@@ -300,9 +299,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	scriptdir := filepath.Dir(script)
-
-	err = setDirVars(ctx, runner, srcdir, pkgdir, scriptdir)
+	err = setDirVars(ctx, runner, srcdir, pkgdir)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -516,7 +513,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	return pkgPaths, pkgNames, nil
 }
 
-func genBuildEnv(info *distro.OSRelease) []string {
+func genBuildEnv(info *distro.OSRelease, scriptdir string) []string {
 	env := os.Environ()
 
 	env = append(
@@ -529,6 +526,8 @@ func genBuildEnv(info *distro.OSRelease) []string {
 
 		"ARCH="+cpu.Arch(),
 		"NCPU="+strconv.Itoa(runtime.NumCPU()),
+
+		"scriptdir="+scriptdir,
 	)
 
 	return env
@@ -565,8 +564,8 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 
 // setDirVars sets srcdir and pkgdir. It's a very hacky way of doing so,
 // but setting the runner's Env and Vars fields doesn't seem to work.
-func setDirVars(ctx context.Context, runner *interp.Runner, srcdir, pkgdir, scriptdir string) error {
-	cmd := "srcdir='" + srcdir + "'\npkgdir='" + pkgdir + "'\nscriptdir='" + scriptdir + "'\n"
+func setDirVars(ctx context.Context, runner *interp.Runner, srcdir, pkgdir string) error {
+	cmd := "srcdir='" + srcdir + "'\npkgdir='" + pkgdir + "'\n"
 	fl, err := syntax.NewParser().Parse(strings.NewReader(cmd), "vars")
 	if err != nil {
 		return err
