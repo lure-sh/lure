@@ -3,7 +3,6 @@ package repos
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/url"
 	"os"

@@ -56,7 +56,7 @@ type pagerModel struct {
 }
 
 func (pm pagerModel) Init() tea.Cmd {
-	return nil
+	return tea.ClearScreen
 }
 
 func (pm pagerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
