@@ -63,5 +63,5 @@ func GetPkgs(db *genji.DB, where string, args ...any) (*genji.Result, error) {
 
 // DeletePkgs deletes all packages matching the where conditions
 func DeletePkgs(db *genji.DB, where string, args ...any) error {
-	return db.Exec("DELETE * FROM pkgs WHERE "+where, args...)
+	return db.Exec("DELETE FROM pkgs WHERE "+where, args...)
 }
