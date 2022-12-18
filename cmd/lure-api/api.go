@@ -122,26 +122,38 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 		if err != nil {
 			return err
 		}
-		out.Packages = append(out.Packages, &api.Package{
-			Name:          pkg.Name,
-			Repository:    pkg.Repository,
-			Version:       pkg.Version,
-			Release:       int64(pkg.Release),
-			Epoch:         ptr(int64(pkg.Epoch)),
-			Description:   &pkg.Description,
-			Homepage:      &pkg.Homepage,
-			Maintainer:    &pkg.Maintainer,
-			Architectures: pkg.Architectures,
-			Licenses:      pkg.Licenses,
-			Provides:      pkg.Provides,
-			Conflicts:     pkg.Conflicts,
-			Replaces:      pkg.Replaces,
-			Depends:       dbMapToAPI(pkg.Depends),
-			BuildDepends:  dbMapToAPI(pkg.BuildDepends),
-		})
+		out.Packages = append(out.Packages, dbPkgToAPI(pkg))
 		return nil
 	})
 	return out, err
+}
+
+func (l lureWebAPI) GetPkg(ctx context.Context, req *api.GetPackageRequest) (*api.Package, error) {
+	pkg, err := db.GetPkg(l.db, "name = ? AND repository = ?", req.Name, req.Repository)
+	if err != nil {
+		return nil, err
+	}
+	return dbPkgToAPI(pkg), nil
+}
+
+func dbPkgToAPI(pkg *db.Package) *api.Package {
+	return &api.Package{
+		Name:          pkg.Name,
+		Repository:    pkg.Repository,
+		Version:       pkg.Version,
+		Release:       int64(pkg.Release),
+		Epoch:         ptr(int64(pkg.Epoch)),
+		Description:   &pkg.Description,
+		Homepage:      &pkg.Homepage,
+		Maintainer:    &pkg.Maintainer,
+		Architectures: pkg.Architectures,
+		Licenses:      pkg.Licenses,
+		Provides:      pkg.Provides,
+		Conflicts:     pkg.Conflicts,
+		Replaces:      pkg.Replaces,
+		Depends:       dbMapToAPI(pkg.Depends),
+		BuildDepends:  dbMapToAPI(pkg.BuildDepends),
+	}
 }
 
 func ptr[T any](v T) *T {
