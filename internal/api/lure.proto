@@ -62,10 +62,21 @@ message SearchResponse {
     repeated Package packages = 1;
 }
 
+message GetBuildScriptRequest {
+    string name = 1;
+    string repository = 2;
+}
+
+message GetBuildScriptResponse {
+    string script = 1;
+}
+
 // Web is the LURE Web service
 service API {
     // Search searches through LURE packages in the database
     rpc Search(SearchRequest) returns (SearchResponse);
     // GetPkg gets a single LURE package from the database
     rpc GetPkg(GetPackageRequest) returns (Package);
+    // GetBuildScript returns the build script for the given package
+    rpc GetBuildScript(GetBuildScriptRequest) returns (GetBuildScriptResponse);
 }
