@@ -1,0 +1,109 @@
+syntax = "proto3";
+package lure;
+option go_package = "/internal/api";
+
+// EmptyResponse is an empty API response
+message EmptyResponse {}
+
+message Comment {
+    int64 comment_id = 1;
+    int64 time_created = 2;
+    string contents = 3;
+}
+
+// CreateCommentRequest is a request to create a comment
+message CreateCommentRequest {
+    string repository = 1;
+    string pkg_name = 2;
+    string contents = 3;
+}
+
+// CreateCommentResponse is a response to CreateCommentRequest
+message CreateCommentResponse {
+    int64 comment_id = 1;
+}
+
+// EditCommentRequest is a request to edit a comment
+message EditCommentRequest {
+    int64 comment_id = 1;
+    string new_contents = 2;
+}
+
+// EditCommentRequest is a request to get comments on a package
+message GetCommentsRequest {
+    string repository = 1;
+    string pkg_name = 2;
+    int64 created_since = 3;
+    int64 limit = 4;
+}
+
+// EditCommentRequest is a response to GetCommentsRequest
+message GetCommentsResponse {
+    repeated Comment comments = 1;
+}
+
+// SORT_BY represents possible things to sort packages by
+enum SORT_BY {
+    UNSORTED = 0;
+    NAME = 1;
+    REPOSITORY = 2;
+    VERSION = 3;
+}
+
+// FILTER_TYPE represents possible filters for packages
+enum FILTER_TYPE {
+    NO_FILTER = 0;
+    IN_REPOSITORY = 1;
+    SUPPORTS_ARCH = 2;
+}
+
+// SearchRequest is a request to search for packages
+message SearchRequest {
+    string query = 1;
+    int64 limit = 2;
+    SORT_BY sort_by = 3;
+    FILTER_TYPE filter_type = 4;
+    optional string filter_value = 5;
+}
+
+// StringList contains a list of strings
+message StringList {
+    repeated string entries = 1;
+}
+
+// Package represents a LURE package
+message Package {
+    string name = 1;
+    string repository = 2;
+    string version = 3;
+    int64 release = 4;
+    optional int64 epoch = 5;
+    optional string description = 6;
+    optional string homepage = 7;
+    optional string maintainer = 8;
+    repeated string architectures = 9;
+    repeated string licenses = 10;
+    repeated string provides = 11;
+    repeated string conflicts = 12;
+    repeated string replaces = 13;
+    map<string, StringList> depends = 14;
+    map<string, StringList> build_depends = 15;
+}
+
+// SearchResponse contains returned packages
+message SearchResponse {
+    repeated Package packages = 1;
+}
+
+// Web is the LURE Web service
+service API {
+    // CreateComment creates a new comment on the given package
+    rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+    // EditComment edits an existing comment
+    rpc EditComment(EditCommentRequest) returns (EmptyResponse);
+    // GetComments returns the comments on a particular package
+    rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
+
+    // Search searches through LURE packages in the database
+    rpc Search(SearchRequest) returns (SearchResponse);
+}
