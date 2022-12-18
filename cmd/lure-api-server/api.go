@@ -8,7 +8,7 @@ import (
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
 	"github.com/genjidb/genji/types"
-	"go.arsenm.dev/lure/cmd/lure-api/internal/api"
+	"go.arsenm.dev/lure/internal/api"
 	"go.arsenm.dev/lure/internal/db"
 )
 
