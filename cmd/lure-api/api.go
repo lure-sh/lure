@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
@@ -15,69 +14,6 @@ import (
 
 type lureWebAPI struct {
 	db *genji.DB
-}
-
-func (l lureWebAPI) CreateComment(ctx context.Context, req *api.CreateCommentRequest) (*api.CreateCommentResponse, error) {
-	count, err := db.CountComments(l.db)
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.InsertComment(l.db, db.Comment{
-		CommentID:   count,
-		PackageName: req.PkgName,
-		PackageRepo: req.Repository,
-		TimeCreated: time.Now().Unix(),
-		Contents:    req.Contents,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.CreateCommentResponse{CommentId: count}, nil
-}
-
-func (l lureWebAPI) EditComment(ctx context.Context, req *api.EditCommentRequest) (*api.EmptyResponse, error) {
-	doc, err := db.GetComment(l.db, "comment_id = ?", req.CommentId)
-	if err != nil {
-		return nil, err
-	}
-
-	var comment db.Comment
-	err = document.ScanDocument(doc, &comment)
-	if err != nil {
-		return nil, err
-	}
-	comment.Contents = req.NewContents
-
-	err = db.InsertComment(l.db, comment)
-	return &api.EmptyResponse{}, err
-}
-
-func (l lureWebAPI) GetComments(ctx context.Context, req *api.GetCommentsRequest) (*api.GetCommentsResponse, error) {
-	doc, err := db.GetComments(
-		l.db,
-		"package_repo = ? AND package_name = ? AND time_created >= ? LIMIT ?",
-		req.PkgName,
-		req.Repository,
-		req.CreatedSince,
-		req.Limit,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &api.GetCommentsResponse{}
-	err = doc.Iterate(func(d types.Document) error {
-		comment := &api.Comment{}
-		err = document.ScanDocument(d, comment)
-		if err != nil {
-			return err
-		}
-		out.Comments = append(out.Comments, comment)
-		return nil
-	})
-	return out, err
 }
 
 func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
