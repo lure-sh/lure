@@ -1,6 +1,8 @@
 syntax = "proto3";
 package lure;
-option go_package = "/internal/api";
+
+// Slight hack to provide protoc with a package name
+option go_package = "../api";
 
 // SORT_BY represents possible things to sort packages by
 enum SORT_BY {

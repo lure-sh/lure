@@ -9,11 +9,8 @@ import (
 	"github.com/twitchtv/twirp"
 	"go.arsenm.dev/logger"
 	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/cmd/lure-api/internal/api"
+	"go.arsenm.dev/lure/internal/api"
 )
-
-//go:generate protoc --twirp_out=. lure.proto
-//go:generate protoc --go_out=. lure.proto
 
 func init() {
 	log.Logger = logger.NewPretty(os.Stderr)
