@@ -90,6 +90,11 @@ message Package {
     map<string, StringList> build_depends = 15;
 }
 
+message GetPackageRequest {
+    string name = 1;
+    string repository = 2;
+}
+
 // SearchResponse contains returned packages
 message SearchResponse {
     repeated Package packages = 1;
@@ -106,4 +111,6 @@ service API {
 
     // Search searches through LURE packages in the database
     rpc Search(SearchRequest) returns (SearchResponse);
+    // GetPkg gets a single LURE package from the database
+    rpc GetPkg(GetPackageRequest) returns (Package);
 }
