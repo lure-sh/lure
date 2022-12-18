@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 )
 
 // Package is a LURE package's database representation
@@ -55,16 +54,6 @@ func Init(db *genji.DB) error {
 			builddepends  (...),
 			UNIQUE(name, repository)
 		);
-
-		CREATE TABLE IF NOT EXISTS comments (
-			comment_id   INT  PRIMARY KEY,
-			package_name TEXT NOT NULL,
-			package_repo TEXT NOT NULL,
-			time_created INT  NOT NULL,
-			contents     TEXT NOT NULL,
-			UNIQUE(comment_id),
-			UNIQUE(package_name, package_repo)
-		);
 	`)
 }
 
@@ -97,43 +86,4 @@ func GetPkg(db *genji.DB, where string, args ...any) (*Package, error) {
 // DeletePkgs deletes all packages matching the where conditions
 func DeletePkgs(db *genji.DB, where string, args ...any) error {
 	return db.Exec("DELETE FROM pkgs WHERE "+where, args...)
-}
-
-func InsertComment(db *genji.DB, c Comment) error {
-	return db.Exec("INSERT INTO comments VALUES ? ON CONFLICT DO REPLACE;", c)
-}
-
-func CountComments(db *genji.DB) (int64, error) {
-	doc, err := db.QueryDocument("SELECT count(*) FROM comments;")
-	if err != nil {
-		return 0, err
-	}
-	val, err := doc.GetByField("COUNT(*)")
-	if err != nil {
-		return 0, err
-	}
-	return val.V().(int64), nil
-}
-
-// GetComments returns a result containing comments that match the where conditions
-func GetComments(db *genji.DB, where string, args ...any) (*genji.Result, error) {
-	stream, err := db.Query("SELECT * FROM comments WHERE "+where, args...)
-	if err != nil {
-		return nil, err
-	}
-	return stream, nil
-}
-
-// GetComment returns a comment that matches the where conditions
-func GetComment(db *genji.DB, where string, args ...any) (types.Document, error) {
-	doc, err := db.QueryDocument("SELECT * FROM comments WHERE "+where+" LIMIT 1", args...)
-	if err != nil {
-		return nil, err
-	}
-	return doc, nil
-}
-
-// DeleteComments deletes all comments matching the where conditions
-func DeleteComments(db *genji.DB, where string, args ...any) error {
-	return db.Exec("DELETE FROM comments WHERE "+where, args...)
 }
