@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
 	"github.com/genjidb/genji/types"
+	"github.com/twitchtv/twirp"
 	"go.arsenm.dev/lure/internal/api"
+	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 )
 
@@ -70,6 +75,27 @@ func (l lureWebAPI) GetPkg(ctx context.Context, req *api.GetPackageRequest) (*ap
 		return nil, err
 	}
 	return dbPkgToAPI(pkg), nil
+}
+
+func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptRequest) (*api.GetBuildScriptResponse, error) {
+	if strings.ContainsAny(req.Name, "./") || strings.ContainsAny(req.Repository, "./") {
+		return nil, twirp.NewError(twirp.InvalidArgument, "name and repository must not contain . or /")
+	}
+
+	scriptPath := filepath.Join(config.RepoDir, req.Repository, req.Name, "lure.sh")
+	_, err := os.Stat(scriptPath)
+	if os.IsNotExist(err) {
+		return nil, twirp.NewError(twirp.NotFound, "requested package not found")
+	} else if err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(scriptPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GetBuildScriptResponse{Script: string(data)}, nil
 }
 
 func dbPkgToAPI(pkg *db.Package) *api.Package {
