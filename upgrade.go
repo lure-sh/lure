@@ -77,6 +77,10 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 
 	var out []db.Package
 	for pkgName, pkgs := range found {
+		if slices.Contains(cfg.IgnorePkgUpdates, pkgName) {
+			continue
+		}
+
 		if len(pkgs) > 1 {
 			// Puts the element with the highest version first
 			slices.SortFunc(pkgs, func(a, b db.Package) bool {
