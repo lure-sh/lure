@@ -38,7 +38,12 @@ nfpms:
     provides:
       - lure
     conflicts:
-      - lure   
+      - lure
+    contents:
+      - src: scripts/completion/bash
+        dst: /usr/share/bash-completion/completions/lure
+      - src: scripts/completion/zsh
+        dst: /usr/share/zsh/site-functions/_lure
 aurs:
   - name: lure-bin
     homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
@@ -57,7 +62,11 @@ aurs:
       - pacman
     package: |-
       # binaries
-      install -Dm755 "./lure" "${pkgdir}/usr/bin/lure"
+      install -Dm755 ./lure "${pkgdir}/usr/bin/lure"
+
+      # completions
+      install -Dm755 ./scripts/completion/bash /usr/share/bash-completion/completions/lure
+      install -Dm755 ./scripts/completion/zsh /usr/share/zsh/site-functions/_lure
 release:
   gitea:
     owner: Arsen6331
