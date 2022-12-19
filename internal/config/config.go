@@ -8,8 +8,9 @@ import (
 )
 
 var defaultConfig = types.Config{
-	RootCmd:    "sudo",
-	PagerStyle: "native",
+	RootCmd:          "sudo",
+	PagerStyle:       "native",
+	IgnorePkgUpdates: []string{},
 	Repos: []types.Repo{
 		{
 			Name: "default",
