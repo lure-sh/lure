@@ -38,7 +38,7 @@ import (
 //go:generate scripts/gen-version.sh
 
 func init() {
-	log.Logger = logger.NewPretty(os.Stderr)
+	log.Logger = logger.NewCLI(os.Stderr)
 }
 
 func main() {
