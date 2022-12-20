@@ -42,9 +42,20 @@ func main() {
 	}
 
 	log.Info("Starting HTTP API server").Str("addr", ln.Addr().String()).Send()
-
-	err = http.Serve(ln, srv)
+	
+	err = http.Serve(ln, allowAllCORSHandler(srv))
 	if err != nil {
 		log.Fatal("Error while running server").Err(err).Send()
 	}
+}
+
+func allowAllCORSHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Access-Control-Allow-Origin", "*")
+		res.Header().Set("Access-Control-Allow-Headers", "*")
+		if req.Method == http.MethodOptions {
+			return
+		}
+		h.ServeHTTP(res, req)
+	})
 }
