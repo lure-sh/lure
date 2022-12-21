@@ -1,4 +1,5 @@
 /lure
 /lure-api-server
+/cmd/lure-api-server/lure-api-server
 /dist/
 /internal/config/version.txt
