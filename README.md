@@ -56,6 +56,12 @@ The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ---
 
+## Web Interface
+
+LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.arsenm.dev/Arsen6331/lure-web) and is available at https://lure.arsenm.dev.
+
+---
+
 ## Repositories
 
 Unlike the AUR, LURE supports using multiple repos. Also unlike the AUR, LURE's repos are a single git repo containing all the build scripts. Inside each LURE repo, there should be a separate directory for each package containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Arsen6331/lure-repo.
@@ -76,4 +82,3 @@ As mentioned before, LURE has zero dependencies after it's built. All functional
 ## Planned Features
 
 - Automated docker-based testing tool
-- Web interface for repos
