@@ -1,3 +1,5 @@
+<img src="https://gitea.arsenm.dev/attachments/1d3327e5-202b-4540-b33d-f07674f1f104" alt="LURE Logo" width="200">
+
 # LURE (Linux User REpository)
 
 [![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
