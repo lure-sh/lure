@@ -1,4 +1,4 @@
-<img src="https://gitea.arsenm.dev/attachments/1d3327e5-202b-4540-b33d-f07674f1f104" alt="LURE Logo" width="200">
+<img src="assets/logo.png" alt="LURE Logo" width="200">
 
 # LURE (Linux User REpository)
 
