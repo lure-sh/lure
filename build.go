@@ -427,6 +427,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			if err != nil {
 				return err
 			}
+			link = strings.TrimPrefix(link, pkgdir)
 
 			contents = append(contents, &files.Content{
 				Source:      link,
