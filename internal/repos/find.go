@@ -32,7 +32,7 @@ func FindPkgs(gdb *sqlx.DB, pkgs []string) (map[string][]db.Package, []string, e
 		result.Close()
 
 		if added == 0 {
-			result, err := db.GetPkgs(gdb, "provides.value = ?", pkgName)
+			result, err := db.GetPkgs(gdb, "json_array_contains(provides, ?)", pkgName)
 			if err != nil {
 				return nil, nil, err
 			}
