@@ -8,7 +8,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	_ "modernc.org/sqlite"
+	"golang.org/x/exp/slices"
+	"modernc.org/sqlite"
 )
 
 // Package is a LURE package's database representation
@@ -98,7 +99,7 @@ func InsertPackage(db *sqlx.DB, pkg Package) error {
 
 // GetPkgs returns a result containing packages that match the where conditions
 func GetPkgs(db *sqlx.DB, where string, args ...any) (*sqlx.Rows, error) {
-	stream, err := db.Queryx("SELECT DISTINCT * FROM pkgs, json_each(pkgs.provides) AS provides WHERE "+where, args...)
+	stream, err := db.Queryx("SELECT * FROM pkgs WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func GetPkgs(db *sqlx.DB, where string, args ...any) (*sqlx.Rows, error) {
 // GetPkg returns a single package that match the where conditions
 func GetPkg(db *sqlx.DB, where string, args ...any) (*Package, error) {
 	out := &Package{}
-	err := db.Get(out, "SELECT DISTINCT * FROM pkgs, json_each(pkgs.provides) AS provides WHERE "+where+"LIMIT 1", args...)
+	err := db.Get(out, "SELECT * FROM pkgs WHERE "+where+"LIMIT 1", args...)
 	return out, err
 }
 
@@ -116,6 +117,26 @@ func GetPkg(db *sqlx.DB, where string, args ...any) (*Package, error) {
 func DeletePkgs(db *sqlx.DB, where string, args ...any) error {
 	_, err := db.Exec("DELETE FROM pkgs WHERE "+where, args...)
 	return err
+}
+
+func JsonArrayContains(ctx *sqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
+	value, ok := args[0].(string)
+	if !ok {
+		return nil, errors.New("both arguments to json_array_contains must be strings")
+	}
+
+	item, ok := args[1].(string)
+	if !ok {
+		return nil, errors.New("both arguments to json_array_contains must be strings")
+	}
+
+	var array []string
+	err := json.Unmarshal([]byte(value), &array)
+	if err != nil {
+		return nil, err
+	}
+
+	return slices.Contains(array, item), nil
 }
 
 type JSON[T any] struct {

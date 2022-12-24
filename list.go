@@ -37,7 +37,7 @@ func listCmd(c *cli.Context) error {
 	where := "true"
 	args := []any(nil)
 	if c.NArg() > 0 {
-		where = "name LIKE ? OR ? IN provides"
+		where = "name LIKE ? OR json_array_contains(provides, ?)"
 		args = []any{c.Args().First(), c.Args().First()}
 	}
 

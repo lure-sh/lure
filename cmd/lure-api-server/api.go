@@ -19,7 +19,7 @@ type lureWebAPI struct {
 }
 
 func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
-	query := "(name LIKE ? OR description LIKE ? OR provides.value = ?)"
+	query := "(name LIKE ? OR description LIKE ? OR json_array_contains(provides, ?))"
 	args := []any{"%" + req.Query + "%", "%" + req.Query + "%", req.Query}
 
 	if req.FilterValue != nil && req.FilterType != api.FILTER_TYPE_NO_FILTER {
