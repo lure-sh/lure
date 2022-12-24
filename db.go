@@ -14,13 +14,11 @@ var gdb *sqlx.DB
 
 func init() {
 	fi, err := os.Stat(config.DBPath)
-	if err != nil {
-		log.Fatal("Cannot stat database path").Err(err).Send()
-	}
-
-	// TODO: This should be removed by the first stable release.
-	if fi.IsDir() {
-		log.Fatal("Your package cache database is using the old database engine. Please remove ~/.cache/lure and then run `lure ref`.").Send()
+	if err == nil {
+		// TODO: This should be removed by the first stable release.
+		if fi.IsDir() {
+			log.Fatal("Your package cache database is using the old database engine. Please remove ~/.cache/lure and then run `lure ref`.").Send()
+		}
 	}
 
 	sqlite.MustRegisterScalarFunction("json_array_contains", 2, db.JsonArrayContains)
