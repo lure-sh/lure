@@ -26,8 +26,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
 	"go.arsenm.dev/logger/log"
@@ -181,18 +179,13 @@ func completionInstall(c *cli.Context) {
 	}
 	defer result.Close()
 
-	err = result.Iterate(func(d types.Document) error {
+	for result.Next() {
 		var pkg db.Package
-		err = document.StructScan(d, &pkg)
+		err = result.StructScan(&pkg)
 		if err != nil {
-			return err
+			log.Fatal("Error iterating over packages").Err(err).Send()
 		}
 
 		fmt.Println(pkg.Name)
-
-		return nil
-	})
-	if err != nil {
-		log.Fatal("Error iterating over packages").Err(err).Send()
 	}
 }
