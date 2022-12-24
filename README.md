@@ -6,9 +6,9 @@
 [![status-badge](https://ci.arsenm.dev/api/badges/Arsen6331/lure/status.svg)](https://ci.arsenm.dev/Arsen6331/lure)
 [![lure-bin AUR package](https://img.shields.io/aur/version/lure-bin?label=lure-bin&logo=archlinux)](https://aur.archlinux.org/packages/lure-bin/)
 
-LURE is intended to bring the AUR to all distros. It is currently in an ***alpha*** state and may not be stable. It can download a repository, build packages in it using a bash script similar to [PKGBUILD](https://wiki.archlinux.org/title/PKGBUILD), and then install them using your system package manager.
+LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in an ***alpha*** state and may not be stable. It is currently able to successfully and consistently build and install packages on various distributions, but there are some bugs that still need to be ironed out.
 
-LURE is written in pure Go and has zero dependencies after it's built. The only things LURE needs are a command for privilege elevation such as `sudo`, `doas`, etc. as well as a supported package manager. Currently, LURE supports `apt`, `pacman`, `apk`, `dnf`, `yum`, and `zypper`. If a supported package manager exists on your system, it will be detected and used automatically.
+LURE is written in pure Go and has zero dependencies after building. The only things LURE requires are a command for privilege elevation such as `sudo`, `doas`, etc. as well as a supported package manager. Currently, LURE supports `apt`, `pacman`, `apk`, `dnf`, `yum`, and `zypper`. If a supported package manager exists on your system, it will be detected and used automatically.
 
 ---
 
@@ -22,7 +22,7 @@ The LURE install script will automatically download and install the appropriate 
 curl https://www.arsenm.dev/lure.sh | bash
 ```
 
-**IMPORTANT**: This method is not recommended as it executes whatever code is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
+**IMPORTANT**: This method is not recommended as it executes any code that is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
 
 ### Packages
 
@@ -42,11 +42,7 @@ sudo make install
 
 ## Why?
 
-The AUR is an amazing feature, and it's one of the main reasons I use Arch on all my daily driver devices. It is really simple while providing really useful functionality. I feel such a solution shouldn't be stuck in only a single distro, so I made LURE.
-
-Like the AUR, it uses simple bash build scripts, but it doesn't depend on bash being installed at all. It uses an embedded, pure Go implementation of bash instead. Similarly, it uses Git to download the repos and sources, but doesn't depend on Git being installed.
-
-This means it's really easy to deploy LURE on any distro that it has support for and on any CPU architecture. It also supports and automatically detects many package managers, so it's not limited to just `pacman`.
+Arch Linux's AUR is a very useful feature. It's one of the main reasons I and many others use Arch on most of their devices. However, Arch is not always a good choice. Whether you're running a server that needs to be stable over long periods of time, or you're a beginner and feel intimidated by Arch, there are many different reasons not to use it. Such useful functionality should not be restricted to only a single distro. That is what LURE is meant to solve.
 
 ---
 
@@ -58,24 +54,26 @@ The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ## Web Interface
 
-LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.arsenm.dev/Arsen6331/lure-web) and is available at https://lure.arsenm.dev.
+LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.arsenm.dev/Arsen6331/lure-web), and is available at https://lure.arsenm.dev.
 
 ---
 
 ## Repositories
 
-Unlike the AUR, LURE supports using multiple repos. Also unlike the AUR, LURE's repos are a single git repo containing all the build scripts. Inside each LURE repo, there should be a separate directory for each package containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Arsen6331/lure-repo.
+Unlike the AUR, LURE supports third-party repositories. Also unlike the AUR, LURE's repos are single git repositories containing all the build scripts. Inside each LURE repo, there is a separate directory for each package, containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Arsen6331/lure-repo, and information about its packages is displayed at https://lure.arsenm.dev/pkgs.
 
 ---
 
 ## Dependencies
 
-As mentioned before, LURE has zero dependencies after it's built. All functionality that could be pure Go is pure Go. Thanks to the following packages for making this possible:
+As mentioned before, LURE has zero dependencies after compilation. Thanks to the following projects for making this possible:
 
-- Bash: https://github.com/mvdan/sh
-- Git: https://github.com/go-git/go-git
-- Archiver: https://github.com/mholt/archiver
-- nfpm: https://github.com/goreleaser/nfpm
+- https://github.com/mvdan/sh
+- https://github.com/go-git/go-git
+- https://github.com/mholt/archiver
+- https://github.com/goreleaser/nfpm
+- https://github.com/charmbracelet/bubbletea
+- https://github.com/genjidb/genji/
 
 ---
 
