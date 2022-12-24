@@ -11,7 +11,9 @@ builds:
       - linux
     goarch:
       - amd64
+      - 386
       - arm64
+      - arm
       - riscv64
 archives:
   - replacements:
