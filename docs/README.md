@@ -1,6 +1,8 @@
 # LURE Docs
 
-- [Build Scripts](build-scripts.md)
-- [Usage](usage.md)
 - [Configuration](configuration.md)
-- [Adding Packages to LURE's repo](adding-packages.md)
+- [Usage](usage.md)
+- [Packages](packages)
+    - [Build Scripts](packages/build-scripts.md)
+    - [Package Conventions](packages/conventions.md)
+    - [Adding Packages to LURE's repo](packages/adding-packages.md)
