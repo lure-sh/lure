@@ -21,8 +21,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/db"
@@ -62,9 +60,9 @@ func listCmd(c *cli.Context) error {
 		}
 	}
 
-	err = result.Iterate(func(d types.Document) error {
+	for result.Next() {
 		var pkg db.Package
-		err := document.StructScan(d, &pkg)
+		err := result.StructScan(&pkg)
 		if err != nil {
 			return err
 		}
@@ -80,8 +78,8 @@ func listCmd(c *cli.Context) error {
 		}
 
 		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, version)
-		return nil
-	})
+	}
+
 	if err != nil {
 		log.Fatal("Error iterating over packages").Err(err).Send()
 	}

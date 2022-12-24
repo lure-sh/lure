@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/genjidb/genji"
+	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
@@ -28,7 +28,7 @@ func fixCmd(c *cli.Context) error {
 		log.Fatal("Unable to create new cache directory").Err(err).Send()
 	}
 
-	gdb, err = genji.Open(config.DBPath)
+	gdb, err = sqlx.Open("sqlite", config.DBPath)
 	if err != nil {
 		log.Fatal("Unable to create new database").Err(err).Send()
 	}

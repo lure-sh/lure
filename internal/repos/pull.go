@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/genjidb/genji"
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
+	"github.com/jmoiron/sqlx"
 	"github.com/pelletier/go-toml/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
@@ -33,7 +33,7 @@ import (
 // Pull pulls the provided repositories. If a repo doesn't exist, it will be cloned
 // and its packages will be written to the DB. If it does exist, it will be pulled.
 // In this case, only changed packages will be processed.
-func Pull(ctx context.Context, gdb *genji.DB, repos []types.Repo) error {
+func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 	for _, repo := range repos {
 		repoURL, err := url.Parse(repo.URL)
 		if err != nil {
@@ -157,7 +157,7 @@ type action struct {
 	File string
 }
 
-func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, w *git.Worktree, old, new *plumbing.Reference, gdb *genji.DB) error {
+func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, w *git.Worktree, old, new *plumbing.Reference, gdb *sqlx.DB) error {
 	oldCommit, err := r.CommitObject(old.Hash())
 	if err != nil {
 		return err
@@ -271,8 +271,8 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 			}
 
 			pkg := db.Package{
-				Depends:      map[string][]string{},
-				BuildDepends: map[string][]string{},
+				Depends:      db.NewJSON(map[string][]string{}),
+				BuildDepends: db.NewJSON(map[string][]string{}),
 				Repository:   repo.Name,
 			}
 
@@ -309,7 +309,7 @@ func isValid(from, to diff.File) bool {
 	return match
 }
 
-func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *genji.DB) error {
+func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *sqlx.DB) error {
 	glob := filepath.Join(repoDir, "/*/lure.sh")
 	matches, err := filepath.Glob(glob)
 	if err != nil {
@@ -338,8 +338,8 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *
 		}
 
 		pkg := db.Package{
-			Depends:      map[string][]string{},
-			BuildDepends: map[string][]string{},
+			Depends:      db.NewJSON(map[string][]string{}),
+			BuildDepends: db.NewJSON(map[string][]string{}),
 			Repository:   repo.Name,
 		}
 
@@ -384,12 +384,12 @@ func resolveOverrides(runner *interp.Runner, pkg *db.Package) {
 			override := strings.TrimPrefix(name, "deps")
 			override = strings.TrimPrefix(override, "_")
 
-			pkg.Depends[override] = val.List
+			pkg.Depends.Val[override] = val.List
 		} else if strings.HasPrefix(name, "build_deps") {
 			override := strings.TrimPrefix(name, "build_deps")
 			override = strings.TrimPrefix(override, "_")
 
-			pkg.BuildDepends[override] = val.List
+			pkg.BuildDepends.Val[override] = val.List
 		} else {
 			continue
 		}

@@ -2,15 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/genjidb/genji"
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
+	"github.com/jmoiron/sqlx"
 	"github.com/twitchtv/twirp"
 	"go.arsenm.dev/lure/internal/api"
 	"go.arsenm.dev/lure/internal/config"
@@ -18,11 +15,11 @@ import (
 )
 
 type lureWebAPI struct {
-	db *genji.DB
+	db *sqlx.DB
 }
 
 func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
-	query := "(name LIKE ? OR description LIKE ? OR ? IN provides)"
+	query := "(name LIKE ? OR description LIKE ? OR provides.value = ?)"
 	args := []any{"%" + req.Query + "%", "%" + req.Query + "%", req.Query}
 
 	if req.FilterValue != nil && req.FilterType != api.FILTER_TYPE_NO_FILTER {
@@ -50,22 +47,21 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 		query += " LIMIT " + strconv.FormatInt(req.Limit, 10)
 	}
 
-	doc, err := db.GetPkgs(l.db, query, args...)
+	result, err := db.GetPkgs(l.db, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(query, args)
 	out := &api.SearchResponse{}
-	err = doc.Iterate(func(d types.Document) error {
+	for result.Next() {
 		pkg := &db.Package{}
-		err = document.ScanDocument(d, pkg)
+		err = result.StructScan(pkg)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		out.Packages = append(out.Packages, dbPkgToAPI(pkg))
-		return nil
-	})
+	}
+
 	return out, err
 }
 
@@ -108,13 +104,13 @@ func dbPkgToAPI(pkg *db.Package) *api.Package {
 		Description:   &pkg.Description,
 		Homepage:      &pkg.Homepage,
 		Maintainer:    &pkg.Maintainer,
-		Architectures: pkg.Architectures,
-		Licenses:      pkg.Licenses,
-		Provides:      pkg.Provides,
-		Conflicts:     pkg.Conflicts,
-		Replaces:      pkg.Replaces,
-		Depends:       dbMapToAPI(pkg.Depends),
-		BuildDepends:  dbMapToAPI(pkg.BuildDepends),
+		Architectures: pkg.Architectures.Val,
+		Licenses:      pkg.Licenses.Val,
+		Provides:      pkg.Provides.Val,
+		Conflicts:     pkg.Conflicts.Val,
+		Replaces:      pkg.Replaces.Val,
+		Depends:       dbMapToAPI(pkg.Depends.Val),
+		BuildDepends:  dbMapToAPI(pkg.BuildDepends.Val),
 	}
 }
 

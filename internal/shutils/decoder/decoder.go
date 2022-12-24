@@ -70,8 +70,15 @@ func (d *Decoder) DecodeVar(name string, val any) error {
 
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
-		Result:           val,
-		TagName:          "sh",
+		DecodeHook: mapstructure.DecodeHookFuncValue(func(from, to reflect.Value) (interface{}, error) {
+			if strings.Contains(to.Type().String(), "db.JSON") {
+				to.FieldByName("Val").Set(from)
+				return to, nil
+			}
+			return from.Interface(), nil
+		}),
+		Result:  val,
+		TagName: "sh",
 	})
 	if err != nil {
 		return err
