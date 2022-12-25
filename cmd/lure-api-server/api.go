@@ -27,7 +27,7 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 		case api.FILTER_TYPE_IN_REPOSITORY:
 			query += " AND repository = ?"
 		case api.FILTER_TYPE_SUPPORTS_ARCH:
-			query += " AND ? IN architectures"
+			query += " AND json_array_contains(architectures, ?)"
 		}
 		args = append(args, *req.FilterValue)
 	}
