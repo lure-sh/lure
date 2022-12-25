@@ -24,9 +24,9 @@ installPkg() {
   fi
   
   case $1 in
-  pacman) $rootCmd pacman -U ${@:2} ;;
+  pacman) $rootCmd pacman --noconfirm -U ${@:2} ;;
   apk) $rootCmd apk add --allow-untrusted ${@:2} ;;
-  *) $rootCmd $1 install ${@:2} ;;
+  *) $rootCmd $1 install -y ${@:2} ;;
   esac
 }
 
