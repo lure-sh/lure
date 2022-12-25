@@ -73,7 +73,7 @@ As mentioned before, LURE has zero dependencies after compilation. Thanks to the
 - https://github.com/mholt/archiver
 - https://github.com/goreleaser/nfpm
 - https://github.com/charmbracelet/bubbletea
-- https://github.com/genjidb/genji/
+- https://gitlab.com/cznic/sqlite
 
 ---
 
