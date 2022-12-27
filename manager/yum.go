@@ -60,7 +60,7 @@ func (y *YUM) Sync(opts *Opts) error {
 
 func (y *YUM) Install(opts *Opts, pkgs ...string) error {
 	opts = ensureOpts(opts)
-	cmd := y.getCmd(opts, "yum", "install")
+	cmd := y.getCmd(opts, "yum", "install", "--allowerasing")
 	cmd.Args = append(cmd.Args, pkgs...)
 	setCmdEnv(cmd)
 	err := cmd.Run()
@@ -153,6 +153,7 @@ func (y *YUM) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
 	var cmd *exec.Cmd
 	if opts.AsRoot {
 		cmd = exec.Command(getRootCmd(y.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, opts.Args...)
 		cmd.Args = append(cmd.Args, args...)
 	} else {
 		cmd = exec.Command(mgrCmd, args...)
