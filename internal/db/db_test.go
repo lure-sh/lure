@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"go.arsenm.dev/lure/internal/db"
-	"modernc.org/sqlite"
 )
 
 var testPkg = db.Package{
@@ -201,8 +200,6 @@ func TestDeletePkgs(t *testing.T) {
 }
 
 func TestJsonArrayContains(t *testing.T) {
-	sqlite.MustRegisterScalarFunction("json_array_contains", 2, db.JsonArrayContains)
-
 	gdb, err := getDB(t)
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)

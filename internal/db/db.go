@@ -12,6 +12,10 @@ import (
 	"modernc.org/sqlite"
 )
 
+func init() {
+	sqlite.MustRegisterScalarFunction("json_array_contains", 2, JsonArrayContains)
+}
+
 // Package is a LURE package's database representation
 type Package struct {
 	Name          string                    `sh:"name,required" db:"name"`
