@@ -153,6 +153,7 @@ func (z *Zypper) getCmd(opts *Opts, mgrCmd string, args ...string) *exec.Cmd {
 	var cmd *exec.Cmd
 	if opts.AsRoot {
 		cmd = exec.Command(getRootCmd(z.rootCmd), mgrCmd)
+		cmd.Args = append(cmd.Args, opts.Args...)
 		cmd.Args = append(cmd.Args, args...)
 	} else {
 		cmd = exec.Command(mgrCmd, args...)

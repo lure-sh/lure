@@ -26,6 +26,7 @@ import (
 type Opts struct {
 	AsRoot    bool
 	NoConfirm bool
+	Args      []string
 }
 
 var DefaultOpts = &Opts{
