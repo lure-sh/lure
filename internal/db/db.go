@@ -109,7 +109,7 @@ func GetPkgs(db *sqlx.DB, where string, args ...any) (*sqlx.Rows, error) {
 // GetPkg returns a single package that match the where conditions
 func GetPkg(db *sqlx.DB, where string, args ...any) (*Package, error) {
 	out := &Package{}
-	err := db.Get(out, "SELECT * FROM pkgs WHERE "+where+"LIMIT 1", args...)
+	err := db.Get(out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
 	return out, err
 }
 
