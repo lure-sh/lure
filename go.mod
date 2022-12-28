@@ -2,8 +2,6 @@ module go.arsenm.dev/lure
 
 go 1.18
 
-replace github.com/cockroachdb/pebble => github.com/Arsen6331/pebble v0.0.0-20221204235940-be1b6eb76a4a
-
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/alecthomas/chroma/v2 v2.4.0
