@@ -23,6 +23,8 @@ import (
 	"os/exec"
 )
 
+var Args []string
+
 type Opts struct {
 	AsRoot    bool
 	NoConfirm bool
@@ -115,7 +117,8 @@ func setCmdEnv(cmd *exec.Cmd) {
 
 func ensureOpts(opts *Opts) *Opts {
 	if opts == nil {
-		return DefaultOpts
+		opts = DefaultOpts
 	}
+	opts.Args = append(opts.Args, Args...)
 	return opts
 }

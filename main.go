@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
+	"go.arsenm.dev/lure/manager"
 )
 
 //go:generate scripts/gen-version.sh
@@ -54,6 +56,13 @@ func main() {
 	app := &cli.App{
 		Name:  "lure",
 		Usage: "Linux User REpository",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "pm-args",
+				Aliases: []string{"P"},
+				Usage:   "Arguments to be passed on to the package manager",
+			},
+		},
 		Commands: []*cli.Command{
 			{
 				Name:         "install",
@@ -154,6 +163,12 @@ func main() {
 				Usage:  "Display the current LURE version and exit",
 				Action: displayVersion,
 			},
+		},
+		Before: func(c *cli.Context) error {
+			fmt.Println("pm-args:", c.String("pm-args"))
+			args := strings.Split(c.String("pm-args"), " ")
+			manager.Args = append(manager.Args, args...)
+			return nil
 		},
 		After: func(ctx *cli.Context) error {
 			return gdb.Close()
