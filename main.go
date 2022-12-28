@@ -165,7 +165,6 @@ func main() {
 			},
 		},
 		Before: func(c *cli.Context) error {
-			fmt.Println("pm-args:", c.String("pm-args"))
 			args := strings.Split(c.String("pm-args"), " ")
 			manager.Args = append(manager.Args, args...)
 			return nil
