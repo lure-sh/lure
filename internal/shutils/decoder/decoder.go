@@ -21,14 +21,12 @@ package decoder
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
-	"runtime"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/overrides"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
@@ -169,7 +167,7 @@ func (d *Decoder) GetFunc(name string) (ScriptFunc, bool) {
 }
 
 func (d *Decoder) getFunc(name string) *syntax.Stmt {
-	names := d.genPossibleNames(name)
+	names := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
 	for _, fnName := range names {
 		fn, ok := d.runner.Funcs[fnName]
 		if ok {
@@ -182,7 +180,7 @@ func (d *Decoder) getFunc(name string) *syntax.Stmt {
 // getVar gets a variable based on its name, taking into account
 // override variables and nameref variables.
 func (d *Decoder) getVar(name string) *expand.Variable {
-	names := d.genPossibleNames(name)
+	names := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
 	for _, varName := range names {
 		val, ok := d.runner.Vars[varName]
 		if ok {
@@ -199,44 +197,4 @@ func (d *Decoder) getVar(name string) *expand.Variable {
 		}
 	}
 	return nil
-}
-
-// genPossibleNames generates a slice of the possible names that
-// could be used in the order that they should be checked
-func (d *Decoder) genPossibleNames(name string) []string {
-	if !d.Overrides {
-		return []string{name}
-	}
-
-	architectures := []string{runtime.GOARCH}
-
-	if runtime.GOARCH == "arm" {
-		// More specific goes first
-		architectures[0] = cpu.ARMVariant()
-		architectures = append(architectures, "arm")
-	}
-
-	distros := []string{d.info.ID}
-	if d.LikeDistros {
-		distros = append(distros, d.info.Like...)
-	}
-
-	var out []string
-	for _, arch := range architectures {
-		for _, distro := range distros {
-			out = append(
-				out,
-				fmt.Sprintf("%s_%s_%s", name, arch, distro),
-				fmt.Sprintf("%s_%s", name, distro),
-			)
-		}
-		out = append(out, fmt.Sprintf("%s_%s", name, arch))
-	}
-	out = append(out, name)
-
-	for index, item := range out {
-		out[index] = strings.ReplaceAll(item, "-", "_")
-	}
-
-	return out
 }
