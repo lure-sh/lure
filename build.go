@@ -41,6 +41,7 @@ import (
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/download"
+	"go.arsenm.dev/lure/internal/cliutils"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
 	"go.arsenm.dev/lure/internal/repos"
@@ -186,13 +187,13 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	err = promptViewScript(script, vars.Name)
+	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle)
 	if err != nil {
 		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
 	}
 
 	if !archMatches(vars.Architectures) {
-		buildAnyway, err := yesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
+		buildAnyway, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -267,7 +268,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		}
 
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, flattenFoundPkgs(found, "install"), notFound, mgr)
+		installPkgs(ctx, cliutils.FlattenPkgs(found, "install"), notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -279,7 +280,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			return nil, nil, err
 		}
 
-		scripts := getScriptPaths(flattenFoundPkgs(found, "install"))
+		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install"))
 		for _, script := range scripts {
 			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
 			if err != nil {
@@ -490,7 +491,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
-		removeBuildDeps, err := yesNoPrompt("Would you like to remove build dependencies?", false)
+		removeBuildDeps, err := cliutils.YesNoPrompt("Would you like to remove build dependencies?", false)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -25,6 +25,7 @@ import (
 	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/lure/internal/cliutils"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
@@ -52,7 +53,7 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Error finding packages").Err(err).Send()
 	}
 
-	installPkgs(c.Context, flattenFoundPkgs(found, "install"), notFound, mgr)
+	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install"), notFound, mgr)
 	return nil
 }
 
@@ -78,24 +79,6 @@ func getScriptPaths(pkgs []db.Package) []string {
 		scripts = append(scripts, scriptPath)
 	}
 	return scripts
-}
-
-// flattenFoundPkgs attempts to flatten the map of slices of packages into a single slice
-// of packages by prompting the users if multiple packages match.
-func flattenFoundPkgs(found map[string][]db.Package, verb string) []db.Package {
-	var outPkgs []db.Package
-	for _, pkgs := range found {
-		if len(pkgs) > 1 {
-			choices, err := pkgPrompt(pkgs, verb)
-			if err != nil {
-				log.Fatal("Error prompting for choice of package").Send()
-			}
-			outPkgs = append(outPkgs, choices...)
-		} else if len(pkgs) == 1 {
-			outPkgs = append(outPkgs, pkgs[0])
-		}
-	}
-	return outPkgs
 }
 
 // installScripts builds and installs LURE build scripts
