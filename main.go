@@ -84,6 +84,13 @@ func main() {
 				Action:  upgradeCmd,
 			},
 			{
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "all",
+						Aliases: []string{"a"},
+						Usage:   "Show all information, not just for the current distro",
+					},
+				},
 				Name:   "info",
 				Usage:  "Print information about a package",
 				Action: infoCmd,

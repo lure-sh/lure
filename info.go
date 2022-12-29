@@ -25,6 +25,8 @@ import (
 	"go.arsenm.dev/logger/log"
 
 	"github.com/urfave/cli/v2"
+	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/overrides"
 	"go.arsenm.dev/lure/internal/repos"
 	"gopkg.in/yaml.v3"
 )
@@ -51,7 +53,41 @@ func infoCmd(c *cli.Context) error {
 
 	pkgs := flattenFoundPkgs(found, "show")
 
+	var names []string
+
+	if !c.Bool("all") {
+		info, err := distro.ParseOSRelease(c.Context)
+		if err != nil {
+			log.Fatal("Error parsing os-release file").Err(err).Send()
+		}
+		names = overrides.Resolve(info, overrides.DefaultOpts)
+	}
+
 	for _, pkg := range pkgs {
+		if !c.Bool("all") {
+			depsSet := false
+			buildDepsSet := false
+			for _, name := range names {
+				if deps, ok := pkg.Depends.Val[name]; ok && !depsSet {
+					pkg.Depends.Val = map[string][]string{name: deps}
+					depsSet = true
+				}
+
+				if buildDeps, ok := pkg.BuildDepends.Val[name]; ok && !buildDepsSet {
+					pkg.BuildDepends.Val = map[string][]string{name: buildDeps}
+					buildDepsSet = true
+				}
+			}
+
+			if !depsSet {
+				pkg.Depends.Val = nil
+			}
+
+			if !buildDepsSet {
+				pkg.BuildDepends.Val = nil
+			}
+		}
+
 		err = yaml.NewEncoder(os.Stdout).Encode(pkg)
 		if err != nil {
 			log.Fatal("Error encoding script variables").Err(err).Send()
