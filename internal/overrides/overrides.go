@@ -65,9 +65,7 @@ func Resolve(info *distro.OSRelease, opts *Opts) []string {
 			out = append(out, opts.Name+"_"+arch)
 		}
 	}
-	if opts.Name != "" {
-		out = append(out, opts.Name)
-	}
+	out = append(out, opts.Name)
 
 	for index, item := range out {
 		out[index] = strings.ReplaceAll(item, "-", "_")
@@ -77,16 +75,25 @@ func Resolve(info *distro.OSRelease, opts *Opts) []string {
 }
 
 func (o *Opts) WithName(name string) *Opts {
-	o.Name = name
-	return o
+	out := &Opts{}
+	*out = *o
+
+	out.Name = name
+	return out
 }
 
 func (o *Opts) WithOverrides(v bool) *Opts {
-	o.Overrides = v
-	return o
+	out := &Opts{}
+	*out = *o
+
+	out.Overrides = v
+	return out
 }
 
 func (o *Opts) WithLikeDistros(v bool) *Opts {
-	o.LikeDistros = v
-	return o
+	out := &Opts{}
+	*out = *o
+
+	out.LikeDistros = v
+	return out
 }

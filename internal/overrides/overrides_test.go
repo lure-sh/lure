@@ -24,6 +24,7 @@ func TestResolve(t *testing.T) {
 		"amd64_fedora",
 		"fedora",
 		"amd64",
+		"",
 	}
 
 	if !reflect.DeepEqual(names, expected) {
@@ -64,6 +65,7 @@ func TestResolveNoLikeDistros(t *testing.T) {
 		"amd64_centos",
 		"centos",
 		"amd64",
+		"",
 	}
 
 	if !reflect.DeepEqual(names, expected) {
