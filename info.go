@@ -26,6 +26,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/distro"
+	"go.arsenm.dev/lure/internal/cliutils"
 	"go.arsenm.dev/lure/internal/overrides"
 	"go.arsenm.dev/lure/internal/repos"
 	"gopkg.in/yaml.v3"
@@ -51,7 +52,7 @@ func infoCmd(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	pkgs := flattenFoundPkgs(found, "show")
+	pkgs := cliutils.FlattenPkgs(found, "show")
 
 	var names []string
 	all := c.Bool("all")
