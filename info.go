@@ -54,8 +54,9 @@ func infoCmd(c *cli.Context) error {
 	pkgs := flattenFoundPkgs(found, "show")
 
 	var names []string
+	all := c.Bool("all")
 
-	if !c.Bool("all") {
+	if !all {
 		info, err := distro.ParseOSRelease(c.Context)
 		if err != nil {
 			log.Fatal("Error parsing os-release file").Err(err).Send()
@@ -64,7 +65,7 @@ func infoCmd(c *cli.Context) error {
 	}
 
 	for _, pkg := range pkgs {
-		if !c.Bool("all") {
+		if !all {
 			depsSet := false
 			buildDepsSet := false
 			for _, name := range names {
