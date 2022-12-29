@@ -166,6 +166,10 @@ func main() {
 		},
 		Before: func(c *cli.Context) error {
 			args := strings.Split(c.String("pm-args"), " ")
+			if len(args) == 1 && args[0] == "" {
+				args = nil
+			}
+
 			manager.Args = append(manager.Args, args...)
 			return nil
 		},
