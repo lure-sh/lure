@@ -13,6 +13,10 @@ func FindPkgs(gdb *sqlx.DB, pkgs []string) (map[string][]db.Package, []string, e
 	notFound := []string(nil)
 
 	for _, pkgName := range pkgs {
+		if pkgName == "" {
+			continue
+		}
+
 		result, err := db.GetPkgs(gdb, "name LIKE ?", pkgName)
 		if err != nil {
 			return nil, nil, err
