@@ -46,8 +46,16 @@ type OSRelease struct {
 	Logo             string
 }
 
-// OSReleaseName returns the NAME field of the
+var parsed *OSRelease
+
+// OSReleaseName returns a struct parsed from the system's os-release
+// file. It checks /etc/os-release as well as /usr/lib/os-release.
+// The returned OSRelease struct is a singleton.
 func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
+	if parsed != nil {
+		return parsed, nil
+	}
+
 	fl, err := os.Open("/usr/lib/os-release")
 	if err != nil {
 		fl, err = os.Open("/etc/os-release")
@@ -99,5 +107,6 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 		out.Like = strings.Split(runner.Vars["ID_LIKE"].Str, " ")
 	}
 
+	parsed = out
 	return out, nil
 }
