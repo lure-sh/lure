@@ -20,6 +20,8 @@ archives:
       386: i386
       amd64: x86_64
       arm64: aarch64
+    files:
+      - scripts/completion/*
 nfpms:
   - id: lure
     package_name: linux-user-repository
