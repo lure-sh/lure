@@ -33,7 +33,7 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
-var ErrInvalidType = errors.New("val must be a pointer to a struct")
+var ErrNotPointerToStruct = errors.New("val must be a pointer to a struct")
 
 type VarNotFoundError struct {
 	name string
@@ -41,6 +41,16 @@ type VarNotFoundError struct {
 
 func (nfe VarNotFoundError) Error() string {
 	return "required variable '" + nfe.name + "' could not be found"
+}
+
+type InvalidTypeError struct {
+	name    string
+	vartype string
+	exptype string
+}
+
+func (ite InvalidTypeError) Error() string {
+	return "variable '" + ite.name + "' is of type " + ite.vartype + ", but " + ite.exptype + " is expected"
 }
 
 // Decoder provides methods for decoding variable values
@@ -70,6 +80,11 @@ func (d *Decoder) DecodeVar(name string, val any) error {
 		WeaklyTypedInput: true,
 		DecodeHook: mapstructure.DecodeHookFuncValue(func(from, to reflect.Value) (interface{}, error) {
 			if strings.Contains(to.Type().String(), "db.JSON") {
+				valType := to.FieldByName("Val").Type()
+				if !from.Type().AssignableTo(valType) {
+					return nil, InvalidTypeError{name, from.Type().String(), valType.String()}
+				}
+
 				to.FieldByName("Val").Set(from)
 				return to, nil
 			}
@@ -97,11 +112,11 @@ func (d *Decoder) DecodeVar(name string, val any) error {
 func (d *Decoder) DecodeVars(val any) error {
 	valKind := reflect.TypeOf(val).Kind()
 	if valKind != reflect.Pointer {
-		return ErrInvalidType
+		return ErrNotPointerToStruct
 	} else {
 		elemKind := reflect.TypeOf(val).Elem().Kind()
 		if elemKind != reflect.Struct {
-			return ErrInvalidType
+			return ErrNotPointerToStruct
 		}
 	}
 
