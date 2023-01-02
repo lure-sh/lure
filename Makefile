@@ -16,7 +16,7 @@ installmisc:
 uninstall:
 	rm -f /usr/local/bin/lure
 	
-version.txt:
-	go generate ./...
+internal/config/version.txt:
+	go generate ./internal/config
 
 .PHONY: install clean uninstall
