@@ -6,6 +6,7 @@ import (
 
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/internal/overrides"
+	"golang.org/x/text/language"
 )
 
 var info = &distro.OSRelease{
@@ -108,8 +109,9 @@ func TestResolveNoOverrides(t *testing.T) {
 
 func TestResolveLangs(t *testing.T) {
 	names, err := overrides.Resolve(info, &overrides.Opts{
-		Overrides: true,
-		Languages: []string{"ru_RU", "en", "en_US"},
+		Overrides:    true,
+		Languages:    []string{"ru_RU", "en", "en_US"},
+		LanguageTags: []language.Tag{language.BritishEnglish},
 	})
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)

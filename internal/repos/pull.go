@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/go-git/go-billy/v5"
@@ -338,6 +339,9 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *
 		}
 
 		pkg := db.Package{
+			Description:  db.NewJSON(map[string]string{}),
+			Homepage:     db.NewJSON(map[string]string{}),
+			Maintainer:   db.NewJSON(map[string]string{}),
 			Depends:      db.NewJSON(map[string][]string{}),
 			BuildDepends: db.NewJSON(map[string][]string{}),
 			Repository:   repo.Name,
@@ -378,20 +382,34 @@ func parseScript(ctx context.Context, parser *syntax.Parser, runner *interp.Runn
 	return d.DecodeVars(pkg)
 }
 
+var overridable = map[string]string{
+	"deps":       "Depends",
+	"build_deps": "BuildDepends",
+	"desc":       "Description",
+	"homepage":   "Homepage",
+	"maintainer": "Maintainer",
+}
+
 func resolveOverrides(runner *interp.Runner, pkg *db.Package) {
+	pkgVal := reflect.ValueOf(pkg).Elem()
 	for name, val := range runner.Vars {
-		if strings.HasPrefix(name, "deps") {
-			override := strings.TrimPrefix(name, "deps")
-			override = strings.TrimPrefix(override, "_")
+		for prefix, field := range overridable {
+			if strings.HasPrefix(name, prefix) {
+				override := strings.TrimPrefix(name, prefix)
+				override = strings.TrimPrefix(override, "_")
 
-			pkg.Depends.Val[override] = val.List
-		} else if strings.HasPrefix(name, "build_deps") {
-			override := strings.TrimPrefix(name, "build_deps")
-			override = strings.TrimPrefix(override, "_")
+				field := pkgVal.FieldByName(field)
+				varVal := field.FieldByName("Val")
+				varType := varVal.Type()
 
-			pkg.BuildDepends.Val[override] = val.List
-		} else {
-			continue
+				switch varType.Elem().String() {
+				case "[]string":
+					varVal.SetMapIndex(reflect.ValueOf(override), reflect.ValueOf(val.List))
+				case "string":
+					varVal.SetMapIndex(reflect.ValueOf(override), reflect.ValueOf(val.Str))
+				}
+				break
+			}
 		}
 	}
 }

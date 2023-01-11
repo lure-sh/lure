@@ -10,13 +10,21 @@ import (
 )
 
 var testPkg = db.Package{
-	Name:          "test",
-	Version:       "0.0.1",
-	Release:       1,
-	Epoch:         2,
-	Description:   "Test package",
-	Homepage:      "https://lure.arsenm.dev",
-	Maintainer:    "Arsen Musayelyan <arsen@arsenm.dev>",
+	Name:    "test",
+	Version: "0.0.1",
+	Release: 1,
+	Epoch:   2,
+	Description: db.NewJSON(map[string]string{
+		"en": "Test package",
+		"ru": "Проверочный пакет",
+	}),
+	Homepage: db.NewJSON(map[string]string{
+		"en": "https://lure.arsenm.dev",
+	}),
+	Maintainer: db.NewJSON(map[string]string{
+		"en": "Arsen Musayelyan <arsen@arsenm.dev>",
+		"ru": "Арсен Мусаелян <arsen@arsenm.dev>",
+	}),
 	Architectures: db.NewJSON([]string{"arm64", "amd64"}),
 	Licenses:      db.NewJSON([]string{"GPL-3.0-or-later"}),
 	Provides:      db.NewJSON([]string{"test"}),

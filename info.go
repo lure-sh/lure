@@ -62,7 +62,11 @@ func infoCmd(c *cli.Context) error {
 		if err != nil {
 			log.Fatal("Error parsing os-release file").Err(err).Send()
 		}
-		names, err = overrides.Resolve(info, overrides.DefaultOpts)
+		names, err = overrides.Resolve(
+			info,
+			overrides.DefaultOpts.
+				WithLanguages([]string{overrides.SystemLang()}),
+		)
 		if err != nil {
 			log.Fatal("Error resolving overrides").Err(err).Send()
 		}
@@ -70,33 +74,17 @@ func infoCmd(c *cli.Context) error {
 
 	for _, pkg := range pkgs {
 		if !all {
-			depsSet := false
-			buildDepsSet := false
-			for _, name := range names {
-				if deps, ok := pkg.Depends.Val[name]; ok && !depsSet {
-					pkg.Depends.Val = map[string][]string{name: deps}
-					depsSet = true
-				}
-
-				if buildDeps, ok := pkg.BuildDepends.Val[name]; ok && !buildDepsSet {
-					pkg.BuildDepends.Val = map[string][]string{name: buildDeps}
-					buildDepsSet = true
-				}
+			err = yaml.NewEncoder(os.Stdout).Encode(overrides.ResolvePackage(&pkg, names))
+			if err != nil {
+				log.Fatal("Error encoding script variables").Err(err).Send()
 			}
-
-			if !depsSet {
-				pkg.Depends.Val = nil
-			}
-
-			if !buildDepsSet {
-				pkg.BuildDepends.Val = nil
+		} else {
+			err = yaml.NewEncoder(os.Stdout).Encode(pkg)
+			if err != nil {
+				log.Fatal("Error encoding script variables").Err(err).Send()
 			}
 		}
 
-		err = yaml.NewEncoder(os.Stdout).Encode(pkg)
-		if err != nil {
-			log.Fatal("Error encoding script variables").Err(err).Send()
-		}
 		fmt.Println("---")
 	}
 

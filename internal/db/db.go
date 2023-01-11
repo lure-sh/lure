@@ -27,9 +27,9 @@ type Package struct {
 	Version       string                    `sh:"version,required" db:"version"`
 	Release       int                       `sh:"release,required" db:"release"`
 	Epoch         uint                      `sh:"epoch" db:"epoch"`
-	Description   string                    `sh:"desc" db:"description"`
-	Homepage      string                    `sh:"homepage" db:"homepage"`
-	Maintainer    string                    `sh:"maintainer" db:"maintainer"`
+	Description   JSON[map[string]string]   `db:"description"`
+	Homepage      JSON[map[string]string]   `db:"homepage"`
+	Maintainer    JSON[map[string]string]   `db:"maintainer"`
 	Architectures JSON[[]string]            `sh:"architectures" db:"architectures"`
 	Licenses      JSON[[]string]            `sh:"license" db:"licenses"`
 	Provides      JSON[[]string]            `sh:"provides" db:"provides"`
@@ -84,9 +84,9 @@ func Init(db *sqlx.DB, dsn string) error {
 			version       TEXT NOT NULL,
 			release       INT  NOT NULL,
 			epoch         INT,
-			description   TEXT,
-			homepage      TEXT,
-			maintainer    TEXT,
+			description   TEXT CHECK(description = 'null' OR (JSON_VALID(description) AND JSON_TYPE(description) = 'object')),
+			homepage      TEXT CHECK(homepage = 'null' OR (JSON_VALID(homepage) AND JSON_TYPE(homepage) = 'object')),
+			maintainer    TEXT CHECK(maintainer = 'null' OR (JSON_VALID(maintainer) AND JSON_TYPE(maintainer) = 'object')),
 			architectures TEXT CHECK(architectures = 'null' OR (JSON_VALID(architectures) AND JSON_TYPE(architectures) = 'array')),
 			licenses      TEXT CHECK(licenses = 'null' OR (JSON_VALID(licenses) AND JSON_TYPE(licenses) = 'array')),
 			provides      TEXT CHECK(provides = 'null' OR (JSON_VALID(provides) AND JSON_TYPE(provides) = 'array')),
