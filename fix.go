@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/config"
@@ -28,18 +27,12 @@ func fixCmd(c *cli.Context) error {
 		log.Fatal("Unable to create new cache directory").Err(err).Send()
 	}
 
-	gdb, err = sqlx.Open("sqlite", config.DBPath)
-	if err != nil {
-		log.Fatal("Unable to create new database").Err(err).Send()
-	}
-
 	// Make sure the DB is rebuilt when repos are pulled
-	config.DBPresent = false
-
-	err = db.Init(gdb)
+	gdb, err = db.Open(config.DBPath)
 	if err != nil {
 		log.Fatal("Error initializing database").Err(err).Send()
 	}
+	config.DBPresent = false
 
 	err = repos.Pull(c.Context, gdb, cfg.Repos)
 	if err != nil {

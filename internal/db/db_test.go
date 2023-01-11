@@ -32,18 +32,6 @@ var testPkg = db.Package{
 	Repository: "default",
 }
 
-func getDB(t *testing.T) (*sqlx.DB, error) {
-	t.Helper()
-
-	gdb, err := sqlx.Open("sqlite", ":memory:")
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.Init(gdb)
-	return gdb, err
-}
-
 func TestInit(t *testing.T) {
 	gdb, err := sqlx.Open("sqlite", ":memory:")
 	if err != nil {
@@ -51,7 +39,7 @@ func TestInit(t *testing.T) {
 	}
 	defer gdb.Close()
 
-	err = db.Init(gdb)
+	err = db.Init(gdb, ":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -60,10 +48,17 @@ func TestInit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
+
+	ver, ok := db.GetVersion(gdb)
+	if !ok {
+		t.Errorf("Expected version to be present")
+	} else if ver != db.CurrentVersion {
+		t.Errorf("Expected version %d, got %d", db.CurrentVersion, ver)
+	}
 }
 
 func TestInsertPackage(t *testing.T) {
-	gdb, err := getDB(t)
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -86,7 +81,7 @@ func TestInsertPackage(t *testing.T) {
 }
 
 func TestGetPkgs(t *testing.T) {
-	gdb, err := getDB(t)
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -126,7 +121,7 @@ func TestGetPkgs(t *testing.T) {
 }
 
 func TestGetPkg(t *testing.T) {
-	gdb, err := getDB(t)
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -162,7 +157,7 @@ func TestGetPkg(t *testing.T) {
 }
 
 func TestDeletePkgs(t *testing.T) {
-	gdb, err := getDB(t)
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -200,7 +195,7 @@ func TestDeletePkgs(t *testing.T) {
 }
 
 func TestJsonArrayContains(t *testing.T) {
-	gdb, err := getDB(t)
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}

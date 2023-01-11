@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
@@ -48,16 +47,11 @@ func removeCacheDir(t *testing.T) {
 }
 
 func TestPull(t *testing.T) {
-	gdb, err := sqlx.Open("sqlite", ":memory:")
+	gdb, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 	defer gdb.Close()
-
-	err = db.Init(gdb)
-	if err != nil {
-		t.Fatalf("Expected no error, got %s", err)
-	}
 
 	setCfgDirs(t)
 	defer removeCacheDir(t)
