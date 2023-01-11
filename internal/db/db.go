@@ -6,11 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/jmoiron/sqlx"
+	"go.arsenm.dev/logger/log"
+	"go.arsenm.dev/lure/internal/config"
 	"golang.org/x/exp/slices"
 	"modernc.org/sqlite"
 )
+
+const CurrentVersion = 1
 
 func init() {
 	sqlite.MustRegisterScalarFunction("json_array_contains", 2, JsonArrayContains)
@@ -35,8 +40,42 @@ type Package struct {
 	Repository    string                    `db:"repository"`
 }
 
+type version struct {
+	Version int `db:"version"`
+}
+
+func Open(dsn string) (*sqlx.DB, error) {
+	if dsn != ":memory:" {
+		fi, err := os.Stat(config.DBPath)
+		if err == nil {
+			// TODO: This should be removed by the first stable release.
+			if fi.IsDir() {
+				log.Warn("Your database is using the old database engine; rebuilding").Send()
+
+				err = os.RemoveAll(config.DBPath)
+				if err != nil {
+					log.Fatal("Error removing old database").Err(err).Send()
+				}
+				config.DBPresent = false
+			}
+		}
+	}
+
+	db, err := sqlx.Open("sqlite", dsn)
+	if err != nil {
+		log.Fatal("Error opening database").Err(err).Send()
+	}
+
+	err = Init(db, dsn)
+	if err != nil {
+		log.Fatal("Error initializing database").Err(err).Send()
+	}
+
+	return db, nil
+}
+
 // Init initializes the database
-func Init(db *sqlx.DB) error {
+func Init(db *sqlx.DB, dsn string) error {
 	*db = *db.Unsafe()
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS pkgs (
@@ -57,7 +96,51 @@ func Init(db *sqlx.DB) error {
 			builddepends  TEXT CHECK(builddepends = 'null' OR (JSON_VALID(builddepends) AND JSON_TYPE(builddepends) = 'object')),
 			UNIQUE(name, repository)
 		);
+
+		CREATE TABLE IF NOT EXISTS lure_db_version (
+			version INT NOT NULL
+		);
 	`)
+	if err != nil {
+		return err
+	}
+
+	ver, ok := GetVersion(db)
+	if !ok {
+		return addVersion(db, CurrentVersion)
+	}
+
+	if ver != CurrentVersion {
+		log.Warn("Database version mismatch; rebuilding").Int("version", ver).Int("expected", CurrentVersion).Send()
+
+		db.Close()
+		err = os.Remove(config.DBPath)
+		if err != nil {
+			return err
+		}
+		config.DBPresent = false
+
+		tdb, err := Open(dsn)
+		if err != nil {
+			return err
+		}
+		*db = *tdb
+	}
+
+	return nil
+}
+
+func GetVersion(db *sqlx.DB) (int, bool) {
+	var ver version
+	err := db.Get(&ver, "SELECT * FROM lure_db_version LIMIT 1;")
+	if err != nil {
+		return 0, false
+	}
+	return ver.Version, true
+}
+
+func addVersion(db *sqlx.DB, ver int) error {
+	_, err := db.Exec(`INSERT INTO lure_db_version(version) VALUES (?);`, ver)
 	return err
 }
 
