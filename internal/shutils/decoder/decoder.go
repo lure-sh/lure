@@ -182,7 +182,11 @@ func (d *Decoder) GetFunc(name string) (ScriptFunc, bool) {
 }
 
 func (d *Decoder) getFunc(name string) *syntax.Stmt {
-	names := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
+	names, err := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
+	if err != nil {
+		return nil
+	}
+
 	for _, fnName := range names {
 		fn, ok := d.runner.Funcs[fnName]
 		if ok {
@@ -195,7 +199,11 @@ func (d *Decoder) getFunc(name string) *syntax.Stmt {
 // getVar gets a variable based on its name, taking into account
 // override variables and nameref variables.
 func (d *Decoder) getVar(name string) *expand.Variable {
-	names := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
+	names, err := overrides.Resolve(d.info, overrides.DefaultOpts.WithName(name))
+	if err != nil {
+		return nil
+	}
+
 	for _, varName := range names {
 		val, ok := d.runner.Vars[varName]
 		if ok {
