@@ -1,32 +1,42 @@
 package overrides
 
 import (
+	"os"
 	"runtime"
 	"strings"
 
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/internal/cpu"
+	"golang.org/x/exp/slices"
+	"golang.org/x/text/language"
 )
 
 type Opts struct {
 	Name        string
 	Overrides   bool
 	LikeDistros bool
+	Languages   []string
 }
 
 var DefaultOpts = &Opts{
 	Overrides:   true,
 	LikeDistros: true,
+	Languages:   []string{"en"},
 }
 
 // Resolve generates a slice of possible override names in the order that they should be checked
-func Resolve(info *distro.OSRelease, opts *Opts) []string {
+func Resolve(info *distro.OSRelease, opts *Opts) ([]string, error) {
 	if opts == nil {
 		opts = DefaultOpts
 	}
 
 	if !opts.Overrides {
-		return []string{opts.Name}
+		return []string{opts.Name}, nil
+	}
+
+	langs, err := parseLangs(opts.Languages)
+	if err != nil {
+		return nil, err
 	}
 
 	architectures := []string{runtime.GOARCH}
@@ -71,7 +81,22 @@ func Resolve(info *distro.OSRelease, opts *Opts) []string {
 		out[index] = strings.ReplaceAll(item, "-", "_")
 	}
 
-	return out
+	if len(langs) > 0 {
+		tmp := out
+		out = make([]string, 0, len(tmp)+(len(tmp)*len(langs)))
+		for _, lang := range langs {
+			for _, val := range tmp {
+				if val == "" {
+					continue
+				}
+
+				out = append(out, val+"_"+lang)
+			}
+		}
+		out = append(out, tmp...)
+	}
+
+	return out, nil
 }
 
 func (o *Opts) WithName(name string) *Opts {
@@ -96,4 +121,27 @@ func (o *Opts) WithLikeDistros(v bool) *Opts {
 
 	out.LikeDistros = v
 	return out
+}
+
+func parseLangs(langs []string) ([]string, error) {
+	out := make([]string, len(langs))
+	for i, lang := range langs {
+		tag, err := language.Parse(lang)
+		if err != nil {
+			return nil, err
+		}
+		base, _ := tag.Base()
+		out[i] = base.String()
+	}
+	slices.Sort(out)
+	out = slices.Compact(out)
+	return out, nil
+}
+
+func SystemLang() string {
+	lang := os.Getenv("LANG")
+	if lang == "" {
+		lang = "en"
+	}
+	return lang
 }

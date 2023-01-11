@@ -62,7 +62,10 @@ func infoCmd(c *cli.Context) error {
 		if err != nil {
 			log.Fatal("Error parsing os-release file").Err(err).Send()
 		}
-		names = overrides.Resolve(info, overrides.DefaultOpts)
+		names, err = overrides.Resolve(info, overrides.DefaultOpts)
+		if err != nil {
+			log.Fatal("Error resolving overrides").Err(err).Send()
+		}
 	}
 
 	for _, pkg := range pkgs {
