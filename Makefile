@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 
-lure: version.txt
+lure: internal/config/version.txt
 	go build
 
 clean:
