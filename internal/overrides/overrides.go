@@ -2,20 +2,23 @@ package overrides
 
 import (
 	"os"
+	"reflect"
 	"runtime"
 	"strings"
 
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/db"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 )
 
 type Opts struct {
-	Name        string
-	Overrides   bool
-	LikeDistros bool
-	Languages   []string
+	Name         string
+	Overrides    bool
+	LikeDistros  bool
+	Languages    []string
+	LanguageTags []language.Tag
 }
 
 var DefaultOpts = &Opts{
@@ -34,7 +37,7 @@ func Resolve(info *distro.OSRelease, opts *Opts) ([]string, error) {
 		return []string{opts.Name}, nil
 	}
 
-	langs, err := parseLangs(opts.Languages)
+	langs, err := parseLangs(opts.Languages, opts.LanguageTags)
 	if err != nil {
 		return nil, err
 	}
@@ -123,15 +126,91 @@ func (o *Opts) WithLikeDistros(v bool) *Opts {
 	return out
 }
 
-func parseLangs(langs []string) ([]string, error) {
-	out := make([]string, len(langs))
+func (o *Opts) WithLanguages(langs []string) *Opts {
+	out := &Opts{}
+	*out = *o
+
+	out.Languages = langs
+	return out
+}
+
+func (o *Opts) WithLanguageTags(langs []string) *Opts {
+	out := &Opts{}
+	*out = *o
+
+	out.Languages = langs
+	return out
+}
+
+// ResolvedPackage is a LURE package after its overrides
+// have been resolved
+type ResolvedPackage struct {
+	Name          string   `sh:"name"`
+	Version       string   `sh:"version"`
+	Release       int      `sh:"release"`
+	Epoch         uint     `sh:"epoch"`
+	Description   string   `db:"description"`
+	Homepage      string   `db:"homepage"`
+	Maintainer    string   `db:"maintainer"`
+	Architectures []string `sh:"architectures"`
+	Licenses      []string `sh:"license"`
+	Provides      []string `sh:"provides"`
+	Conflicts     []string `sh:"conflicts"`
+	Replaces      []string `sh:"replaces"`
+	Depends       []string `sh:"deps"`
+	BuildDepends  []string `sh:"build_deps"`
+}
+
+func ResolvePackage(pkg *db.Package, overrides []string) *ResolvedPackage {
+	out := &ResolvedPackage{}
+	outVal := reflect.ValueOf(out).Elem()
+	pkgVal := reflect.ValueOf(pkg).Elem()
+
+	for i := 0; i < outVal.NumField(); i++ {
+		fieldVal := outVal.Field(i)
+		fieldType := fieldVal.Type()
+		pkgFieldVal := pkgVal.FieldByName(outVal.Type().Field(i).Name)
+		pkgFieldType := pkgFieldVal.Type()
+
+		if strings.HasPrefix(pkgFieldType.String(), "db.JSON") {
+			pkgFieldVal = pkgFieldVal.FieldByName("Val")
+			pkgFieldType = pkgFieldVal.Type()
+		}
+
+		if pkgFieldType.AssignableTo(fieldType) {
+			fieldVal.Set(pkgFieldVal)
+			continue
+		}
+
+		if pkgFieldVal.Kind() == reflect.Map && pkgFieldType.Elem().AssignableTo(fieldType) {
+			for _, override := range overrides {
+				overrideVal := pkgFieldVal.MapIndex(reflect.ValueOf(override))
+				if !overrideVal.IsValid() {
+					continue
+				}
+
+				fieldVal.Set(overrideVal)
+				break
+			}
+		}
+	}
+
+	return out
+}
+
+func parseLangs(langs []string, tags []language.Tag) ([]string, error) {
+	out := make([]string, len(tags)+len(langs))
+	for i, tag := range tags {
+		base, _ := tag.Base()
+		out[i] = base.String()
+	}
 	for i, lang := range langs {
 		tag, err := language.Parse(lang)
 		if err != nil {
 			return nil, err
 		}
 		base, _ := tag.Base()
-		out[i] = base.String()
+		out[len(tags)+i] = base.String()
 	}
 	slices.Sort(out)
 	out = slices.Compact(out)
@@ -140,6 +219,7 @@ func parseLangs(langs []string) ([]string, error) {
 
 func SystemLang() string {
 	lang := os.Getenv("LANG")
+	lang, _, _ = strings.Cut(lang, ".")
 	if lang == "" {
 		lang = "en"
 	}

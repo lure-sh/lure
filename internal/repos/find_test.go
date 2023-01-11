@@ -73,24 +73,30 @@ func TestFindPkgsEmpty(t *testing.T) {
 	defer removeCacheDir(t)
 
 	err = db.InsertPackage(gdb, db.Package{
-		Name:        "test1",
-		Repository:  "default",
-		Version:     "0.0.1",
-		Release:     1,
-		Description: "Test package 1",
-		Provides:    db.NewJSON([]string{""}),
+		Name:       "test1",
+		Repository: "default",
+		Version:    "0.0.1",
+		Release:    1,
+		Description: db.NewJSON(map[string]string{
+			"en": "Test package 1",
+			"ru": "Проверочный пакет 1",
+		}),
+		Provides: db.NewJSON([]string{""}),
 	})
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
 	err = db.InsertPackage(gdb, db.Package{
-		Name:        "test2",
-		Repository:  "default",
-		Version:     "0.0.1",
-		Release:     1,
-		Description: "Test package 2",
-		Provides:    db.NewJSON([]string{"test"}),
+		Name:       "test2",
+		Repository: "default",
+		Version:    "0.0.1",
+		Release:    1,
+		Description: db.NewJSON(map[string]string{
+			"en": "Test package 2",
+			"ru": "Проверочный пакет 2",
+		}),
+		Provides: db.NewJSON([]string{"test"}),
 	})
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
