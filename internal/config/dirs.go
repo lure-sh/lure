@@ -71,6 +71,6 @@ func init() {
 
 	DBPath = filepath.Join(CacheDir, "db")
 
-	_, err = os.ReadDir(DBPath)
-	DBPresent = err == nil
+	fi, err := os.Stat(DBPath)
+	DBPresent = err == nil && !fi.IsDir()
 }
