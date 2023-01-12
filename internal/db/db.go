@@ -107,6 +107,7 @@ func Init(db *sqlx.DB, dsn string) error {
 
 	ver, ok := GetVersion(db)
 	if !ok {
+		log.Warn("Database version does not exist. Run lure fix if something isn't working.").Send()
 		return addVersion(db, CurrentVersion)
 	}
 
