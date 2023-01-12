@@ -9,9 +9,11 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/twitchtv/twirp"
+	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/api"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
+	"golang.org/x/text/language"
 )
 
 type lureWebAPI struct {
@@ -59,7 +61,7 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 		if err != nil {
 			return nil, err
 		}
-		out.Packages = append(out.Packages, dbPkgToAPI(pkg))
+		out.Packages = append(out.Packages, dbPkgToAPI(ctx, pkg))
 	}
 
 	return out, err
@@ -70,7 +72,7 @@ func (l lureWebAPI) GetPkg(ctx context.Context, req *api.GetPackageRequest) (*ap
 	if err != nil {
 		return nil, err
 	}
-	return dbPkgToAPI(pkg), nil
+	return dbPkgToAPI(ctx, pkg), nil
 }
 
 func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptRequest) (*api.GetBuildScriptResponse, error) {
@@ -94,16 +96,16 @@ func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptR
 	return &api.GetBuildScriptResponse{Script: string(data)}, nil
 }
 
-func dbPkgToAPI(pkg *db.Package) *api.Package {
+func dbPkgToAPI(ctx context.Context, pkg *db.Package) *api.Package {
 	return &api.Package{
 		Name:          pkg.Name,
 		Repository:    pkg.Repository,
 		Version:       pkg.Version,
 		Release:       int64(pkg.Release),
 		Epoch:         ptr(int64(pkg.Epoch)),
-		Description:   &pkg.Description,
-		Homepage:      &pkg.Homepage,
-		Maintainer:    &pkg.Maintainer,
+		Description:   performTranslation(ctx, pkg.Description.Val),
+		Homepage:      performTranslation(ctx, pkg.Homepage.Val),
+		Maintainer:    performTranslation(ctx, pkg.Maintainer.Val),
 		Architectures: pkg.Architectures.Val,
 		Licenses:      pkg.Licenses.Val,
 		Provides:      pkg.Provides.Val,
@@ -123,5 +125,63 @@ func dbMapToAPI(m map[string][]string) map[string]*api.StringList {
 	for override, list := range m {
 		out[override] = &api.StringList{Entries: list}
 	}
+	return out
+}
+
+func performTranslation(ctx context.Context, v map[string]string) *string {
+	alVal := ctx.Value(acceptLanguageKey{})
+	langVal := ctx.Value(langParameterKey{})
+
+	if alVal == nil && langVal == nil {
+		val, ok := v[""]
+		if !ok {
+			return ptr("<unknown>")
+		}
+		return &val
+	}
+
+	al, _ := alVal.(string)
+	lang, _ := langVal.(string)
+
+	tags, _, err := language.ParseAcceptLanguage(al)
+	if err != nil {
+		log.Warn("Error parsing Accept-Language header").Err(err).Send()
+	}
+
+	var bases []string
+	if lang != "" {
+		langTag, err := language.Parse(lang)
+		if err != nil {
+			log.Warn("Error parsing lang parameter").Err(err).Send()
+			bases = getLangBases(tags)
+		} else {
+			bases = getLangBases(append([]language.Tag{langTag}, tags...))
+		}
+	} else {
+		bases = getLangBases(tags)
+	}
+
+	if len(bases) == 1 {
+		bases = []string{"en", ""}
+	}
+
+	for _, name := range bases {
+		val, ok := v[name]
+		if !ok {
+			continue
+		}
+		return &val
+	}
+
+	return ptr("<unknown>")
+}
+
+func getLangBases(langs []language.Tag) []string {
+	out := make([]string, len(langs)+1)
+	for i, lang := range langs {
+		base, _ := lang.Base()
+		out[i] = base.String()
+	}
+	out[len(out)-1] = ""
 	return out
 }

@@ -49,6 +49,7 @@ func main() {
 		lureWebAPI{db: gdb},
 		twirp.WithServerPathPrefix(""),
 	)
+	handler = withAcceptLanguage(handler)
 	handler = allowAllCORSHandler(handler)
 	handler = handleWebhook(handler, sigCh)
 
@@ -72,6 +73,25 @@ func allowAllCORSHandler(h http.Handler) http.Handler {
 		if req.Method == http.MethodOptions {
 			return
 		}
+		h.ServeHTTP(res, req)
+	})
+}
+
+type acceptLanguageKey struct{}
+type langParameterKey struct{}
+
+func withAcceptLanguage(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+
+		langs := req.Header.Get("Accept-Language")
+		ctx = context.WithValue(ctx, acceptLanguageKey{}, langs)
+		
+		lang := req.URL.Query().Get("lang")
+		ctx = context.WithValue(ctx, langParameterKey{}, lang)
+		
+		req = req.WithContext(ctx)
+
 		h.ServeHTTP(res, req)
 	})
 }
