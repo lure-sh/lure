@@ -1,0 +1,103 @@
+[[translation]]
+id = 1228660974
+value = 'Скачивание репозитория'
+
+[[translation]]
+id = 2779805870
+value = 'Репозиторий уже обновлен'
+
+[[translation]]
+id = 1433222829
+value = 'Показать скрипт для пакета'
+
+[[translation]]
+id = 2470847050
+value = 'Не удалось предложить просмотреть скрипт'
+
+[[translation]]
+id = 855659503
+value = 'Продолжить?'
+
+[[translation]]
+id = 1997041569
+value = 'Пользователь решил не продолжать после просмотра скрипта'
+
+[[translation]]
+id = 2347700990
+value = 'Сборка пакета'
+
+[[translation]]
+id = 2105058868
+value = 'Скачивание файлов'
+
+[[translation]]
+id = 1519177982
+value = 'Ошибка при сборке пакета'
+
+[[translation]]
+id = 2125220917
+value = 'Выберите, какие пакеты установить'
+
+[[translation]]
+id = 812531604
+value = 'Ошибка при запросе выбора пакета'
+
+[[translation]]
+id = 1040982801
+value = 'Обновление версии'
+
+[[translation]]
+id = 2235794125
+value = 'Удалить зависимости сборки?'
+
+[[translation]]
+id = 2205430948
+value = 'Установка зависимостей сборки'
+
+[[translation]]
+id = 2522710805
+value = 'Установка зависимостей'
+
+[[translation]]
+id = 3602138206
+value = 'Ошибка при установке пакета'
+
+[[translation]]
+id = 1057080231
+value = 'Вызов функции package()'
+
+[[translation]]
+id = 2687735200
+value = 'Вызов функции prepare()'
+
+[[translation]]
+id = 535572372
+value = 'Вызов функции version()'
+
+[[translation]]
+id = 436644691
+value = 'Вызов функции build()'
+
+[[translation]]
+id = 2562049386
+value = "Архитектура процессора вашей системы не соответствует этому пакету. Продолжать несмотря на это?"
+
+[[translation]]
+id = 3759891273
+value = 'Функция package() необходима'
+
+[[translation]]
+id = 4006393493
+value = 'Массив checksums должен быть той же длины, что и sources'
+
+[[translation]]
+id = 1579384326
+value = 'название'
+
+[[translation]]
+id = 3206337475
+value = 'версия'
+
+[[translation]]
+id = 1810056261
+value = 'новая'

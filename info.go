@@ -27,6 +27,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/lure/distro"
 	"go.arsenm.dev/lure/internal/cliutils"
+	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/overrides"
 	"go.arsenm.dev/lure/internal/repos"
 	"gopkg.in/yaml.v3"
@@ -52,7 +53,7 @@ func infoCmd(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	pkgs := cliutils.FlattenPkgs(found, "show")
+	pkgs := cliutils.FlattenPkgs(found, "show", translator)
 
 	var names []string
 	all := c.Bool("all")
@@ -65,7 +66,7 @@ func infoCmd(c *cli.Context) error {
 		names, err = overrides.Resolve(
 			info,
 			overrides.DefaultOpts.
-				WithLanguages([]string{overrides.SystemLang()}),
+				WithLanguages([]string{config.SystemLang()}),
 		)
 		if err != nil {
 			log.Fatal("Error resolving overrides").Err(err).Send()

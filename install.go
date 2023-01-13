@@ -53,7 +53,7 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Error finding packages").Err(err).Send()
 	}
 
-	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install"), notFound, mgr)
+	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install", translator), notFound, mgr)
 	return nil
 }
 

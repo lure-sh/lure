@@ -15,12 +15,14 @@ require (
 	github.com/mholt/archiver/v4 v4.0.0-alpha.7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/muesli/reflow v0.3.0
-	github.com/pelletier/go-toml/v2 v2.0.5
+	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/twitchtv/twirp v8.1.3+incompatible
-	github.com/urfave/cli/v2 v2.16.3
-	go.arsenm.dev/logger v0.0.0-20221220032833-ba8a3cfb4668
+	github.com/urfave/cli/v2 v2.23.7
+	go.arsenm.dev/logger v0.0.0-20230104225304-d706171ea6df
+	go.arsenm.dev/translate v0.0.0-20230113025904-5ad1ec0ed296
 	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
 	golang.org/x/sys v0.3.0
+	golang.org/x/text v0.6.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.20.0
@@ -91,7 +93,6 @@ require (
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect

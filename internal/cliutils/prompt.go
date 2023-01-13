@@ -5,16 +5,18 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"go.arsenm.dev/logger/log"
+	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/pager"
+	"go.arsenm.dev/translate"
 )
 
 // YesNoPrompt asks the user a yes or no question, using def as the default answer
-func YesNoPrompt(msg string, def bool) (bool, error) {
+func YesNoPrompt(msg string, def bool, t translate.Translator) (bool, error) {
 	var answer bool
 	err := survey.AskOne(
 		&survey.Confirm{
-			Message: msg,
+			Message: t.TranslateTo(msg, config.Language),
 			Default: def,
 		},
 		&answer,
@@ -25,8 +27,8 @@ func YesNoPrompt(msg string, def bool) (bool, error) {
 // PromptViewScript asks the user if they'd like to see a script,
 // shows it if they answer yes, then asks if they'd still like to
 // continue, and exits if they answer no.
-func PromptViewScript(script, name, style string) error {
-	view, err := YesNoPrompt("Would you like to view the build script for "+name, false)
+func PromptViewScript(script, name, style string, t translate.Translator) error {
+	view, err := YesNoPrompt(t.TranslateTo("Would you like to view the build script for", config.Language)+" "+name, false, t)
 	if err != nil {
 		return err
 	}
@@ -37,13 +39,13 @@ func PromptViewScript(script, name, style string) error {
 			return err
 		}
 
-		cont, err := YesNoPrompt("Would you still like to continue?", false)
+		cont, err := YesNoPrompt("Would you still like to continue?", false, t)
 		if err != nil {
 			return err
 		}
 
 		if !cont {
-			log.Fatal("User chose not to continue after reading script").Send()
+			log.Fatal(t.TranslateTo("User chose not to continue after reading script", config.Language)).Send()
 		}
 	}
 
@@ -70,11 +72,11 @@ func ShowScript(path, name, style string) error {
 
 // FlattenPkgs attempts to flatten the a map of slices of packages into a single slice
 // of packages by prompting the user if multiple packages match.
-func FlattenPkgs(found map[string][]db.Package, verb string) []db.Package {
+func FlattenPkgs(found map[string][]db.Package, verb string, t translate.Translator) []db.Package {
 	var outPkgs []db.Package
 	for _, pkgs := range found {
 		if len(pkgs) > 1 {
-			choices, err := PkgPrompt(pkgs, verb)
+			choices, err := PkgPrompt(pkgs, verb, t)
 			if err != nil {
 				log.Fatal("Error prompting for choice of package").Send()
 			}
@@ -88,7 +90,7 @@ func FlattenPkgs(found map[string][]db.Package, verb string) []db.Package {
 
 // PkgPrompt asks the user to choose between multiple packages.
 // The user may choose multiple packages.
-func PkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
+func PkgPrompt(options []db.Package, verb string, t translate.Translator) ([]db.Package, error) {
 	names := make([]string, len(options))
 	for i, option := range options {
 		names[i] = option.Repository + "/" + option.Name + " " + option.Version
@@ -96,7 +98,7 @@ func PkgPrompt(options []db.Package, verb string) ([]db.Package, error) {
 
 	prompt := &survey.MultiSelect{
 		Options: names,
-		Message: "Choose which package(s) to " + verb,
+		Message: t.TranslateTo("Choose which package(s) to "+verb, config.Language),
 	}
 
 	var choices []int

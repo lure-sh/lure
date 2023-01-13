@@ -187,13 +187,13 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
-	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle)
+	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle, translator)
 	if err != nil {
 		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
 	}
 
 	if !archMatches(vars.Architectures) {
-		buildAnyway, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true)
+		buildAnyway, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true, translator)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -268,7 +268,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		}
 
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, cliutils.FlattenPkgs(found, "install"), notFound, mgr)
+		installPkgs(ctx, cliutils.FlattenPkgs(found, "install", translator), notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -280,7 +280,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 			return nil, nil, err
 		}
 
-		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install"))
+		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install", translator))
 		for _, script := range scripts {
 			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
 			if err != nil {
@@ -491,7 +491,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	if len(buildDeps) > 0 {
-		removeBuildDeps, err := cliutils.YesNoPrompt("Would you like to remove build dependencies?", false)
+		removeBuildDeps, err := cliutils.YesNoPrompt("Would you like to remove build dependencies?", false, translator)
 		if err != nil {
 			return nil, nil, err
 		}
