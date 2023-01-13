@@ -1,0 +1,107 @@
+[[translation]]
+id = 1228660974
+value = 'Pulling repository'
+
+[[translation]]
+id = 2779805870
+value = 'Repository up to date'
+
+[[translation]]
+id = 1433222829
+value = 'Would you like to view the build script for'
+
+[[translation]]
+id = 2470847050
+value = 'Failed to prompt user to view build script'
+
+[[translation]]
+id = 855659503
+value = 'Would you still like to continue?'
+
+[[translation]]
+id = 1997041569
+value = 'User chose not to continue after reading script'
+
+[[translation]]
+id = 2347700990
+value = 'Building package'
+
+[[translation]]
+id = 2105058868
+value = 'Downloading sources'
+
+[[translation]]
+id = 1519177982
+value = 'Error building package'
+
+[[translation]]
+id = 2125220917
+value = 'Choose which package(s) to install'
+
+[[translation]]
+id = 812531604
+value = 'Error prompting for choice of package'
+
+[[translation]]
+id = 1040982801
+value = 'Updating version'
+
+[[translation]]
+id = 1014897988
+value = 'Remove build dependencies?'
+
+[[translation]]
+id = 2205430948
+value = 'Installing build dependencies'
+
+[[translation]]
+id = 2522710805
+value = 'Installing dependencies'
+
+[[translation]]
+id = 3602138206
+value = 'Error installing package'
+
+[[translation]]
+id = 2235794125
+value = 'Would you like to remove build dependencies?'
+
+[[translation]]
+id = 2562049386
+value = "Your system's CPU architecture doesn't match this package. Do you want to build anyway?"
+
+[[translation]]
+id = 4006393493
+value = 'The checksums array must be the same length as sources'
+
+[[translation]]
+id = 3759891273
+value = 'The package() function is required'
+
+[[translation]]
+id = 1057080231
+value = 'Executing package()'
+
+[[translation]]
+id = 2687735200
+value = 'Executing prepare()'
+
+[[translation]]
+id = 535572372
+value = 'Executing version()'
+
+[[translation]]
+id = 436644691
+value = 'Executing build()'
+
+[[translation]]
+id = 1579384326
+value = 'name'
+
+[[translation]]
+id = 3206337475
+value = 'version'
+
+[[translation]]
+id = 1810056261
+value = 'new'

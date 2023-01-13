@@ -20,6 +20,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"os"
 	"os/signal"
@@ -33,12 +34,26 @@ import (
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/manager"
+	"go.arsenm.dev/translate"
 )
 
 //go:generate scripts/gen-version.sh
 
+//go:embed translations
+var translationFS embed.FS
+
+var translator translate.Translator
+
 func init() {
-	log.Logger = logger.NewCLI(os.Stderr)
+	logger := logger.NewCLI(os.Stderr)
+
+	t, err := translate.NewFromFS(translationFS)
+	if err != nil {
+		logger.Fatal("Error creating new translator").Err(err).Send()
+	}
+	translator = t
+
+	log.Logger = translate.NewLogger(logger, t, config.Language)
 }
 
 func main() {

@@ -1,7 +1,6 @@
 package overrides
 
 import (
-	"os"
 	"reflect"
 	"runtime"
 	"strings"
@@ -215,13 +214,4 @@ func parseLangs(langs []string, tags []language.Tag) ([]string, error) {
 	slices.Sort(out)
 	out = slices.Compact(out)
 	return out, nil
-}
-
-func SystemLang() string {
-	lang := os.Getenv("LANG")
-	lang, _, _ = strings.Cut(lang, ".")
-	if lang == "" {
-		lang = "en"
-	}
-	return lang
 }
