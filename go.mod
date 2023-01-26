@@ -18,7 +18,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	github.com/urfave/cli/v2 v2.23.7
-	go.arsenm.dev/logger v0.0.0-20230104225304-d706171ea6df
+	go.arsenm.dev/logger v0.0.0-20230126004036-a8cbbe3b6fe6
 	go.arsenm.dev/translate v0.0.0-20230113025904-5ad1ec0ed296
 	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
 	golang.org/x/sys v0.3.0
