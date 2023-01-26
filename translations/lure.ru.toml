@@ -91,6 +91,10 @@ id = 4006393493
 value = 'Массив checksums должен быть той же длины, что и sources'
 
 [[translation]]
+id = 1393316459
+value = 'Этот пакет уже установлен'
+
+[[translation]]
 id = 1579384326
 value = 'название'
 

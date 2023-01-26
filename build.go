@@ -254,6 +254,13 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	if instVer, ok := installed[vars.Name]; ok {
+		log.Warn("This package is already installed").
+			Str("name", vars.Name).
+			Str("version", instVer).
+			Send()
+	}
+
 	var buildDeps []string
 	for _, pkgName := range vars.BuildDepends {
 		if _, ok := installed[pkgName]; !ok {
