@@ -111,15 +111,8 @@ func (d *DNF) UpgradeAll(opts *Opts) error {
 }
 
 func (d *DNF) ListInstalled(opts *Opts) (map[string]string, error) {
-	opts = ensureOpts(opts)
 	out := map[string]string{}
-
-	var cmd *exec.Cmd
-	if opts.AsRoot {
-		cmd = exec.Command(getRootCmd(d.rootCmd), "rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
-	} else {
-		cmd = exec.Command("rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
-	}
+	cmd := exec.Command("rpm", "-qa", "--queryformat", "%{NAME}\u200b%|EPOCH?{%{EPOCH}:}:{}|%{VERSION}-%{RELEASE}\\n")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

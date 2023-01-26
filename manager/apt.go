@@ -104,15 +104,8 @@ func (a *APT) UpgradeAll(opts *Opts) error {
 }
 
 func (a *APT) ListInstalled(opts *Opts) (map[string]string, error) {
-	opts = ensureOpts(opts)
 	out := map[string]string{}
-
-	var cmd *exec.Cmd
-	if opts.AsRoot {
-		cmd = exec.Command(getRootCmd(a.rootCmd), "dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
-	} else {
-		cmd = exec.Command("dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
-	}
+	cmd := exec.Command("dpkg-query", "-f", "${Package}\u200b${Version}\\n", "-W")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

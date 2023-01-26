@@ -112,15 +112,8 @@ func (a *APK) UpgradeAll(opts *Opts) error {
 }
 
 func (a *APK) ListInstalled(opts *Opts) (map[string]string, error) {
-	opts = ensureOpts(opts)
 	out := map[string]string{}
-
-	var cmd *exec.Cmd
-	if opts.AsRoot {
-		cmd = exec.Command(getRootCmd(a.rootCmd), "apk", "list", "-I")
-	} else {
-		cmd = exec.Command("apk", "list", "-I")
-	}
+	cmd := exec.Command("apk", "list", "-I")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
