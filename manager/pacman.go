@@ -111,15 +111,8 @@ func (p *Pacman) UpgradeAll(opts *Opts) error {
 }
 
 func (p *Pacman) ListInstalled(opts *Opts) (map[string]string, error) {
-	opts = ensureOpts(opts)
 	out := map[string]string{}
-
-	var cmd *exec.Cmd
-	if opts.AsRoot {
-		cmd = exec.Command(getRootCmd(p.rootCmd), "pacman", "-Q")
-	} else {
-		cmd = exec.Command("pacman", "-Q")
-	}
+	cmd := exec.Command("pacman", "-Q")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
