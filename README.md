@@ -4,7 +4,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
 [![status-badge](https://ci.arsenm.dev/api/badges/Arsen6331/lure/status.svg)](https://ci.arsenm.dev/Arsen6331/lure)
-[![lure-bin AUR package](https://img.shields.io/aur/version/lure-bin?label=lure-bin&logo=archlinux)](https://aur.archlinux.org/packages/lure-bin/)
+[![linux-user-repository-bin AUR package](https://img.shields.io/aur/version/linux-user-repository-bin?label=lure-bin&logo=archlinux)](https://aur.archlinux.org/packages/lure-bin/)
 
 LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in an ***alpha*** state and may not be stable. It is currently able to successfully and consistently build and install packages on various distributions, but there are some bugs that still need to be ironed out.
 
