@@ -67,8 +67,16 @@ type Manifest struct {
 }
 
 type Downloader interface {
+	// Name returns the name of the downloader
 	Name() string
+	// MatchURL checks if the given URL matches
+	// the downloader.
 	MatchURL(string) bool
+	// Download downloads the object at the URL
+	// provided in the options, to the destination
+	// given in the options. It returns a type,
+	// a name for the downloaded object (this may be empty),
+	// and an error.
 	Download(Options) (Type, string, error)
 }
 
@@ -77,6 +85,11 @@ type Downloader interface {
 // allow for incremental updates without changing the URL.
 type UpdatingDownloader interface {
 	Downloader
+	// Update checks for and performs any
+	// available updates for the object
+	// described in the options. It returns
+	// true if an update was performed, or
+	// false if no update was required.
 	Update(Options) (bool, error)
 }
 
