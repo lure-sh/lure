@@ -91,7 +91,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	}
 
 	if opts.PostprocDisabled {
-		return TypeFile, name, nil
+		return TypeFile, "", nil
 	}
 
 	_, err = fl.Seek(0, io.SeekStart)
@@ -101,7 +101,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 
 	format, r, err := archiver.Identify(name, fl)
 	if err == archiver.ErrNoMatch {
-		return TypeFile, name, nil
+		return TypeFile, "", nil
 	} else if err != nil {
 		return 0, "", err
 	}
@@ -112,7 +112,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	}
 
 	err = os.Remove(path)
-	return TypeDir, strings.TrimSuffix(name, format.Name()), err
+	return TypeDir, "", err
 }
 
 func extractFile(r io.Reader, format archiver.Format, name string, opts Options) (err error) {

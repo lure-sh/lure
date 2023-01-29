@@ -212,7 +212,7 @@ func linkDir(src, dest string) error {
 
 		newPath := filepath.Join(dest, rel)
 		if info.IsDir() {
-			return os.Mkdir(newPath, info.Mode())
+			return os.MkdirAll(newPath, info.Mode())
 		}
 
 		return os.Link(path, newPath)
