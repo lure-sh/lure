@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -40,10 +41,10 @@ import (
 	"github.com/goreleaser/nfpm/v2/files"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/download"
 	"go.arsenm.dev/lure/internal/cliutils"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/dl"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/internal/shutils"
 	"go.arsenm.dev/lure/internal/shutils/decoder"
@@ -548,10 +549,11 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 	}
 
 	for i, src := range bv.Sources {
-		opts := download.GetOptions{
-			SourceURL:   src,
+		opts := dl.Options{
+			Name:        fmt.Sprintf("%s[%d]", bv.Name, i),
+			URL:         src,
 			Destination: srcdir,
-			EncloseGit:  true,
+			Progress:    os.Stderr,
 		}
 
 		if !strings.EqualFold(bv.Checksums[i], "SKIP") {
@@ -559,10 +561,10 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 			if err != nil {
 				return err
 			}
-			opts.SHA256Sum = checksum
+			opts.SHA256 = checksum
 		}
 
-		err := download.Get(ctx, opts)
+		err := dl.Download(ctx, opts)
 		if err != nil {
 			return err
 		}
