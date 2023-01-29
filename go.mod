@@ -19,6 +19,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.13.0
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	github.com/urfave/cli/v2 v2.23.7
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.arsenm.dev/logger v0.0.0-20230126004036-a8cbbe3b6fe6
 	go.arsenm.dev/translate v0.0.0-20230113025904-5ad1ec0ed296
 	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
@@ -86,6 +87,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
