@@ -77,8 +77,10 @@ func allowAllCORSHandler(h http.Handler) http.Handler {
 	})
 }
 
-type acceptLanguageKey struct{}
-type langParameterKey struct{}
+type (
+	acceptLanguageKey struct{}
+	langParameterKey  struct{}
+)
 
 func withAcceptLanguage(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -86,10 +88,10 @@ func withAcceptLanguage(h http.Handler) http.Handler {
 
 		langs := req.Header.Get("Accept-Language")
 		ctx = context.WithValue(ctx, acceptLanguageKey{}, langs)
-		
+
 		lang := req.URL.Query().Get("lang")
 		ctx = context.WithValue(ctx, langParameterKey{}, lang)
-		
+
 		req = req.WithContext(ctx)
 
 		h.ServeHTTP(res, req)
