@@ -31,6 +31,10 @@ id = 2105058868
 value = 'Downloading sources'
 
 [[translation]]
+id = 1884485082
+value = 'Downloading source'
+
+[[translation]]
 id = 1519177982
 value = 'Error building package'
 
@@ -99,6 +103,14 @@ id = 1393316459
 value = 'This package is already installed'
 
 [[translation]]
+id = 1267660189
+value = 'Source can be updated, updating if required'
+
+[[translation]]
+id = 21753247
+value = 'Source found in cache, linked to destination'
+
+[[translation]]
 id = 1579384326
 value = 'name'
 
@@ -109,3 +121,15 @@ value = 'version'
 [[translation]]
 id = 1810056261
 value = 'new'
+
+[[translation]]
+id = 1602912115
+value = 'source'
+
+[[translation]]
+id = 2363381545
+value = 'type'
+
+[[translation]]
+id = 3419504365
+value = 'downloader'
