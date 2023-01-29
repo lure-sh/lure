@@ -10,8 +10,12 @@ import (
 	"go.arsenm.dev/lure/internal/config"
 )
 
+// BasePath stores the base path to the download cache
 var BasePath = filepath.Join(config.CacheDir, "dl")
 
+// New creates a new directory with the given ID in the cache.
+// If a directory with the same ID already exists,
+// it will be deleted before creating a new one.
 func New(id string) (string, error) {
 	h, err := hashID(id)
 	if err != nil {
@@ -35,6 +39,11 @@ func New(id string) (string, error) {
 	return itemPath, nil
 }
 
+// Get checks if an entry with the given ID
+// already exists in the cache, and if so,
+// returns the directory and true. If it
+// does not exist, it returns an empty string
+// and false.
 func Get(id string) (string, bool) {
 	h, err := hashID(id)
 	if err != nil {
@@ -50,6 +59,9 @@ func Get(id string) (string, bool) {
 	return itemPath, true
 }
 
+// hashID hashes the input ID with SHA1
+// and returns the hex string of the hashed
+// ID.
 func hashID(id string) (string, error) {
 	h := sha1.New()
 	_, err := io.WriteString(h, id)
