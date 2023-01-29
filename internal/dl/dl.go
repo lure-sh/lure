@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/internal/dlcache"
@@ -88,6 +89,12 @@ type UpdatingDownloader interface {
 // it downloads the source to a new cache directory and links it
 // to the destination.
 func Download(ctx context.Context, opts Options) (err error) {
+	normalized, err := normalizeURL(opts.URL)
+	if err != nil {
+		return err
+	}
+	opts.URL = normalized
+
 	d := getDownloader(opts.URL)
 
 	if opts.CacheDisabled {
@@ -232,7 +239,7 @@ func handleCache(cacheDir, dest string, t Type) (bool, error) {
 // hard links for each file from the src directory to the
 // dest directory. If it encounters a directory, it will
 // create a directory with the same name and permissions
-// in the dest directory, because hard links cannot be 
+// in the dest directory, because hard links cannot be
 // created for directories.
 func linkDir(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
@@ -265,4 +272,23 @@ func getDownloader(u string) Downloader {
 		}
 	}
 	return nil
+}
+
+// normalizeURL normalizes a URL string, so that insignificant
+// don't change the hash.
+func normalizeURL(u string) (string, error) {
+	const normalizationFlags = purell.FlagRemoveTrailingSlash |
+		purell.FlagRemoveDefaultPort |
+		purell.FlagLowercaseHost |
+		purell.FlagLowercaseScheme |
+		purell.FlagRemoveDuplicateSlashes |
+		purell.FlagRemoveFragment |
+		purell.FlagRemoveUnnecessaryHostDots |
+		purell.FlagSortQuery |
+		purell.FlagDecodeHexHost |
+		purell.FlagDecodeOctalHost |
+		purell.FlagDecodeUnnecessaryEscapes |
+		purell.FlagRemoveEmptyPortSeparator
+
+	return purell.NormalizeURLString(u, normalizationFlags)
 }
