@@ -1,12 +1,11 @@
 package dlcache
 
 import (
+	"crypto/sha1"
 	"encoding/hex"
 	"io"
 	"os"
 	"path/filepath"
-
-	"crypto/sha1"
 
 	"go.arsenm.dev/lure/internal/config"
 )
