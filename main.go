@@ -80,6 +80,13 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "clean",
+						Aliases: []string{"c"},
+						Usage:   "Build package from scratch even if there's an already built package available",
+					},
+				},
 				Name:         "install",
 				Usage:        "Install a new package",
 				Aliases:      []string{"in"},
@@ -93,6 +100,13 @@ func main() {
 				Action:  removeCmd,
 			},
 			{
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "clean",
+						Aliases: []string{"c"},
+						Usage:   "Build package from scratch even if there's an already built package available",
+					},
+				},
 				Name:    "upgrade",
 				Usage:   "Upgrade all installed packages",
 				Aliases: []string{"up"},
@@ -129,6 +143,11 @@ func main() {
 						Aliases: []string{"s"},
 						Value:   "lure.sh",
 						Usage:   "Path to the build script",
+					},
+					&cli.BoolFlag{
+						Name:    "clean",
+						Aliases: []string{"c"},
+						Usage:   "Build package from scratch even if there's an already built package available",
 					},
 				},
 				Name:   "build",

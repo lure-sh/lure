@@ -102,7 +102,7 @@ func buildCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	pkgPaths, _, err := buildPackage(c.Context, script, mgr)
+	pkgPaths, _, err := buildPackage(c.Context, script, mgr, c.Bool("clean"))
 	if err != nil {
 		log.Fatal("Error building package").Err(err).Send()
 	}
@@ -125,7 +125,7 @@ func buildCmd(c *cli.Context) error {
 
 // buildPackage builds the script at the given path. It returns two slices. One contains the paths
 // to the built package(s), the other contains the names of the built package(s).
-func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]string, []string, error) {
+func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean bool) ([]string, []string, error) {
 	info, err := distro.ParseOSRelease(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -189,6 +189,21 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		return nil, nil, err
 	}
 
+	baseDir := filepath.Join(config.PkgsDir, vars.Name)
+	srcdir := filepath.Join(baseDir, "src")
+	pkgdir := filepath.Join(baseDir, "pkg")
+
+	if !clean {
+		builtPkgPath, ok, err := checkForBuiltPackage(mgr, &vars, getPkgFormat(mgr), baseDir)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if ok {
+			return []string{builtPkgPath}, nil, err
+		}
+	}
+
 	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle, translator)
 	if err != nil {
 		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
@@ -232,10 +247,6 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 		dec.LikeDistros = false
 	}
 
-	baseDir := filepath.Join(config.PkgsDir, vars.Name)
-	srcdir := filepath.Join(baseDir, "src")
-	pkgdir := filepath.Join(baseDir, "pkg")
-
 	err = os.RemoveAll(baseDir)
 	if err != nil {
 		return nil, nil, err
@@ -276,7 +287,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 		flattened := cliutils.FlattenPkgs(found, "install", translator)
 		buildDeps = packageNames(flattened)
-		installPkgs(ctx, flattened, notFound, mgr)
+		installPkgs(ctx, flattened, notFound, mgr, clean)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -290,7 +301,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install", translator))
 		for _, script := range scripts {
-			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr)
+			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr, clean)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -472,12 +483,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 
 	pkgInfo.Overridables.Contents = contents
 
-	pkgFormat := mgr.Format()
-	if format, ok := os.LookupEnv("LURE_PKG_FORMAT"); ok {
-		pkgFormat = format
-	}
-
-	packager, err := nfpm.Get(pkgFormat)
+	packager, err := nfpm.Get(getPkgFormat(mgr))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -521,6 +527,47 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	uniq(&pkgPaths, &pkgNames)
 
 	return pkgPaths, pkgNames, nil
+}
+
+func checkForBuiltPackage(mgr manager.Manager, vars *BuildVars, pkgFormat, baseDir string) (string, bool, error) {
+	filename, err := pkgFileName(vars, pkgFormat)
+	if err != nil {
+		return "", false, err
+	}
+
+	pkgPath := filepath.Join(baseDir, filename)
+
+	_, err = os.Stat(pkgPath)
+	if err != nil {
+		return "", false, nil
+	}
+
+	return pkgPath, true, nil
+}
+
+func pkgFileName(vars *BuildVars, pkgFormat string) (string, error) {
+	pkgInfo := &nfpm.Info{
+		Name:    vars.Name,
+		Arch:    cpu.Arch(),
+		Version: vars.Version,
+		Release: strconv.Itoa(vars.Release),
+		Epoch:   strconv.FormatUint(uint64(vars.Epoch), 10),
+	}
+
+	packager, err := nfpm.Get(pkgFormat)
+	if err != nil {
+		return "", err
+	}
+
+	return packager.ConventionalFileName(pkgInfo), nil
+}
+
+func getPkgFormat(mgr manager.Manager) string {
+	pkgFormat := mgr.Format()
+	if format, ok := os.LookupEnv("LURE_PKG_FORMAT"); ok {
+		pkgFormat = format
+	}
+	return pkgFormat
 }
 
 func genBuildEnv(info *distro.OSRelease, scriptdir string) []string {
