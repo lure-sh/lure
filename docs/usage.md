@@ -31,12 +31,15 @@ The package arguments do not have to be exact. LURE will check the `provides` ar
 
 If multiple packages are found, you will be prompted to select which you want to install.
 
+By default, if a package has already been built, LURE will install the cached package rather than re-build it. Use the `-c` or `--clean` flag to force a re-build.
+
 Examples:
 
 ```shell
 lure in itd-bin # only finds itd-bin
 lure in itd # finds itd-bin and itd-git
 lure in it% # finds itd-bin, itd-git, and itgui-git
+lure in -c itd-bin
 ```
 
 ### remove
@@ -52,6 +55,8 @@ lure rm firefox
 ### upgrade
 
 The upgrade command looks through the packages installed on your system and sees if any of them match LURE repo packages. If they do, their versions are compared using the `rpmvercmp` algorithm. If LURE repos contain a newer version, the package is upgraded.
+
+By default, if a package has already been built, LURE will install the cached package rather than re-build it. Use the `-c` or `--clean` flag to force a re-build.
 
 Example:
 
