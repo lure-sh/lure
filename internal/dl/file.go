@@ -18,20 +18,22 @@ import (
 	"go.arsenm.dev/lure/internal/shutils"
 )
 
+// FileDownloader downloads files using HTTP
 type FileDownloader struct{}
 
+// Name always returns "file"
 func (FileDownloader) Name() string {
 	return "file"
 }
 
-func (FileDownloader) Type() Type {
-	return TypeFile
-}
-
+// MatchURL always returns true, as FileDownloader
+// is used as a fallback if nothing else matches
 func (FileDownloader) MatchURL(string) bool {
 	return true
 }
 
+// Download downloads a file using HTTP. If the file is
+// compressed using a supported format, it will be extracted
 func (FileDownloader) Download(opts Options) (Type, string, error) {
 	res, err := http.Get(opts.URL)
 	if err != nil {
@@ -115,6 +117,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	return TypeDir, "", err
 }
 
+// extractFile extracts an archive or decompresses a file
 func extractFile(r io.Reader, format archiver.Format, name string, opts Options) (err error) {
 	fname := format.Name()
 
@@ -185,6 +188,10 @@ func extractFile(r io.Reader, format archiver.Format, name string, opts Options)
 
 var cdHeaderRgx = regexp.MustCompile(`filename="(.+)"`)
 
+// getFilename attempts to parse the Content-Disposition
+// HTTP response header and extract a filename. If the
+// header does not exist, it will use the last element
+// of the path.
 func getFilename(res *http.Response) (name string) {
 	cd := res.Header.Get("Content-Disposition")
 	matches := cdHeaderRgx.FindStringSubmatch(cd)

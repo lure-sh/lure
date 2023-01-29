@@ -11,20 +11,22 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
+// GitDownloader downloads Git repositories
 type GitDownloader struct{}
 
+// Name always returns "git"
 func (GitDownloader) Name() string {
 	return "git"
 }
 
-func (GitDownloader) Type() Type {
-	return TypeDir
-}
-
+// MatchURL matches any URLs that start with "git+"
 func (GitDownloader) MatchURL(u string) bool {
 	return strings.HasPrefix(u, "git+")
 }
 
+// Download uses git to clone the repository from the specified URL.
+// It allows specifying the revision, depth and recursion options
+// via query string
 func (GitDownloader) Download(opts Options) (Type, string, error) {
 	u, err := url.Parse(opts.URL)
 	if err != nil {
@@ -92,6 +94,11 @@ func (GitDownloader) Download(opts Options) (Type, string, error) {
 	return TypeDir, name, nil
 }
 
+// Update uses git to pull the repository and update it
+// to the latest revision. It allows specifying the depth
+// and recursion options via query string. It returns
+// true if update was successful and false if the
+// repository is already up-to-date
 func (GitDownloader) Update(opts Options) (bool, error) {
 	u, err := url.Parse(opts.URL)
 	if err != nil {

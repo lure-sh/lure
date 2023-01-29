@@ -1,3 +1,5 @@
+// Package dl contains abstractions for downloadingfiles and directories
+// from various sources.
 package dl
 
 import (
@@ -14,13 +16,18 @@ import (
 
 const manifestFileName = ".lure_cache_manifest"
 
+// ErrChecksumMismatch occurs when the checksum of a downloaded file
+// does not match the expected checksum provided in the Options struct.
 var ErrChecksumMismatch = errors.New("dl: checksums did not match")
 
+// Downloaders contains all the downloaders in the order in which
+// they should be checked
 var Downloaders = []Downloader{
 	GitDownloader{},
 	FileDownloader{},
 }
 
+// Type represents the type of download (file or directory)
 type Type uint8
 
 const (
@@ -38,6 +45,8 @@ func (t Type) String() string {
 	return "<unknown>"
 }
 
+// Options contains the options for downloading
+// files and directories
 type Options struct {
 	SHA256           []byte
 	Name             string
@@ -48,6 +57,9 @@ type Options struct {
 	Progress         io.Writer
 }
 
+// Manifest holds information about the type and name
+// of a downloaded file or directory. It is stored inside
+// each cache directory for later use.
 type Manifest struct {
 	Type Type
 	Name string
@@ -59,11 +71,22 @@ type Downloader interface {
 	Download(Options) (Type, string, error)
 }
 
+// UpdatingDownloader extends the Downloader interface
+// with an Update method for protocols such as git, which
+// allow for incremental updates without changing the URL.
 type UpdatingDownloader interface {
 	Downloader
 	Update(Options) (bool, error)
 }
 
+// Download downloads a file or directory using the specified options.
+// It first gets the appropriate downloader for the URL, then checks
+// if caching is enabled. If caching is enabled, it attempts to get
+// the cache directory for the URL and update it if necessary.
+// If the source is found in the cache, it links it to the destination
+// using hard links. If the source is not found in the cache,
+// it downloads the source to a new cache directory and links it
+// to the destination.
 func Download(ctx context.Context, opts Options) (err error) {
 	d := getDownloader(opts.URL)
 
@@ -144,6 +167,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 	return err
 }
 
+// writeManifest writes the manifest to the specified cache directory.
 func writeManifest(cacheDir string, m Manifest) error {
 	fl, err := os.Create(filepath.Join(cacheDir, manifestFileName))
 	if err != nil {
@@ -153,6 +177,7 @@ func writeManifest(cacheDir string, m Manifest) error {
 	return msgpack.NewEncoder(fl).Encode(m)
 }
 
+// getManifest reads the manifest from the specified cache directory.
 func getManifest(cacheDir string) (m Manifest, err error) {
 	fl, err := os.Open(filepath.Join(cacheDir, manifestFileName))
 	if err != nil {
@@ -164,6 +189,7 @@ func getManifest(cacheDir string) (m Manifest, err error) {
 	return
 }
 
+// handleCache links the cache directory or a file within it to the destination
 func handleCache(cacheDir, dest string, t Type) (bool, error) {
 	switch t {
 	case TypeFile:
@@ -202,6 +228,12 @@ func handleCache(cacheDir, dest string, t Type) (bool, error) {
 	return false, nil
 }
 
+// linkDir recursively walks through a directory, creating
+// hard links for each file from the src directory to the
+// dest directory. If it encounters a directory, it will
+// create a directory with the same name and permissions
+// in the dest directory, because hard links cannot be 
+// created for directories.
 func linkDir(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
