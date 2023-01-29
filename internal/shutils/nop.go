@@ -47,7 +47,7 @@ func (NopRWC) Read([]byte) (int, error) {
 }
 
 func (NopRWC) Write([]byte) (int, error) {
-	return 0, io.EOF
+	return 0, nil
 }
 
 func (NopRWC) Close() error {
