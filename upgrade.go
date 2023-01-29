@@ -55,7 +55,7 @@ func upgradeCmd(c *cli.Context) error {
 	}
 
 	if len(updates) > 0 {
-		installPkgs(c.Context, updates, nil, mgr)
+		installPkgs(c.Context, updates, nil, mgr, c.Bool("clean"))
 	} else {
 		log.Info("There is nothing to do.").Send()
 	}
