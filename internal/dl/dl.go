@@ -275,7 +275,7 @@ func getDownloader(u string) Downloader {
 }
 
 // normalizeURL normalizes a URL string, so that insignificant
-// don't change the hash.
+// differences don't change the hash.
 func normalizeURL(u string) (string, error) {
 	const normalizationFlags = purell.FlagRemoveTrailingSlash |
 		purell.FlagRemoveDefaultPort |
