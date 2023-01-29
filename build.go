@@ -44,6 +44,7 @@ import (
 	"go.arsenm.dev/lure/internal/cliutils"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/cpu"
+	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/dl"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/internal/shutils"
@@ -263,20 +264,19 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager) ([]st
 	}
 
 	var buildDeps []string
-	for _, pkgName := range vars.BuildDepends {
-		if _, ok := installed[pkgName]; !ok {
-			buildDeps = append(buildDeps, pkgName)
-		}
-	}
-
-	if len(buildDeps) > 0 {
-		found, notFound, err := repos.FindPkgs(gdb, buildDeps)
+	if len(vars.BuildDepends) > 0 {
+		found, notFound, err := repos.FindPkgs(gdb, vars.BuildDepends)
 		if err != nil {
 			return nil, nil, err
 		}
 
+		found = filterBuildDeps(found, installed)
+
 		log.Info("Installing build dependencies").Send()
-		installPkgs(ctx, cliutils.FlattenPkgs(found, "install", translator), notFound, mgr)
+
+		flattened := cliutils.FlattenPkgs(found, "install", translator)
+		buildDeps = packageNames(flattened)
+		installPkgs(ctx, flattened, notFound, mgr)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -640,6 +640,41 @@ func setVersion(ctx context.Context, r *interp.Runner, to string) error {
 		return err
 	}
 	return r.Run(ctx, fl)
+}
+
+func filterBuildDeps(found map[string][]db.Package, installed map[string]string) map[string][]db.Package {
+	out := map[string][]db.Package{}
+	for name, pkgs := range found {
+		var inner []db.Package
+		for _, pkg := range pkgs {
+			if _, ok := installed[pkg.Name]; !ok {
+				addToFiltered := true
+				for _, provides := range pkg.Provides.Val {
+					if _, ok := installed[provides]; ok {
+						addToFiltered = false
+						break
+					}
+				}
+
+				if addToFiltered {
+					inner = append(inner, pkg)
+				}
+			}
+		}
+
+		if len(inner) > 0 {
+			out[name] = inner
+		}
+	}
+	return out
+}
+
+func packageNames(pkgs []db.Package) []string {
+	names := make([]string, len(pkgs))
+	for i, p := range pkgs {
+		names[i] = p.Name
+	}
+	return names
 }
 
 // uniq removes all duplicates from string slices
