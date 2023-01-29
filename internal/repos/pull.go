@@ -19,7 +19,6 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"go.arsenm.dev/logger/log"
 	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/download"
 	"go.arsenm.dev/lure/internal/config"
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/shutils"
@@ -104,13 +103,9 @@ func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 				return err
 			}
 
-			if !strings.HasPrefix(repoURL.Scheme, "git+") {
-				repoURL.Scheme = "git+" + repoURL.Scheme
-			}
-
-			err = download.Get(ctx, download.GetOptions{
-				SourceURL:   repoURL.String(),
-				Destination: repoDir,
+			_, err = git.PlainCloneContext(ctx, repoDir, false, &git.CloneOptions{
+				URL:      repoURL.String(),
+				Progress: os.Stderr,
 			})
 			if err != nil {
 				return err
