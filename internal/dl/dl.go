@@ -91,22 +91,29 @@ func Download(ctx context.Context, opts Options) (err error) {
 		}
 
 		m, err := getManifest(cacheDir)
-		if err != nil {
-			return err
-		}
-		t = m.Type
+		if err == nil {
+			t = m.Type
 
-		dest := filepath.Join(opts.Destination, m.Name)
-		ok, err := handleCache(cacheDir, dest, t)
-		if err != nil {
-			return err
-		}
+			dest := filepath.Join(opts.Destination, m.Name)
+			ok, err := handleCache(cacheDir, dest, t)
+			if err != nil {
+				return err
+			}
 
-		if ok && !updated {
-			log.Info("Source found in cache, linked to destination").Str("source", opts.Name).Stringer("type", t).Send()
-			return nil
-		} else if ok {
-			return nil
+			if ok && !updated {
+				log.Info("Source found in cache, linked to destination").Str("source", opts.Name).Stringer("type", t).Send()
+				return nil
+			} else if ok {
+				return nil
+			}
+		} else {
+			// If we cannot read the manifest,
+			// this cache entry is invalid and
+			// the source must be re-downloaded.
+			err = os.RemoveAll(cacheDir)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
