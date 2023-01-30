@@ -168,7 +168,7 @@ The `replaces` array contains the packages that are replaced by this package. Ge
 
 The `sources` array contains URLs which are downloaded into `$srcdir` before the build starts.
 
-If the URL provided is an archive or compressed file, it will be extracted. To disable this, add the `~postproc=false` (`postproc` stands for postprocessing) query parameter. Example:
+If the URL provided is an archive or compressed file, it will be extracted. To disable this, add the `~archive=false` query parameter. Example:
 
 Extracted:
 ```text
@@ -177,7 +177,7 @@ https://example.com/archive.tar.gz
 
 Not extracted:
 ```text
-https://example.com/archive.tar.gz?~postproc=false
+https://example.com/archive.tar.gz?~archive=false
 ```
 
 If the URL scheme starts with `git+`, the source will be downloaded as a git repo. The git download mode supports multiple parameters:

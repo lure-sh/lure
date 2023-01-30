@@ -46,6 +46,9 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	name := query.Get("~name")
 	query.Del("~name")
 
+	archive := query.Get("~archive")
+	query.Del("~archive")
+
 	u.RawQuery = query.Encode()
 
 	res, err := http.Get(u.String())
@@ -56,6 +59,8 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	if name == "" {
 		name = getFilename(res)
 	}
+
+	opts.PostprocDisabled = archive == "false"
 
 	path := filepath.Join(opts.Destination, name)
 	fl, err := os.Create(path)
