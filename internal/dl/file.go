@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -35,12 +36,27 @@ func (FileDownloader) MatchURL(string) bool {
 // Download downloads a file using HTTP. If the file is
 // compressed using a supported format, it will be extracted
 func (FileDownloader) Download(opts Options) (Type, string, error) {
-	res, err := http.Get(opts.URL)
+	u, err := url.Parse(opts.URL)
 	if err != nil {
 		return 0, "", err
 	}
 
-	name := getFilename(res)
+	query := u.Query()
+
+	name := query.Get("~name")
+	query.Del("~name")
+
+	u.RawQuery = query.Encode()
+
+	res, err := http.Get(u.String())
+	if err != nil {
+		return 0, "", err
+	}
+
+	if name == "" {
+		name = getFilename(res)
+	}
+
 	path := filepath.Join(opts.Destination, name)
 	fl, err := os.Create(path)
 	if err != nil {
