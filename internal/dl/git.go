@@ -39,6 +39,9 @@ func (GitDownloader) Download(opts Options) (Type, string, error) {
 	rev := query.Get("~rev")
 	query.Del("~rev")
 
+	name := query.Get("~name")
+	query.Del("~name")
+
 	depthStr := query.Get("~depth")
 	query.Del("~depth")
 
@@ -90,7 +93,10 @@ func (GitDownloader) Download(opts Options) (Type, string, error) {
 		}
 	}
 
-	name := strings.TrimSuffix(path.Base(u.Path), ".git")
+	if name == "" {
+		name = strings.TrimSuffix(path.Base(u.Path), ".git")
+	}
+
 	return TypeDir, name, nil
 }
 
