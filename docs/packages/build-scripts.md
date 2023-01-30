@@ -168,7 +168,7 @@ The `replaces` array contains the packages that are replaced by this package. Ge
 
 The `sources` array contains URLs which are downloaded into `$srcdir` before the build starts.
 
-If the URL provided is an archive or compressed file, it will be extracted. To disable this, add the `~archive=false` query parameter. Example:
+If the URL provided is an archive or compressed file, it will be extracted. To disable this, add the `~postproc=false` (`postproc` stands for postprocessing) query parameter. Example:
 
 Extracted:
 ```text
@@ -177,25 +177,24 @@ https://example.com/archive.tar.gz
 
 Not extracted:
 ```text
-https://example.com/archive.tar.gz?~archive=false
+https://example.com/archive.tar.gz?~postproc=false
 ```
 
 If the URL scheme starts with `git+`, the source will be downloaded as a git repo. The git download mode supports multiple parameters:
 
-- `~tag`: Specify which tag of the repo to check out.
-- `~branch`: Specify which branch of the repo to check out.
-- `~commit`: Specify which commit of the repo to check out.
+- `~rev`: Specify which revision of the repo to check out.
 - `~depth`: Specify what depth should be used when cloning the repo. Must be an integer.
 - `~name`: Specify the name of the directory into which the git repo should be cloned.
+- `~recursive`: If set to true, submodules will be cloned recursively. It is false by default.
 
 Examples:
 
 ```text
-git+https://gitea.arsenm.dev/Arsen6331/itd?~branch=resource-loading&~depth=1
+git+https://gitea.arsenm.dev/Arsen6331/itd?~rev=resource-loading&~depth=1
 ```
 
 ```text
-git+https://gitea.arsenm.dev/Arsen6331/lure?~tag=v0.0.1
+git+https://gitea.arsenm.dev/Arsen6331/lure?~rev=v0.0.1&~recursive=true
 ```
 
 ### checksums
