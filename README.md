@@ -6,7 +6,7 @@
 [![status-badge](https://ci.arsenm.dev/api/badges/Arsen6331/lure/status.svg)](https://ci.arsenm.dev/Arsen6331/lure)
 [![linux-user-repository-bin AUR package](https://img.shields.io/aur/version/linux-user-repository-bin?label=lure-bin&logo=archlinux)](https://aur.archlinux.org/packages/linux-user-repository-bin/)
 
-LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in an ***alpha*** state and may not be stable. It is currently able to successfully and consistently build and install packages on various distributions, but there are some bugs that still need to be ironed out.
+LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in **beta**. Most major bugs have been fixed, and most major features have been added. LURE is ready for general use, but may still break or change occasionally.
 
 LURE is written in pure Go and has zero dependencies after building. The only things LURE requires are a command for privilege elevation such as `sudo`, `doas`, etc. as well as a supported package manager. Currently, LURE supports `apt`, `pacman`, `apk`, `dnf`, `yum`, and `zypper`. If a supported package manager exists on your system, it will be detected and used automatically.
 
