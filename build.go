@@ -380,6 +380,8 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 	} else {
 		log.Fatal("The package() function is required").Send()
 	}
+	
+	log.Info("Building package metadata").Str("name", vars.Name).Send()
 
 	uniq(
 		&repoDeps,
@@ -498,6 +500,8 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 	if err != nil {
 		return nil, nil, err
 	}
+	
+	log.Info("Compressing package").Str("name", pkgName).Send()
 
 	err = packager.Package(pkgInfo, pkgFile)
 	if err != nil {

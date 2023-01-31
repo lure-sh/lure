@@ -111,6 +111,14 @@ id = 21753247
 value = 'Source found in cache, linked to destination'
 
 [[translation]]
+id = 257354570
+value = 'Compressing package'
+
+[[translation]]
+id = 2952487371
+value = 'Building package metadata'
+
+[[translation]]
 id = 1579384326
 value = 'name'
 
