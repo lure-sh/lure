@@ -58,9 +58,11 @@ aurs:
     private_key: '{{ .Env.AUR_KEY }}'
     git_url: 'ssh://aur@aur.archlinux.org/lure-bin.git'
     provides:
-      - lure
+      - linux-user-repository
     conflicts:
-      - lure
+      - linux-user-repository
+    replaces:
+      - lure-bin
     depends:
       - sudo
       - pacman
