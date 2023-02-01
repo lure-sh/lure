@@ -61,8 +61,6 @@ aurs:
       - linux-user-repository
     conflicts:
       - linux-user-repository
-    replaces:
-      - lure-bin
     depends:
       - sudo
       - pacman
