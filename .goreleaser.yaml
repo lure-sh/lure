@@ -56,7 +56,7 @@ aurs:
       - 'Arsen Musayelyan <arsen@arsenm.dev>'
     license: GPLv3
     private_key: '{{ .Env.AUR_KEY }}'
-    git_url: 'ssh://aur@aur.archlinux.org/lure-bin.git'
+    git_url: 'ssh://aur@aur.archlinux.org/linux-user-repository-bin.git'
     provides:
       - linux-user-repository
     conflicts:
