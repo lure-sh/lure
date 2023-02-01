@@ -285,6 +285,9 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 			}
 
 			pkg := db.Package{
+				Description:  db.NewJSON(map[string]string{}),
+				Homepage:     db.NewJSON(map[string]string{}),
+				Maintainer:   db.NewJSON(map[string]string{}),
 				Depends:      db.NewJSON(map[string][]string{}),
 				BuildDepends: db.NewJSON(map[string][]string{}),
 				Repository:   repo.Name,
