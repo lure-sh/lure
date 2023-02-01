@@ -40,9 +40,9 @@ nfpms:
       - rpm
       - archlinux
     provides:
-      - lure
+      - linux-user-repository
     conflicts:
-      - lure
+      - linux-user-repository
     contents:
       - src: scripts/completion/bash
         dst: /usr/share/bash-completion/completions/lure
