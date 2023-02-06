@@ -28,7 +28,7 @@ curl https://www.arsenm.dev/lure.sh | bash
 
 Distro packages and binary archives are provided at the latest Gitea release: https://gitea.arsenm.dev/Arsen6331/lure/releases/latest
 
-LURE is also available on the AUR as [lure-bin](https://aur.archlinux.org/packages/lure-bin)
+LURE is also available on the AUR as [linux-user-repository-bin](https://aur.archlinux.org/packages/linux-user-repository-bin)
 
 ### Building from source
 
