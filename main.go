@@ -57,6 +57,10 @@ func init() {
 }
 
 func main() {
+	if os.Geteuid() == 0 {
+		log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
+	}
+
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()

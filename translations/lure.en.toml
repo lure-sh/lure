@@ -119,6 +119,10 @@ id = 2952487371
 value = 'Building package metadata'
 
 [[translation]]
+id = 3121791194
+value = 'Running LURE as root is forbidden as it may cause catastrophic damage to your system'
+
+[[translation]]
 id = 1579384326
 value = 'name'
 
