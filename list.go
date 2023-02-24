@@ -26,6 +26,7 @@ import (
 	"go.arsenm.dev/lure/internal/db"
 	"go.arsenm.dev/lure/internal/repos"
 	"go.arsenm.dev/lure/manager"
+	"golang.org/x/exp/slices"
 )
 
 func listCmd(c *cli.Context) error {
@@ -67,11 +68,15 @@ func listCmd(c *cli.Context) error {
 			return err
 		}
 
+		if slices.Contains(cfg.IgnorePkgUpdates, pkg.Name) {
+			continue
+		}
+
 		version := pkg.Version
 		if c.Bool("installed") {
 			instVersion, ok := installed[pkg.Name]
 			if !ok {
-				return nil
+				continue
 			} else {
 				version = instVersion
 			}
