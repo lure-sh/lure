@@ -102,7 +102,7 @@ func buildCmd(c *cli.Context) error {
 		log.Fatal("Unable to detect supported package manager on system").Send()
 	}
 
-	pkgPaths, _, err := buildPackage(c.Context, script, mgr, c.Bool("clean"))
+	pkgPaths, _, err := buildPackage(c.Context, script, mgr, c.Bool("clean"), c.Bool("interactive"))
 	if err != nil {
 		log.Fatal("Error building package").Err(err).Send()
 	}
@@ -125,7 +125,7 @@ func buildCmd(c *cli.Context) error {
 
 // buildPackage builds the script at the given path. It returns two slices. One contains the paths
 // to the built package(s), the other contains the names of the built package(s).
-func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean bool) ([]string, []string, error) {
+func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean, interactive bool) ([]string, []string, error) {
 	info, err := distro.ParseOSRelease(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -204,13 +204,13 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 		}
 	}
 
-	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle, translator)
+	err = cliutils.PromptViewScript(script, vars.Name, cfg.PagerStyle, interactive, translator)
 	if err != nil {
 		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
 	}
 
 	if !archMatches(vars.Architectures) {
-		buildAnyway, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", true, translator)
+		buildAnyway, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", interactive, true, translator)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -285,9 +285,9 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 
 		log.Info("Installing build dependencies").Send()
 
-		flattened := cliutils.FlattenPkgs(found, "install", translator)
+		flattened := cliutils.FlattenPkgs(found, "install", interactive, translator)
 		buildDeps = packageNames(flattened)
-		installPkgs(ctx, flattened, notFound, mgr, clean)
+		installPkgs(ctx, flattened, notFound, mgr, clean, interactive)
 	}
 
 	var builtDeps, builtNames, repoDeps []string
@@ -299,9 +299,9 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 			return nil, nil, err
 		}
 
-		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install", translator))
+		scripts := getScriptPaths(cliutils.FlattenPkgs(found, "install", interactive, translator))
 		for _, script := range scripts {
-			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr, clean)
+			pkgPaths, pkgNames, err := buildPackage(ctx, script, mgr, clean, interactive)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -509,7 +509,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 	}
 
 	if len(buildDeps) > 0 {
-		removeBuildDeps, err := cliutils.YesNoPrompt("Would you like to remove build dependencies?", false, translator)
+		removeBuildDeps, err := cliutils.YesNoPrompt("Would you like to remove build dependencies?", interactive, false, translator)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -30,23 +30,31 @@ import (
 )
 
 // YesNoPrompt asks the user a yes or no question, using def as the default answer
-func YesNoPrompt(msg string, def bool, t translate.Translator) (bool, error) {
-	var answer bool
-	err := survey.AskOne(
-		&survey.Confirm{
-			Message: t.TranslateTo(msg, config.Language),
-			Default: def,
-		},
-		&answer,
-	)
-	return answer, err
+func YesNoPrompt(msg string, interactive, def bool, t translate.Translator) (bool, error) {
+	if interactive {
+		var answer bool
+		err := survey.AskOne(
+			&survey.Confirm{
+				Message: t.TranslateTo(msg, config.Language),
+				Default: def,
+			},
+			&answer,
+		)
+		return answer, err
+	} else {
+		return def, nil
+	}
 }
 
 // PromptViewScript asks the user if they'd like to see a script,
 // shows it if they answer yes, then asks if they'd still like to
 // continue, and exits if they answer no.
-func PromptViewScript(script, name, style string, t translate.Translator) error {
-	view, err := YesNoPrompt(t.TranslateTo("Would you like to view the build script for", config.Language)+" "+name, false, t)
+func PromptViewScript(script, name, style string, interactive bool, t translate.Translator) error {
+	if !interactive {
+		return nil
+	}
+
+	view, err := YesNoPrompt(t.TranslateTo("Would you like to view the build script for", config.Language)+" "+name, interactive, false, t)
 	if err != nil {
 		return err
 	}
@@ -57,7 +65,7 @@ func PromptViewScript(script, name, style string, t translate.Translator) error 
 			return err
 		}
 
-		cont, err := YesNoPrompt("Would you still like to continue?", false, t)
+		cont, err := YesNoPrompt("Would you still like to continue?", interactive, false, t)
 		if err != nil {
 			return err
 		}
@@ -90,16 +98,16 @@ func ShowScript(path, name, style string) error {
 
 // FlattenPkgs attempts to flatten the a map of slices of packages into a single slice
 // of packages by prompting the user if multiple packages match.
-func FlattenPkgs(found map[string][]db.Package, verb string, t translate.Translator) []db.Package {
+func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool, t translate.Translator) []db.Package {
 	var outPkgs []db.Package
 	for _, pkgs := range found {
-		if len(pkgs) > 1 {
-			choices, err := PkgPrompt(pkgs, verb, t)
+		if len(pkgs) > 1 && interactive {
+			choices, err := PkgPrompt(pkgs, verb, interactive, t)
 			if err != nil {
 				log.Fatal("Error prompting for choice of package").Send()
 			}
 			outPkgs = append(outPkgs, choices...)
-		} else if len(pkgs) == 1 {
+		} else if len(pkgs) == 1 || !interactive {
 			outPkgs = append(outPkgs, pkgs[0])
 		}
 	}
@@ -108,7 +116,11 @@ func FlattenPkgs(found map[string][]db.Package, verb string, t translate.Transla
 
 // PkgPrompt asks the user to choose between multiple packages.
 // The user may choose multiple packages.
-func PkgPrompt(options []db.Package, verb string, t translate.Translator) ([]db.Package, error) {
+func PkgPrompt(options []db.Package, verb string, interactive bool, t translate.Translator) ([]db.Package, error) {
+	if !interactive {
+		return []db.Package{options[0]}, nil
+	}
+
 	names := make([]string, len(options))
 	for i, option := range options {
 		names[i] = option.Repository + "/" + option.Name + " " + option.Version
