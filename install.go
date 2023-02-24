@@ -53,13 +53,13 @@ func installCmd(c *cli.Context) error {
 		log.Fatal("Error finding packages").Err(err).Send()
 	}
 
-	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install", translator), notFound, mgr, c.Bool("clean"))
+	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install", c.Bool("interactive"), translator), notFound, mgr, c.Bool("clean"), c.Bool("interactive"))
 	return nil
 }
 
 // installPkgs installs non-LURE packages via the package manager, then builds and installs LURE
 // packages
-func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager, clean bool) {
+func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager, clean, interactive bool) {
 	if len(notFound) > 0 {
 		err := mgr.Install(nil, notFound...)
 		if err != nil {
@@ -67,7 +67,7 @@ func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr 
 		}
 	}
 
-	installScripts(ctx, mgr, getScriptPaths(pkgs), clean)
+	installScripts(ctx, mgr, getScriptPaths(pkgs), clean, interactive)
 }
 
 // getScriptPaths generates a slice of script paths corresponding to the
@@ -82,9 +82,9 @@ func getScriptPaths(pkgs []db.Package) []string {
 }
 
 // installScripts builds and installs LURE build scripts
-func installScripts(ctx context.Context, mgr manager.Manager, scripts []string, clean bool) {
+func installScripts(ctx context.Context, mgr manager.Manager, scripts []string, clean, interactive bool) {
 	for _, script := range scripts {
-		builtPkgs, _, err := buildPackage(ctx, script, mgr, clean)
+		builtPkgs, _, err := buildPackage(ctx, script, mgr, clean, interactive)
 		if err != nil {
 			log.Fatal("Error building package").Err(err).Send()
 		}

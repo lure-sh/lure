@@ -53,7 +53,7 @@ func infoCmd(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	pkgs := cliutils.FlattenPkgs(found, "show", translator)
+	pkgs := cliutils.FlattenPkgs(found, "show", c.Bool("interactive"), translator)
 
 	var names []string
 	all := c.Bool("all")

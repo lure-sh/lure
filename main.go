@@ -28,6 +28,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 	"go.arsenm.dev/logger"
 	"go.arsenm.dev/logger/log"
@@ -80,6 +81,12 @@ func main() {
 				Name:    "pm-args",
 				Aliases: []string{"P"},
 				Usage:   "Arguments to be passed on to the package manager",
+			},
+			&cli.BoolFlag{
+				Name:    "interactive",
+				Aliases: []string{"i"},
+				Value:   isatty.IsTerminal(os.Stdin.Fd()),
+				Usage:   "Enable interactive questions and prompts",
 			},
 		},
 		Commands: []*cli.Command{
