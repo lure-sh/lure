@@ -41,7 +41,7 @@ func init() {
 func SystemLang() string {
 	lang := os.Getenv("LANG")
 	lang, _, _ = strings.Cut(lang, ".")
-	if lang == "" {
+	if lang == "" || lang == "C" {
 		lang = "en"
 	}
 	return lang
