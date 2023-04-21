@@ -27,10 +27,10 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/twitchtv/twirp"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/api"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/api"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
 	"golang.org/x/text/language"
 )
 

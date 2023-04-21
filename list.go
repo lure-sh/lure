@@ -22,10 +22,10 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/internal/repos"
-	"go.arsenm.dev/lure/manager"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/manager"
 	"golang.org/x/exp/slices"
 )
 

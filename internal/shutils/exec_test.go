@@ -23,9 +23,9 @@ import (
 	"strings"
 	"testing"
 
-	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/shutils"
-	"go.arsenm.dev/lure/internal/shutils/decoder"
+	"go.elara.ws/lure/distro"
+	"go.elara.ws/lure/internal/shutils"
+	"go.elara.ws/lure/internal/shutils/decoder"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )

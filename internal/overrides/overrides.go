@@ -23,9 +23,9 @@ import (
 	"runtime"
 	"strings"
 
-	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/cpu"
-	"go.arsenm.dev/lure/internal/db"
+	"go.elara.ws/lure/distro"
+	"go.elara.ws/lure/internal/cpu"
+	"go.elara.ws/lure/internal/db"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 )

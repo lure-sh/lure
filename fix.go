@@ -22,10 +22,10 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/internal/repos"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/repos"
 )
 
 func fixCmd(c *cli.Context) error {

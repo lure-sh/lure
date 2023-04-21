@@ -24,10 +24,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/internal/repos"
-	"go.arsenm.dev/lure/internal/types"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/internal/types"
 )
 
 func setCfgDirs(t *testing.T) {

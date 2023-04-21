@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.arsenm.dev/lure/internal/types"
+	"go.elara.ws/lure/internal/types"
 )
 
 var defaultConfig = types.Config{

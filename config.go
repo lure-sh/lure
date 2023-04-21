@@ -19,10 +19,10 @@
 package main
 
 import (
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/types"
-	"go.arsenm.dev/lure/manager"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/manager"
 )
 
 var cfg types.Config

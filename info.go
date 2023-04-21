@@ -22,14 +22,14 @@ import (
 	"fmt"
 	"os"
 
-	"go.arsenm.dev/logger/log"
+	"go.elara.ws/logger/log"
 
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/cliutils"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/overrides"
-	"go.arsenm.dev/lure/internal/repos"
+	"go.elara.ws/lure/distro"
+	"go.elara.ws/lure/internal/cliutils"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/overrides"
+	"go.elara.ws/lure/internal/repos"
 	"gopkg.in/yaml.v3"
 )
 

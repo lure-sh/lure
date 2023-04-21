@@ -20,7 +20,7 @@ package repos
 
 import (
 	"github.com/jmoiron/sqlx"
-	"go.arsenm.dev/lure/internal/db"
+	"go.elara.ws/lure/internal/db"
 )
 
 // FindPkgs looks for packages matching the inputs inside the database.

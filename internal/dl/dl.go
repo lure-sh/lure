@@ -29,8 +29,8 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/dlcache"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/dlcache"
 )
 
 const manifestFileName = ".lure_cache_manifest"

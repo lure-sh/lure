@@ -22,11 +22,11 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/internal/pager"
-	"go.arsenm.dev/translate"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/pager"
+	"go.elara.ws/translate"
 )
 
 // YesNoPrompt asks the user a yes or no question, using def as the default answer

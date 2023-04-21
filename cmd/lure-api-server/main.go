@@ -26,10 +26,10 @@ import (
 	"os"
 
 	"github.com/twitchtv/twirp"
-	"go.arsenm.dev/logger"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/api"
-	"go.arsenm.dev/lure/internal/repos"
+	"go.elara.ws/logger"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/api"
+	"go.elara.ws/lure/internal/repos"
 )
 
 func init() {

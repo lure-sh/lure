@@ -34,7 +34,7 @@ import (
 
 	"github.com/mholt/archiver/v4"
 	"github.com/schollz/progressbar/v3"
-	"go.arsenm.dev/lure/internal/shutils"
+	"go.elara.ws/lure/internal/shutils"
 )
 
 // FileDownloader downloads files using HTTP

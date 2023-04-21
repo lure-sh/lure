@@ -22,14 +22,14 @@ import (
 	"context"
 	"path/filepath"
 
-	"go.arsenm.dev/logger/log"
+	"go.elara.ws/logger/log"
 
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/lure/internal/cliutils"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/internal/repos"
-	"go.arsenm.dev/lure/manager"
+	"go.elara.ws/lure/internal/cliutils"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/manager"
 )
 
 func installCmd(c *cli.Context) error {

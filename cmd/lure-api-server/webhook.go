@@ -29,8 +29,8 @@ import (
 	"os"
 	"strings"
 
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/repos"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/repos"
 )
 
 func handleWebhook(next http.Handler, sigCh chan<- struct{}) http.Handler {

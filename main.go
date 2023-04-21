@@ -30,12 +30,12 @@ import (
 
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
-	"go.arsenm.dev/logger"
-	"go.arsenm.dev/logger/log"
-	"go.arsenm.dev/lure/internal/config"
-	"go.arsenm.dev/lure/internal/db"
-	"go.arsenm.dev/lure/manager"
-	"go.arsenm.dev/translate"
+	"go.elara.ws/logger"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/manager"
+	"go.elara.ws/translate"
 )
 
 //go:generate scripts/gen-version.sh

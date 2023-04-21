@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"testing"
 
-	"go.arsenm.dev/lure/distro"
-	"go.arsenm.dev/lure/internal/overrides"
+	"go.elara.ws/lure/distro"
+	"go.elara.ws/lure/internal/overrides"
 	"golang.org/x/text/language"
 )
 

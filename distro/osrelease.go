@@ -24,7 +24,7 @@ import (
 	"os"
 	"strings"
 
-	"go.arsenm.dev/lure/internal/shutils"
+	"go.elara.ws/lure/internal/shutils"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"

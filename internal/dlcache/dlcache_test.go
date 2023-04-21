@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go.arsenm.dev/lure/internal/dlcache"
+	"go.elara.ws/lure/internal/dlcache"
 )
 
 func init() {
