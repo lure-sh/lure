@@ -31,8 +31,8 @@ nfpms:
       386: i386
       amd64: x86_64
       arm64: aarch64
-    homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
-    maintainer: 'Arsen Musayelyan <arsen@arsenm.dev>'
+    homepage: 'https://gitea.elara.ws/Elara6331/lure'
+    maintainer: 'Elara Musayelyan <elara@elara.ws>'
     license: GPLv3
     formats:
       - apk
@@ -50,10 +50,10 @@ nfpms:
         dst: /usr/share/zsh/site-functions/_lure
 aurs:
   - name: linux-user-repository-bin
-    homepage: 'https://gitea.arsenm.dev/Arsen6331/lure'
+    homepage: 'https://gitea.elara.ws/Elara6331/lure'
     description: "Linux User REpository"
     maintainers:
-      - 'Arsen Musayelyan <arsen@arsenm.dev>'
+      - 'Elara Musayelyan <elara@elara.ws>'
     license: GPLv3
     private_key: '{{ .Env.AUR_KEY }}'
     git_url: 'ssh://aur@aur.archlinux.org/linux-user-repository-bin.git'
@@ -73,11 +73,11 @@ aurs:
       install -Dm755 ./scripts/completion/zsh ${pkgdir}/usr/share/zsh/site-functions/_lure
 release:
   gitea:
-    owner: Arsen6331
+    owner: Elara6331
     name: lure
 gitea_urls:
-  api: 'https://gitea.arsenm.dev/api/v1/'
-  download: 'https://gitea.arsenm.dev'
+  api: 'https://gitea.elara.ws/api/v1/'
+  download: 'https://gitea.elara.ws'
   skip_tls_verify: false
 checksum:
   name_template: 'checksums.txt'
