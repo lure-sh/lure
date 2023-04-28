@@ -12,6 +12,10 @@
 
 ---
 
+## How to test a package
+
+To test packages you can first create [a `lure.sh` shell file](./build-scripts.md) and then run the `lure build` comand to build the local `lure.sh` file into a install file for your OS (more info about the `build` command [here](./usage.md#build) you can then install this file to your distro and test it.
+
 ## How to submit a package
 
 LURE's repo is hosted on Github at https://github.com/Arsen6331/lure-repo. In it, there are multiple directories each containing a `lure.sh` file. In order to add a package to LURE's repo, simply create a PR with a [build script](./build-scripts.md) and place it in a directory with the same name as the package.
