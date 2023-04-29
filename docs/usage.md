@@ -130,6 +130,15 @@ Example:
 lure rr -n default
 ```
 
+### listrepo
+
+The listrepo command lists all of the repos you have.
+
+Example:
+```shell
+lure lr
+```
+
 ### refresh
 
 The refresh command pulls all changes from all LURE repos that have changed.
