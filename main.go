@@ -200,6 +200,12 @@ func main() {
 				Action:  removerepoCmd,
 			},
 			{
+				Name:    "listrepo",
+				Usage:   "List all of the repos you have",
+				Aliases: []string{"lr"},
+				Action:  listrepoCmd,
+			},
+			{
 				Name:    "refresh",
 				Usage:   "Pull all repositories that have changed",
 				Aliases: []string{"ref"},

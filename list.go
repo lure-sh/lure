@@ -91,3 +91,10 @@ func listCmd(c *cli.Context) error {
 
 	return nil
 }
+
+func listrepoCmd(c *cli.Context) error {
+	for _, repo := range cfg.Repos {
+		fmt.Printf("%s - %s\n", repo.Name, repo.URL)
+	}
+	return nil
+}
