@@ -21,6 +21,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"fmt"
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
@@ -109,6 +110,13 @@ func refreshCmd(c *cli.Context) error {
 	err := repos.Pull(c.Context, gdb, cfg.Repos)
 	if err != nil {
 		log.Fatal("Error pulling repos").Err(err).Send()
+	}
+	return nil
+}
+
+func listrepoCmd(c *cli.Context) error {
+	for _, repo := range cfg.Repos {
+		fmt.Printf("%s - %s\n", repo.Name, repo.URL)
 	}
 	return nil
 }
