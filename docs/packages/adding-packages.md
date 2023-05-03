@@ -14,7 +14,7 @@
 
 ## How to test a package
 
-To test packages you can first create [a `lure.sh` shell file](./build-scripts.md) and then run the `lure build` comand to build the local `lure.sh` file into a install file for your OS (more info about the `build` command [here](./usage.md#build) you can then install this file to your distro and test it.
+To test packages you can first create [a `lure.sh` shell file](./build-scripts.md) and then run the `lure build` comand to build the local `lure.sh` file into a package for your distro (more info about the `build` command [here](./usage.md#build)). You can then install this file to your distro and test it.
 
 ## How to submit a package
 
