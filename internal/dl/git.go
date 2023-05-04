@@ -96,7 +96,7 @@ func (GitDownloader) Download(opts Options) (Type, string, error) {
 	err = r.Fetch(&git.FetchOptions{
 		RefSpecs: []config.RefSpec{"+refs/*:refs/*"},
 	})
-	if err != nil {
+	if err != git.NoErrAlreadyUpToDate && err != nil {
 		return 0, "", err
 	}
 
