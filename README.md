@@ -3,7 +3,7 @@
 # LURE (Linux User REpository)
 
 [![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
-[![status-badge](https://ci.arsenm.dev/api/badges/Arsen6331/lure/status.svg)](https://ci.arsenm.dev/Arsen6331/lure)
+[![status-badge](https://ci.elara.ws/api/badges/Elara6331/lure/status.svg)](https://ci.elara.ws/Elara6331/lure)
 [![linux-user-repository-bin AUR package](https://img.shields.io/aur/version/linux-user-repository-bin?label=linux-user-repository-bin&logo=archlinux)](https://aur.archlinux.org/packages/linux-user-repository-bin/)
 
 LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in **beta**. Most major bugs have been fixed, and most major features have been added. LURE is ready for general use, but may still break or change occasionally.
