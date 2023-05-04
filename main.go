@@ -62,6 +62,11 @@ func main() {
 		log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
 	}
 
+	err := LoadDB()
+	if err != nil {
+		log.Fatal("Error loading database").Err(err).Send()
+	}
+
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
@@ -231,7 +236,7 @@ func main() {
 		EnableBashCompletion: true,
 	}
 
-	err := app.RunContext(ctx, os.Args)
+	err = app.RunContext(ctx, os.Args)
 	if err != nil {
 		log.Error("Error while running app").Err(err).Send()
 	}

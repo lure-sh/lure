@@ -20,17 +20,17 @@ package main
 
 import (
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
 )
 
 var gdb *sqlx.DB
 
-func init() {
-	var err error
-	gdb, err = db.Open(config.DBPath)
+func loadDB() error {
+	ldb, err := db.Open(config.DBPath)
 	if err != nil {
-		log.Fatal("Error opening database").Err(err).Send()
+		return err
 	}
+	gdb = ldb
+	return nil
 }
