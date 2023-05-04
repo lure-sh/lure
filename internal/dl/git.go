@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
@@ -88,6 +89,13 @@ func (GitDownloader) Download(opts Options) (Type, string, error) {
 	}
 
 	r, err := git.PlainClone(opts.Destination, false, co)
+	if err != nil {
+		return 0, "", err
+	}
+
+	err = r.Fetch(&git.FetchOptions{
+		RefSpecs: []config.RefSpec{"+refs/*:refs/*"},
+	})
 	if err != nil {
 		return 0, "", err
 	}
