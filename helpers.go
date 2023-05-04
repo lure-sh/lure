@@ -244,7 +244,7 @@ func gitVersionCmd(hc interp.HandlerContext, cmd string, args []string) error {
 
 	hash := HEAD.Hash().String()
 
-	fmt.Fprintf(hc.Stdout, "%d.%s", revNum, hash[:7])
+	fmt.Fprintf(hc.Stdout, "%d.%s\n", revNum, hash[:7])
 
 	return nil
 }
