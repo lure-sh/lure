@@ -62,7 +62,7 @@ func main() {
 		log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
 	}
 
-	err := LoadDB()
+	err := loadDB()
 	if err != nil {
 		log.Fatal("Error loading database").Err(err).Send()
 	}
