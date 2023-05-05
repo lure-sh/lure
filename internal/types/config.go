@@ -24,10 +24,15 @@ type Config struct {
 	PagerStyle       string   `toml:"pagerStyle"`
 	IgnorePkgUpdates []string `toml:"ignorePkgUpdates"`
 	Repos            []Repo   `toml:"repo"`
+	Unsafe           Unsafe   `toml:"unsafe"`
 }
 
 // Repo represents a LURE repo within a configuration file
 type Repo struct {
 	Name string `toml:"name"`
 	URL  string `toml:"url"`
+}
+
+type Unsafe struct {
+	AllowRunAsRoot bool `toml:"allowRunAsRoot"`
 }
