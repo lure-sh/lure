@@ -2,7 +2,7 @@
 
 # LURE (Linux User REpository)
 
-[![Go Report Card](https://goreportcard.com/badge/go.arsenm.dev/lure)](https://goreportcard.com/report/go.arsenm.dev/lure)
+[![Go Report Card](https://goreportcard.com/badge/go.elara.ws/lure)](https://goreportcard.com/report/go.elara.ws/lure)
 [![status-badge](https://ci.elara.ws/api/badges/Elara6331/lure/status.svg)](https://ci.elara.ws/Elara6331/lure)
 [![linux-user-repository-bin AUR package](https://img.shields.io/aur/version/linux-user-repository-bin?label=linux-user-repository-bin&logo=archlinux)](https://aur.archlinux.org/packages/linux-user-repository-bin/)
 
@@ -19,14 +19,14 @@ LURE is written in pure Go and has zero dependencies after building. The only th
 The LURE install script will automatically download and install the appropriate LURE package on your system. To use it, simply run the following command:
 
 ```bash
-curl https://www.arsenm.dev/lure.sh | bash
+curl https://www.elara.ws/lure.sh | bash
 ```
 
 **IMPORTANT**: This method is not recommended as it executes any code that is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
 
 ### Packages
 
-Distro packages and binary archives are provided at the latest Gitea release: https://gitea.arsenm.dev/Arsen6331/lure/releases/latest
+Distro packages and binary archives are provided at the latest Gitea release: https://gitea.elara.ws/Elara6331/lure/releases/latest
 
 LURE is also available on the AUR as [linux-user-repository-bin](https://aur.archlinux.org/packages/linux-user-repository-bin)
 
@@ -54,13 +54,13 @@ The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ## Web Interface
 
-LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.arsenm.dev/Arsen6331/lure-web), and is available at https://lure.arsenm.dev.
+LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.elara.ws/Elara6331/lure-web), and is available at https://lure.elara.ws.
 
 ---
 
 ## Repositories
 
-Unlike the AUR, LURE supports third-party repositories. Also unlike the AUR, LURE's repos are single git repositories containing all the build scripts. Inside each LURE repo, there is a separate directory for each package, containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Arsen6331/lure-repo, and information about its packages is displayed at https://lure.arsenm.dev/pkgs.
+Unlike the AUR, LURE supports third-party repositories. Also unlike the AUR, LURE's repos are single git repositories containing all the build scripts. Inside each LURE repo, there is a separate directory for each package, containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Elara6331/lure-repo, and information about its packages is displayed at https://lure.elara.ws/pkgs.
 
 ---
 
