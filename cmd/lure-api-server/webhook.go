@@ -33,30 +33,21 @@ import (
 	"go.elara.ws/lure/internal/repos"
 )
 
-func handleWebhook(next http.Handler, sigCh chan<- struct{}) http.Handler {
+func handleWebhook(sigCh chan<- struct{}) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		if req.URL.Path == "/webhook" {
-			if req.Method != http.MethodPost {
-				res.WriteHeader(http.StatusMethodNotAllowed)
-				return
-			}
-
-			if req.Header.Get("X-GitHub-Event") != "push" {
-				http.Error(res, "Only push events are accepted by this bot", http.StatusBadRequest)
-				return
-			}
-
-			err := verifySecure(req)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			sigCh <- struct{}{}
+		if req.Header.Get("X-GitHub-Event") != "push" {
+			http.Error(res, "Only push events are accepted by this bot", http.StatusBadRequest)
 			return
 		}
 
-		next.ServeHTTP(res, req)
+		err := verifySecure(req)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusForbidden)
+			return
+		}
+
+		sigCh <- struct{}{}
+		return
 	})
 }
 

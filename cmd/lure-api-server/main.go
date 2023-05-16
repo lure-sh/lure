@@ -30,6 +30,7 @@ import (
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/api"
 	"go.elara.ws/lure/internal/repos"
+	"github.com/go-chi/chi/v5"
 )
 
 func init() {
@@ -60,16 +61,16 @@ func main() {
 
 	sigCh := make(chan struct{}, 200)
 	go repoPullWorker(ctx, sigCh)
-
-	var handler http.Handler
-
-	handler = api.NewAPIServer(
+	
+	apiServer := api.NewAPIServer(
 		lureWebAPI{db: gdb},
 		twirp.WithServerPathPrefix(""),
 	)
-	handler = withAcceptLanguage(handler)
-	handler = allowAllCORSHandler(handler)
-	handler = handleWebhook(handler, sigCh)
+	
+	r := chi.NewRouter()
+	r.With(allowAllCORSHandler, withAcceptLanguage).Handle("/*", apiServer)
+	r.Post("/webhook", handleWebhook(sigCh))
+	r.Get("/badge/{repo}/{pkg}", handleBadge(gdb))
 
 	ln, err := net.Listen("tcp", *addr)
 	if err != nil {
@@ -78,7 +79,7 @@ func main() {
 
 	log.Info("Starting HTTP API server").Str("addr", ln.Addr().String()).Send()
 
-	err = http.Serve(ln, handler)
+	err = http.Serve(ln, r)
 	if err != nil {
 		log.Fatal("Error while running server").Err(err).Send()
 	}
