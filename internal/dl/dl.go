@@ -31,6 +31,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/dlcache"
+	"golang.org/x/exp/slices"
 )
 
 const manifestFileName = ".lure_cache_manifest"
@@ -43,6 +44,7 @@ var ErrChecksumMismatch = errors.New("dl: checksums did not match")
 // they should be checked
 var Downloaders = []Downloader{
 	GitDownloader{},
+	TorrentDownloader{},
 	FileDownloader{},
 }
 
@@ -156,7 +158,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 			t = m.Type
 
 			dest := filepath.Join(opts.Destination, m.Name)
-			ok, err := handleCache(cacheDir, dest, t)
+			ok, err := handleCache(cacheDir, dest, m.Name, t)
 			if err != nil {
 				return err
 			}
@@ -201,7 +203,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 	}
 
 	dest := filepath.Join(opts.Destination, name)
-	_, err = handleCache(cacheDir, dest, t)
+	_, err = handleCache(cacheDir, dest, name, t)
 	return err
 }
 
@@ -228,7 +230,7 @@ func getManifest(cacheDir string) (m Manifest, err error) {
 }
 
 // handleCache links the cache directory or a file within it to the destination
-func handleCache(cacheDir, dest string, t Type) (bool, error) {
+func handleCache(cacheDir, dest, name string, t Type) (bool, error) {
 	switch t {
 	case TypeFile:
 		cd, err := os.Open(cacheDir)
@@ -236,7 +238,7 @@ func handleCache(cacheDir, dest string, t Type) (bool, error) {
 			return false, err
 		}
 
-		names, err := cd.Readdirnames(2)
+		names, err := cd.Readdirnames(0)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -245,17 +247,13 @@ func handleCache(cacheDir, dest string, t Type) (bool, error) {
 
 		cd.Close()
 
-		for _, name := range names {
-			if name == manifestFileName {
-				continue
-			}
-
-			err = os.Link(filepath.Join(cacheDir, names[0]), filepath.Join(dest, filepath.Base(names[0])))
+		if slices.Contains(names, name) {
+			err = os.Link(filepath.Join(cacheDir, name), dest)
 			if err != nil {
 				return false, err
 			}
+			return true, nil
 		}
-		return true, nil
 	case TypeDir:
 		err := linkDir(cacheDir, dest)
 		if err != nil {
