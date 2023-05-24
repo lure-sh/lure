@@ -1,7 +1,7 @@
 PREFIX ?= /usr/local
 
 lure: internal/config/version.txt
-	go build
+	CGO_ENABLED=0 go build
 
 clean:
 	rm -f lure
