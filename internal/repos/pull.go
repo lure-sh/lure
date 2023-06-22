@@ -42,7 +42,7 @@ import (
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/vercmp"
+	"go.elara.ws/vercmp"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"

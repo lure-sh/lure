@@ -28,7 +28,7 @@ import (
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/repos"
 	"go.elara.ws/lure/manager"
-	"go.elara.ws/lure/vercmp"
+	"go.elara.ws/vercmp"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )

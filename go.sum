@@ -72,8 +72,6 @@ github.com/anacrolix/log v0.3.0/go.mod h1:lWvLTqzAnCWPJA08T2HCstZi0L1y2Wyvm3FJgw
 github.com/anacrolix/log v0.6.0/go.mod h1:lWvLTqzAnCWPJA08T2HCstZi0L1y2Wyvm3FJgwU9jwU=
 github.com/anacrolix/log v0.10.0/go.mod h1:s5yBP/j046fm9odtUTbHOfDUq/zh1W8OkPpJtnX0oQI=
 github.com/anacrolix/log v0.10.1-0.20220123034749-3920702c17f8/go.mod h1:GmnE2c0nvz8pOIPUSC9Rawgefy1sDXqposC2wgtBZE4=
-github.com/anacrolix/log v0.13.2-0.20230518105052-6aef2c4c91f1 h1:Yo4XQhmdmrkB4RGP7RWvl8U+og2rCBsNqoJFTew0plk=
-github.com/anacrolix/log v0.13.2-0.20230518105052-6aef2c4c91f1/go.mod h1:1OmJESOtxQGNMlUO5rcv96Vpp9mfMqXXbe2RdinFLdY=
 github.com/anacrolix/log v0.14.0 h1:mYhTSemILe/Z8tIxbGdTIWWpPspI8W/fhZHpoFbDaL0=
 github.com/anacrolix/log v0.14.0/go.mod h1:1OmJESOtxQGNMlUO5rcv96Vpp9mfMqXXbe2RdinFLdY=
 github.com/anacrolix/lsan v0.0.0-20211126052245-807000409a62 h1:P04VG6Td13FHMgS5ZBcJX23NPC/fiC4cp9bXwYujdYM=
@@ -106,8 +104,6 @@ github.com/anacrolix/sync v0.4.0/go.mod h1:BbecHL6jDSExojhNtgTFSBcdGerzNc64tz3DC
 github.com/anacrolix/tagflag v0.0.0-20180109131632-2146c8d41bf0/go.mod h1:1m2U/K6ZT+JZG0+bdMK6qauP49QT4wE5pmhJXOKKCHw=
 github.com/anacrolix/tagflag v1.0.0/go.mod h1:1m2U/K6ZT+JZG0+bdMK6qauP49QT4wE5pmhJXOKKCHw=
 github.com/anacrolix/tagflag v1.1.0/go.mod h1:Scxs9CV10NQatSmbyjqmqmeQNwGzlNe0CMUMIxqHIG8=
-github.com/anacrolix/torrent v1.51.2 h1:7UWUElt7rCVZlFF/VMaBOoZfpNtaMDj1zfvgsoX17LA=
-github.com/anacrolix/torrent v1.51.2/go.mod h1:yCbMnw1IpltDstasqpZploAMnJrkXNjZFjo7XdDYUDY=
 github.com/anacrolix/torrent v1.51.3 h1:Rj5LNfT2/IucClxyskD5klaepNQorSeWHChP+y/xYU8=
 github.com/anacrolix/torrent v1.51.3/go.mod h1:t9v92CO5xOCvmg+Qfn3XcBbXVhN9Xg6xID2d565IhVo=
 github.com/anacrolix/upnp v0.1.3-0.20220123035249-922794e51c96 h1:QAVZ3pN/J4/UziniAhJR2OZ9Ox5kOY2053tBbbqUPYA=
@@ -560,6 +556,8 @@ go.elara.ws/logger v0.0.0-20230421022458-e80700db2090 h1:RVC8XvWo6Yw4HUshqx4TSzu
 go.elara.ws/logger v0.0.0-20230421022458-e80700db2090/go.mod h1:qng49owViqsW5Aey93lwBXONw20oGbJIoLVscB16mPM=
 go.elara.ws/translate v0.0.0-20230421025926-32ccfcd110e6 h1:4xCBxLPBn3Y2DuIcj8zQ1tQOFLrpu6tEIGUWn/Q6zPM=
 go.elara.ws/translate v0.0.0-20230421025926-32ccfcd110e6/go.mod h1:NmfCFqwq7X/aqa/ZVkIysj17JyMEY4Bb5E921kMswNo=
+go.elara.ws/vercmp v0.0.0-20230622214216-0b2b067575c4 h1:Ep54XceQlKhcCHl9awG+wWP4kz4kIP3c3Lzw/Gc/zwY=
+go.elara.ws/vercmp v0.0.0-20230622214216-0b2b067575c4/go.mod h1:/7PNW7nFnDR5W7UXZVc04gdVLR/wBNgkm33KgIz0OBk=
 go.etcd.io/bbolt v1.3.7 h1:j+zJOnnEjF/kyHlDDgGnVL/AIqIJPq8UoB2GSNfkUfQ=
 go.etcd.io/bbolt v1.3.7/go.mod h1:N9Mkw9X8x5fupy0IKsmuqVtoGDyxsaDlbk4Rd05IAQw=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
@@ -584,8 +582,8 @@ golang.org/x/crypto v0.0.0-20220516162934-403b01795ae8/go.mod h1:IxCIyHEi3zRg3s0
 golang.org/x/crypto v0.5.0 h1:U/0M97KRkSFvyD/3FSmdP5W5swImpNgle/EHFhOsQPE=
 golang.org/x/crypto v0.5.0/go.mod h1:NK/OQwhpMQP3MwtdjgLlYHnH9ebylxKWv3e0fK+mkQU=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
-golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b h1:SCE/18RnFsLrjydh/R/s5EVvHoZprqEQUuoxK8q2Pc4=
-golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b/go.mod h1:cyybsKvd6eL0RnXn6p/Grxp8F5bW7iYuBgsNCOHpMYE=
+golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 h1:k/i9J1pBpvlfR+9QsetwPyERsqu1GIbi967PQMq3Ivc=
+golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=

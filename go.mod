@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/PuerkitoBio/purell v1.2.0
 	github.com/alecthomas/chroma/v2 v2.4.0
+	github.com/anacrolix/log v0.14.0
 	github.com/anacrolix/torrent v1.51.3
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.23.1
@@ -26,7 +27,8 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.elara.ws/logger v0.0.0-20230421022458-e80700db2090
 	go.elara.ws/translate v0.0.0-20230421025926-32ccfcd110e6
-	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
+	go.elara.ws/vercmp v0.0.0-20230622214216-0b2b067575c4
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/sys v0.7.0
 	golang.org/x/text v0.9.0
 	google.golang.org/protobuf v1.28.1
@@ -53,7 +55,6 @@ require (
 	github.com/anacrolix/envpprof v1.2.1 // indirect
 	github.com/anacrolix/generics v0.0.0-20230428105757-683593396d68 // indirect
 	github.com/anacrolix/go-libutp v1.2.0 // indirect
-	github.com/anacrolix/log v0.14.0 // indirect
 	github.com/anacrolix/missinggo v1.3.0 // indirect
 	github.com/anacrolix/missinggo/perf v1.0.0 // indirect
 	github.com/anacrolix/missinggo/v2 v2.7.0 // indirect
