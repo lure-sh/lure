@@ -25,12 +25,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/twitchtv/twirp"
 	"go.elara.ws/logger"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/api"
 	"go.elara.ws/lure/internal/repos"
-	"github.com/go-chi/chi/v5"
 )
 
 func init() {
@@ -61,12 +61,12 @@ func main() {
 
 	sigCh := make(chan struct{}, 200)
 	go repoPullWorker(ctx, sigCh)
-	
+
 	apiServer := api.NewAPIServer(
 		lureWebAPI{db: gdb},
 		twirp.WithServerPathPrefix(""),
 	)
-	
+
 	r := chi.NewRouter()
 	r.With(allowAllCORSHandler, withAcceptLanguage).Handle("/*", apiServer)
 	r.Post("/webhook", handleWebhook(sigCh))

@@ -1,19 +1,20 @@
 package dl
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"errors"
 )
 
-var urlMatchRegex = regexp.MustCompile(`(magnet|torrent\+https?):.*`)
-var ErrAria2NotFound = errors.New("aria2 must be installed for torrent functionality")
-var ErrDestinationEmpty = errors.New("the destination directory is empty")
+var (
+	urlMatchRegex       = regexp.MustCompile(`(magnet|torrent\+https?):.*`)
+	ErrAria2NotFound    = errors.New("aria2 must be installed for torrent functionality")
+	ErrDestinationEmpty = errors.New("the destination directory is empty")
+)
 
 type TorrentDownloader struct{}
 
