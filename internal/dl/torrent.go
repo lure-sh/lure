@@ -2,20 +2,18 @@ package dl
 
 import (
 	"fmt"
-	"io"
-	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
-	alog "github.com/anacrolix/log"
-	"github.com/anacrolix/torrent"
-	"github.com/anacrolix/torrent/metainfo"
-	"github.com/schollz/progressbar/v3"
-	"go.elara.ws/logger/log"
+	"errors"
 )
 
 var urlMatchRegex = regexp.MustCompile(`(magnet|torrent\+https?):.*`)
+var ErrAria2NotFound = errors.New("aria2 must be installed for torrent functionality")
+var ErrDestinationEmpty = errors.New("the destination directory is empty")
 
 type TorrentDownloader struct{}
 
@@ -32,90 +30,60 @@ func (TorrentDownloader) MatchURL(u string) bool {
 
 // Download downloads a file over the BitTorrent protocol.
 func (TorrentDownloader) Download(opts Options) (Type, string, error) {
-	cfg := torrent.NewDefaultClientConfig()
-	cfg.DataDir = opts.Destination
-	cfg.DisableWebseeds = true
-	cfg.Logger.SetHandlers(alog.DiscardHandler)
+	aria2Path, err := exec.LookPath("aria2c")
+	if err != nil {
+		return 0, "", ErrAria2NotFound
+	}
 
-	c, err := torrent.NewClient(cfg)
+	opts.URL = strings.TrimPrefix(opts.URL, "torrent+")
+
+	cmd := exec.Command(aria2Path, "--summary-interval=0", "--log-level=warn", "--seed-time=0", "--dir="+opts.Destination, opts.URL)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return 0, "", fmt.Errorf("aria2c returned an error: %w", err)
+	}
+
+	err = removeTorrentFiles(opts.Destination)
 	if err != nil {
 		return 0, "", err
 	}
-	defer c.Close()
 
-	var t *torrent.Torrent
-	if strings.HasPrefix(opts.URL, "magnet:") {
-		t, err = c.AddMagnet(opts.URL)
-		if err != nil {
-			return 0, "", err
-		}
-		log.Info("Waiting for torrent metadata").Str("source", opts.Name).Send()
-		<-t.GotInfo()
-	} else if strings.HasPrefix(opts.URL, "torrent+") {
-		log.Info("Downloading torrent file").Str("source", opts.Name).Send()
+	return determineType(opts.Destination)
+}
 
-		res, err := http.Get(strings.TrimPrefix(opts.URL, "torrent+"))
-		if err != nil {
-			return 0, "", err
-		}
+func removeTorrentFiles(path string) error {
+	filePaths, err := filepath.Glob(filepath.Join(path, "*.torrent"))
+	if err != nil {
+		return err
+	}
 
-		meta, err := metainfo.Load(res.Body)
+	for _, filePath := range filePaths {
+		err = os.Remove(filePath)
 		if err != nil {
-			return 0, "", err
-		}
-
-		t, err = c.AddTorrent(meta)
-		if err != nil {
-			return 0, "", err
+			return err
 		}
 	}
 
-	t.DownloadAll()
-	info := t.Info()
-	info.BestName()
+	return nil
+}
 
-	var bar *progressbar.ProgressBar
-	if opts.Progress != nil {
-		bar = progressbar.NewOptions64(
-			info.TotalLength(),
-			progressbar.OptionSetDescription(info.Name),
-			progressbar.OptionSetWriter(opts.Progress),
-			progressbar.OptionShowBytes(true),
-			progressbar.OptionSetWidth(10),
-			progressbar.OptionThrottle(65*time.Millisecond),
-			progressbar.OptionShowCount(),
-			progressbar.OptionOnCompletion(func() {
-				_, _ = io.WriteString(opts.Progress, "\n")
-			}),
-			progressbar.OptionSpinnerType(14),
-			progressbar.OptionFullWidth(),
-			progressbar.OptionSetRenderBlankState(true),
-		)
-		defer bar.Close()
+func determineType(path string) (Type, string, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return 0, "", err
 	}
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		info = t.Info()
-		if t.Complete.Bool() {
-			if info.IsDir() {
-				return TypeDir, info.Name, nil
-			} else {
-				return TypeFile, info.Name, nil
-			}
-		}
-
-		if bar != nil {
-			bar.ChangeMax64(info.TotalLength())
-			bar.Set64(t.BytesCompleted())
-			stats := t.Stats()
-			bar.Describe(fmt.Sprintf("%s [%d/%d]", info.Name, stats.ActivePeers, stats.TotalPeers))
+	if len(files) > 1 {
+		return TypeDir, "", nil
+	} else if len(files) == 1 {
+		if files[0].IsDir() {
+			return TypeDir, files[0].Name(), nil
+		} else {
+			return TypeFile, files[0].Name(), nil
 		}
 	}
 
-	// This code should never execute because the loop will return from the function
-	// once the torrent has finished downloading.
-	panic("unreachable")
+	return 0, "", ErrDestinationEmpty
 }

@@ -380,7 +380,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 	} else {
 		log.Fatal("The package() function is required").Send()
 	}
-	
+
 	log.Info("Building package metadata").Str("name", vars.Name).Send()
 
 	uniq(
@@ -393,6 +393,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 		Name:        vars.Name,
 		Description: vars.Description,
 		Arch:        cpu.Arch(),
+		Platform:    "linux",
 		Version:     vars.Version,
 		Release:     strconv.Itoa(vars.Release),
 		Homepage:    vars.Homepage,
@@ -500,7 +501,7 @@ func buildPackage(ctx context.Context, script string, mgr manager.Manager, clean
 	if err != nil {
 		return nil, nil, err
 	}
-	
+
 	log.Info("Compressing package").Str("name", pkgName).Send()
 
 	err = packager.Package(pkgInfo, pkgFile)

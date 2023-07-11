@@ -26,6 +26,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
@@ -319,5 +320,12 @@ func normalizeURL(u string) (string, error) {
 		purell.FlagDecodeUnnecessaryEscapes |
 		purell.FlagRemoveEmptyPortSeparator
 
-	return purell.NormalizeURLString(u, normalizationFlags)
+	u, err := purell.NormalizeURLString(u, normalizationFlags)
+	if err != nil {
+		return "", err
+	}
+
+	// Fix magnet URLs after normalization
+	u = strings.Replace(u, "magnet://", "magnet:", 1)
+	return u, nil
 }

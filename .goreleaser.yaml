@@ -43,6 +43,8 @@ nfpms:
       - linux-user-repository
     conflicts:
       - linux-user-repository
+    recommends:
+      - aria2
     contents:
       - src: scripts/completion/bash
         dst: /usr/share/bash-completion/completions/lure
@@ -64,6 +66,8 @@ aurs:
     depends:
       - sudo
       - pacman
+    optdepends:
+      - 'aria2: for downloading torrent sources'
     package: |-
       # binaries
       install -Dm755 ./lure "${pkgdir}/usr/bin/lure"
