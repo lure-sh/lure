@@ -21,7 +21,6 @@ package dl
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"io"
 	"net/http"
 	"net/url"
@@ -109,10 +108,13 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		bar = shutils.NopRWC{}
 	}
 
-	h := sha256.New()
+	h, err := opts.NewHash()
+	if err != nil {
+		return 0, "", err
+	}
 
 	var w io.Writer
-	if opts.SHA256 != nil {
+	if opts.Hash != nil {
 		w = io.MultiWriter(fl, h, bar)
 	} else {
 		w = io.MultiWriter(fl, bar)
@@ -124,9 +126,9 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	}
 	res.Body.Close()
 
-	if opts.SHA256 != nil {
+	if opts.Hash != nil {
 		sum := h.Sum(nil)
-		if !bytes.Equal(sum, opts.SHA256) {
+		if !bytes.Equal(sum, opts.Hash) {
 			return 0, "", ErrChecksumMismatch
 		}
 	}

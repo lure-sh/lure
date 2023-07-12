@@ -609,11 +609,21 @@ func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 		}
 
 		if !strings.EqualFold(bv.Checksums[i], "SKIP") {
-			checksum, err := hex.DecodeString(bv.Checksums[i])
-			if err != nil {
-				return err
+			algo, hashData, ok := strings.Cut(bv.Checksums[i], ":")
+			if ok {
+				checksum, err := hex.DecodeString(hashData)
+				if err != nil {
+					return err
+				}
+				opts.Hash = checksum
+				opts.HashAlgorithm = algo
+			} else {
+				checksum, err := hex.DecodeString(bv.Checksums[i])
+				if err != nil {
+					return err
+				}
+				opts.Hash = checksum
 			}
-			opts.SHA256 = checksum
 		}
 
 		err := dl.Download(ctx, opts)

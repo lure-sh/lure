@@ -22,7 +22,13 @@ package dl
 
 import (
 	"context"
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"errors"
+	"fmt"
+	"hash"
 	"io"
 	"os"
 	"path/filepath"
@@ -39,7 +45,10 @@ const manifestFileName = ".lure_cache_manifest"
 
 // ErrChecksumMismatch occurs when the checksum of a downloaded file
 // does not match the expected checksum provided in the Options struct.
-var ErrChecksumMismatch = errors.New("dl: checksums did not match")
+var (
+	ErrChecksumMismatch = errors.New("dl: checksums did not match")
+	ErrNoSuchHashAlgo   = errors.New("dl: invalid hashing algorithm")
+)
 
 // Downloaders contains all the downloaders in the order in which
 // they should be checked
@@ -70,13 +79,35 @@ func (t Type) String() string {
 // Options contains the options for downloading
 // files and directories
 type Options struct {
-	SHA256           []byte
+	Hash             []byte
+	HashAlgorithm    string
 	Name             string
 	URL              string
 	Destination      string
 	CacheDisabled    bool
 	PostprocDisabled bool
 	Progress         io.Writer
+}
+
+func (opts Options) NewHash() (hash.Hash, error) {
+	if opts.HashAlgorithm == "" {
+		opts.HashAlgorithm = "sha256"
+	}
+	switch opts.HashAlgorithm {
+	case "sha256":
+		return sha256.New(), nil
+	case "sha224":
+		return sha256.New224(), nil
+	case "sha512":
+		return sha512.New(), nil
+	case "sha384":
+		return sha512.New384(), nil
+	case "sha1":
+		return sha1.New(), nil
+	case "md5":
+		return md5.New(), nil
+	}
+	return nil, fmt.Errorf("%w: %s", ErrNoSuchHashAlgo, opts.HashAlgorithm)
 }
 
 // Manifest holds information about the type and name
@@ -144,10 +175,12 @@ func Download(ctx context.Context, opts Options) (err error) {
 			log.Info("Source can be updated, updating if required").Str("source", opts.Name).Str("downloader", d.Name()).Send()
 
 			updated, err = d.Update(Options{
-				Name:        opts.Name,
-				URL:         opts.URL,
-				Destination: cacheDir,
-				Progress:    opts.Progress,
+				Hash:          opts.Hash,
+				HashAlgorithm: opts.HashAlgorithm,
+				Name:          opts.Name,
+				URL:           opts.URL,
+				Destination:   cacheDir,
+				Progress:      opts.Progress,
 			})
 			if err != nil {
 				return err
@@ -189,10 +222,12 @@ func Download(ctx context.Context, opts Options) (err error) {
 	}
 
 	t, name, err := d.Download(Options{
-		Name:        opts.Name,
-		URL:         opts.URL,
-		Destination: cacheDir,
-		Progress:    opts.Progress,
+		Hash:          opts.Hash,
+		HashAlgorithm: opts.HashAlgorithm,
+		Name:          opts.Name,
+		URL:           opts.URL,
+		Destination:   cacheDir,
+		Progress:      opts.Progress,
 	})
 	if err != nil {
 		return err

@@ -199,7 +199,9 @@ git+https://gitea.arsenm.dev/Arsen6331/lure?~rev=v0.0.1&~recursive=true
 
 ### checksums
 
-The `checksums` array must be the same length as the `sources` array. It contains sha256 checksums for the source files. The files are checked against the checksums and the build fails if they don't match.
+The `checksums` array must be the same length as the `sources` array. It contains checksums for the source files. The files are checked against the checksums and the build fails if they don't match.
+
+By default, checksums are expected to be sha256. To change the algorithm, add it before the hash with a colon in between. For example, `md5:bc0c6f5dcd06bddbca9a0163e4c9f2e1`. The following algorithms are currently supported: `sha256`, `sha224`, `sha512`, `sha384`, `sha1`, and `md5`.
 
 To skip the check for a particular source, set the corresponding checksum to `SKIP`.
 
