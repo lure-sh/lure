@@ -47,6 +47,7 @@ var helpers = shutils.ExecFuncs{
 	"install-config":       installHelperCmd("/etc", 0o644),
 	"install-license":      installHelperCmd("/usr/share/licenses", 0o644),
 	"install-desktop":      installHelperCmd("/usr/share/applications", 0o644),
+	"install-icon":         installHelperCmd("/usr/share/pixmaps", 0o644),
 	"install-manual":       installManualCmd,
 	"install-completion":   installCompletionCmd,
 	"install-library":      installLibraryCmd,
