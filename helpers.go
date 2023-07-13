@@ -206,10 +206,12 @@ func getLibPrefix(hc interp.HandlerContext) string {
 
 	architecture := hc.Env.Get("ARCH").Str
 
-	if distroID == "debian" || slices.Contains(distroLike, "debian") {
-		triple, ok := multiarchTupleMap[architecture]
+	if distroID == "debian" || slices.Contains(distroLike, "debian") ||
+		distroID == "ubuntu" || slices.Contains(distroLike, "ubuntu") {
+
+		tuple, ok := multiarchTupleMap[architecture]
 		if ok {
-			out = filepath.Join("/usr/lib", triple)
+			out = filepath.Join("/usr/lib", tuple)
 		}
 	}
 
