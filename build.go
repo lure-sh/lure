@@ -597,7 +597,7 @@ func genBuildEnv(info *distro.OSRelease, scriptdir string) []string {
 
 func getSources(ctx context.Context, srcdir string, bv *BuildVars) error {
 	if len(bv.Sources) != len(bv.Checksums) {
-		log.Fatal("The checksums array must be the same length as sources")
+		log.Fatal("The checksums array must be the same length as sources").Send()
 	}
 
 	for i, src := range bv.Sources {
