@@ -134,7 +134,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	}
 
 	if opts.PostprocDisabled {
-		return TypeFile, "", nil
+		return TypeFile, name, nil
 	}
 
 	_, err = fl.Seek(0, io.SeekStart)
@@ -144,7 +144,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 
 	format, r, err := archiver.Identify(name, fl)
 	if err == archiver.ErrNoMatch {
-		return TypeFile, "", nil
+		return TypeFile, name, nil
 	} else if err != nil {
 		return 0, "", err
 	}
