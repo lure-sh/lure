@@ -44,15 +44,55 @@ func ARMVariant() string {
 	}
 }
 
+// CompatibleARM returns all the compatible ARM variants given the system architecture
+func CompatibleARM(variant string) []string {
+	switch variant {
+	case "arm7", "arm":
+		return []string{"arm7", "arm6", "arm5"}
+	case "arm6":
+		return []string{"arm6", "arm5"}
+	case "arm5":
+		return []string{"arm5"}
+	default:
+		return []string{variant}
+	}
+}
+
+// CompatibleARMReverse returns all the compatible ARM variants given the package's architecture
+func CompatibleARMReverse(variant string) []string {
+	switch variant {
+	case "arm7":
+		return []string{"arm7"}
+	case "arm6":
+		return []string{"arm6", "arm7"}
+	case "arm5", "arm":
+		return []string{"arm5", "arm6", "arm7"}
+	default:
+		return []string{variant}
+	}
+}
+
 // Arch returns the canonical CPU architecture of the system
 func Arch() string {
 	arch := os.Getenv("LURE_ARCH")
-	if arch != "" {
-		return arch
+	if arch == "" {
+		arch = runtime.GOARCH
 	}
-	arch = runtime.GOARCH
 	if arch == "arm" {
 		arch = ARMVariant()
 	}
 	return arch
+}
+
+// Arches returns all the architectures the system is compatible with
+func Arches() []string {
+	arch := os.Getenv("LURE_ARCH")
+	if arch == "" {
+		arch = runtime.GOARCH
+	}
+	if strings.HasPrefix(arch, "arm") {
+		return append(CompatibleARM(arch), "arm")
+	} else {
+		return []string{Arch()}
+	}
 }

@@ -689,9 +689,13 @@ func archMatches(architectures []string) bool {
 		return true
 	}
 
-	if slices.Contains(architectures, "arm") {
-		architectures = append(architectures, cpu.ARMVariant())
+	for _, arch := range architectures {
+		if strings.HasPrefix(arch, "arm") {
+			architectures = append(architectures, cpu.CompatibleARMReverse(arch)...)
+		}
 	}
+
+	fmt.Println(architectures)
 
 	return slices.Contains(architectures, cpu.Arch())
 }

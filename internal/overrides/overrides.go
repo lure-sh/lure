@@ -20,7 +20,6 @@ package overrides
 
 import (
 	"reflect"
-	"runtime"
 	"strings"
 
 	"go.elara.ws/lure/distro"
@@ -59,13 +58,7 @@ func Resolve(info *distro.OSRelease, opts *Opts) ([]string, error) {
 		return nil, err
 	}
 
-	architectures := []string{runtime.GOARCH}
-
-	if runtime.GOARCH == "arm" {
-		// More specific goes first
-		architectures[0] = cpu.ARMVariant()
-		architectures = append(architectures, "arm")
-	}
+	architectures := cpu.Arches()
 
 	distros := []string{info.ID}
 	if opts.LikeDistros {
