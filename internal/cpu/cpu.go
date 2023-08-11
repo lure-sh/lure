@@ -46,7 +46,11 @@ func ARMVariant() string {
 
 // Arch returns the canonical CPU architecture of the system
 func Arch() string {
-	arch := runtime.GOARCH
+	arch := os.Getenv("LURE_ARCH")
+	if arch != "" {
+		return arch
+	}
+	arch = runtime.GOARCH
 	if arch == "arm" {
 		arch = ARMVariant()
 	}
