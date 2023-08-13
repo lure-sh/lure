@@ -91,6 +91,9 @@ type Scripts struct {
 
 func buildCmd(c *cli.Context) error {
 	script := c.String("script")
+	if c.String("package") != "" {
+		script = filepath.Join(config.RepoDir, c.String("package"), "lure.sh")
+	}
 
 	err := repos.Pull(c.Context, gdb, cfg.Repos)
 	if err != nil {

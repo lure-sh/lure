@@ -160,6 +160,11 @@ func main() {
 						Value:   "lure.sh",
 						Usage:   "Path to the build script",
 					},
+					&cli.StringFlag{
+						Name:    "package",
+						Aliases: []string{"p"},
+						Usage:   "Name of the package to build and its repo (example: default/go-bin)",
+					},
 					&cli.BoolFlag{
 						Name:    "clean",
 						Aliases: []string{"c"},
