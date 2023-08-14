@@ -698,8 +698,6 @@ func archMatches(architectures []string) bool {
 		}
 	}
 
-	fmt.Println(architectures)
-
 	return slices.Contains(architectures, cpu.Arch())
 }
 
