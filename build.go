@@ -47,6 +47,7 @@ import (
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/dl"
 	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/internal/osutils"
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/manager"
@@ -117,7 +118,7 @@ func buildCmd(c *cli.Context) error {
 
 	for _, pkgPath := range pkgPaths {
 		name := filepath.Base(pkgPath)
-		err = os.Rename(pkgPath, filepath.Join(wd, name))
+		err = osutils.Move(pkgPath, filepath.Join(wd, name))
 		if err != nil {
 			log.Fatal("Error moving the package").Err(err).Send()
 		}
