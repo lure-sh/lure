@@ -102,8 +102,8 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 
 		if len(pkgs) > 1 {
 			// Puts the element with the highest version first
-			slices.SortFunc(pkgs, func(a, b db.Package) bool {
-				return vercmp.Compare(a.Version, b.Version) == 1
+			slices.SortFunc(pkgs, func(a, b db.Package) int {
+				return vercmp.Compare(a.Version, b.Version)
 			})
 		}
 
