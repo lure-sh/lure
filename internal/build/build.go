@@ -13,6 +13,11 @@ import (
 	"strconv"
 	"strings"
 
+	_ "github.com/goreleaser/nfpm/v2/apk"
+	_ "github.com/goreleaser/nfpm/v2/arch"
+	_ "github.com/goreleaser/nfpm/v2/deb"
+	_ "github.com/goreleaser/nfpm/v2/rpm"
+
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"go.elara.ws/logger/log"

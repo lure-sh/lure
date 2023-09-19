@@ -22,12 +22,7 @@ import (
 	"os"
 	"path/filepath"
 
-	_ "github.com/goreleaser/nfpm/v2/apk"
-	_ "github.com/goreleaser/nfpm/v2/arch"
-	_ "github.com/goreleaser/nfpm/v2/deb"
-	_ "github.com/goreleaser/nfpm/v2/rpm"
 	"github.com/urfave/cli/v2"
-
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/build"
 	"go.elara.ws/lure/internal/config"
