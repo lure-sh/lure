@@ -28,8 +28,10 @@ import (
 	"go.elara.ws/lure/internal/config"
 )
 
-// BasePath stores the base path to the download cache
-var BasePath = filepath.Join(config.CacheDir, "dl")
+// BasePath returns the base path of the download cache
+func BasePath() string {
+	return filepath.Join(config.GetPaths().RepoDir, "dl")
+}
 
 // New creates a new directory with the given ID in the cache.
 // If a directory with the same ID already exists,
@@ -39,7 +41,7 @@ func New(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	itemPath := filepath.Join(BasePath, h)
+	itemPath := filepath.Join(BasePath(), h)
 
 	fi, err := os.Stat(itemPath)
 	if err == nil || (fi != nil && !fi.IsDir()) {
@@ -67,7 +69,7 @@ func Get(id string) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	itemPath := filepath.Join(BasePath, h)
+	itemPath := filepath.Join(BasePath(), h)
 
 	_, err = os.Stat(itemPath)
 	if err != nil {

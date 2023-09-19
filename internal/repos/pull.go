@@ -33,7 +33,6 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
-	"github.com/jmoiron/sqlx"
 	"github.com/pelletier/go-toml/v2"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/distro"
@@ -51,7 +50,7 @@ import (
 // Pull pulls the provided repositories. If a repo doesn't exist, it will be cloned
 // and its packages will be written to the DB. If it does exist, it will be pulled.
 // In this case, only changed packages will be processed.
-func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
+func Pull(ctx context.Context, repos []types.Repo) error {
 	for _, repo := range repos {
 		repoURL, err := url.Parse(repo.URL)
 		if err != nil {
@@ -59,7 +58,7 @@ func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 		}
 
 		log.Info("Pulling repository").Str("name", repo.Name).Send()
-		repoDir := filepath.Join(config.RepoDir, repo.Name)
+		repoDir := filepath.Join(config.GetPaths().RepoDir, repo.Name)
 
 		var repoFS billy.Filesystem
 		gitDir := filepath.Join(repoDir, ".git")
@@ -89,7 +88,7 @@ func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 			repoFS = w.Filesystem
 
 			// Make sure the DB is created even if the repo is up to date
-			if !errors.Is(err, git.NoErrAlreadyUpToDate) || !config.DBPresent {
+			if !errors.Is(err, git.NoErrAlreadyUpToDate) || db.IsEmpty() {
 				new, err := r.Head()
 				if err != nil {
 					return err
@@ -98,13 +97,13 @@ func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 				// If the DB was not present at startup, that means it's
 				// empty. In this case, we need to update the DB fully
 				// rather than just incrementally.
-				if config.DBPresent {
-					err = processRepoChanges(ctx, repo, r, w, old, new, gdb)
+				if db.IsEmpty() {
+					err = processRepoChanges(ctx, repo, r, w, old, new)
 					if err != nil {
 						return err
 					}
 				} else {
-					err = processRepoFull(ctx, repo, repoDir, gdb)
+					err = processRepoFull(ctx, repo, repoDir)
 					if err != nil {
 						return err
 					}
@@ -129,7 +128,7 @@ func Pull(ctx context.Context, gdb *sqlx.DB, repos []types.Repo) error {
 				return err
 			}
 
-			err = processRepoFull(ctx, repo, repoDir, gdb)
+			err = processRepoFull(ctx, repo, repoDir)
 			if err != nil {
 				return err
 			}
@@ -171,7 +170,7 @@ type action struct {
 	File string
 }
 
-func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, w *git.Worktree, old, new *plumbing.Reference, gdb *sqlx.DB) error {
+func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository, w *git.Worktree, old, new *plumbing.Reference) error {
 	oldCommit, err := r.CommitObject(old.Hash())
 	if err != nil {
 		return err
@@ -265,7 +264,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 				return err
 			}
 
-			err = db.DeletePkgs(gdb, "name = ? AND repository = ?", pkg.Name, repo.Name)
+			err = db.DeletePkgs("name = ? AND repository = ?", pkg.Name, repo.Name)
 			if err != nil {
 				return err
 			}
@@ -300,7 +299,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 
 			resolveOverrides(runner, &pkg)
 
-			err = db.InsertPackage(gdb, pkg)
+			err = db.InsertPackage(pkg)
 			if err != nil {
 				return err
 			}
@@ -326,7 +325,7 @@ func isValid(from, to diff.File) bool {
 	return match
 }
 
-func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *sqlx.DB) error {
+func processRepoFull(ctx context.Context, repo types.Repo, repoDir string) error {
 	glob := filepath.Join(repoDir, "/*/lure.sh")
 	matches, err := filepath.Glob(glob)
 	if err != nil {
@@ -370,7 +369,7 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string, gdb *
 
 		resolveOverrides(runner, &pkg)
 
-		err = db.InsertPackage(gdb, pkg)
+		err = db.InsertPackage(pkg)
 		if err != nil {
 			return err
 		}

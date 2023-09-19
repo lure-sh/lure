@@ -19,98 +19,98 @@
 package main
 
 import (
-	"context"
-	"path/filepath"
-
-	"go.elara.ws/logger/log"
+	"fmt"
 
 	"github.com/urfave/cli/v2"
+	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/build"
 	"go.elara.ws/lure/internal/cliutils"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/manager"
 )
 
-func installCmd(c *cli.Context) error {
-	args := c.Args()
-	if args.Len() < 1 {
-		log.Fatalf("Command install expected at least 1 argument, got %d", args.Len()).Send()
-	}
-
-	mgr := manager.Detect()
-	if mgr == nil {
-		log.Fatal("Unable to detect supported package manager on system").Send()
-	}
-
-	err := repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repositories").Err(err).Send()
-	}
-
-	found, notFound, err := repos.FindPkgs(gdb, args.Slice())
-	if err != nil {
-		log.Fatal("Error finding packages").Err(err).Send()
-	}
-
-	installPkgs(c.Context, cliutils.FlattenPkgs(found, "install", c.Bool("interactive"), translator), notFound, mgr, c.Bool("clean"), c.Bool("interactive"))
-	return nil
-}
-
-// installPkgs installs non-LURE packages via the package manager, then builds and installs LURE
-// packages
-func installPkgs(ctx context.Context, pkgs []db.Package, notFound []string, mgr manager.Manager, clean, interactive bool) {
-	if len(notFound) > 0 {
-		err := mgr.Install(nil, notFound...)
-		if err != nil {
-			log.Fatal("Error installing native packages").Err(err).Send()
-		}
-	}
-
-	installScripts(ctx, mgr, getScriptPaths(pkgs), clean, interactive)
-}
-
-// getScriptPaths generates a slice of script paths corresponding to the
-// given packages
-func getScriptPaths(pkgs []db.Package) []string {
-	var scripts []string
-	for _, pkg := range pkgs {
-		scriptPath := filepath.Join(config.RepoDir, pkg.Repository, pkg.Name, "lure.sh")
-		scripts = append(scripts, scriptPath)
-	}
-	return scripts
-}
-
-// installScripts builds and installs LURE build scripts
-func installScripts(ctx context.Context, mgr manager.Manager, scripts []string, clean, interactive bool) {
-	for _, script := range scripts {
-		builtPkgs, _, err := buildPackage(ctx, script, mgr, clean, interactive)
-		if err != nil {
-			log.Fatal("Error building package").Err(err).Send()
+var installCmd = &cli.Command{
+	Name:    "install",
+	Usage:   "Install a new package",
+	Aliases: []string{"in"},
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "clean",
+			Aliases: []string{"c"},
+			Usage:   "Build package from scratch even if there's an already built package available",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		args := c.Args()
+		if args.Len() < 1 {
+			log.Fatalf("Command install expected at least 1 argument, got %d", args.Len()).Send()
 		}
 
-		err = mgr.InstallLocal(nil, builtPkgs...)
-		if err != nil {
-			log.Fatal("Error installing package").Err(err).Send()
+		mgr := manager.Detect()
+		if mgr == nil {
+			log.Fatal("Unable to detect a supported package manager on the system").Send()
 		}
-	}
+
+		err := repos.Pull(c.Context, config.Config().Repos)
+		if err != nil {
+			log.Fatal("Error pulling repositories").Err(err).Send()
+		}
+
+		found, notFound, err := repos.FindPkgs(args.Slice())
+		if err != nil {
+			log.Fatal("Error finding packages").Err(err).Send()
+		}
+
+		pkgs := cliutils.FlattenPkgs(found, "install", c.Bool("interactive"))
+		build.InstallPkgs(c.Context, pkgs, notFound, types.BuildOpts{
+			Manager:     mgr,
+			Clean:       c.Bool("clean"),
+			Interactive: c.Bool("interactive"),
+		})
+		return nil
+	},
+	BashComplete: func(c *cli.Context) {
+		result, err := db.GetPkgs("true")
+		if err != nil {
+			log.Fatal("Error getting packages").Err(err).Send()
+		}
+		defer result.Close()
+
+		for result.Next() {
+			var pkg db.Package
+			err = result.StructScan(&pkg)
+			if err != nil {
+				log.Fatal("Error iterating over packages").Err(err).Send()
+			}
+
+			fmt.Println(pkg.Name)
+		}
+	},
 }
 
-func removeCmd(c *cli.Context) error {
-	args := c.Args()
-	if args.Len() < 1 {
-		log.Fatalf("Command remove expected at least 1 argument, got %d", args.Len()).Send()
-	}
+var removeCmd = &cli.Command{
+	Name:    "remove",
+	Usage:   "Remove an installed package",
+	Aliases: []string{"rm"},
+	Action: func(c *cli.Context) error {
+		args := c.Args()
+		if args.Len() < 1 {
+			log.Fatalf("Command remove expected at least 1 argument, got %d", args.Len()).Send()
+		}
 
-	mgr := manager.Detect()
-	if mgr == nil {
-		log.Fatal("Unable to detect supported package manager on system").Send()
-	}
+		mgr := manager.Detect()
+		if mgr == nil {
+			log.Fatal("Unable to detect a supported package manager on the system").Send()
+		}
 
-	err := mgr.Remove(nil, c.Args().Slice()...)
-	if err != nil {
-		log.Fatal("Error removing packages").Err(err).Send()
-	}
+		err := mgr.Remove(nil, c.Args().Slice()...)
+		if err != nil {
+			log.Fatal("Error removing packages").Err(err).Send()
+		}
 
-	return nil
+		return nil
+	},
 }

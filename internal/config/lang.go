@@ -26,16 +26,23 @@ import (
 	"golang.org/x/text/language"
 )
 
-var Language language.Tag
+var (
+	lang    language.Tag
+	langSet bool
+)
 
-func init() {
-	lang := SystemLang()
-	tag, err := language.Parse(lang)
-	if err != nil {
-		log.Fatal("Error parsing system language").Err(err).Send()
+func Language() language.Tag {
+	if !langSet {
+		syslang := SystemLang()
+		tag, err := language.Parse(syslang)
+		if err != nil {
+			log.Fatal("Error parsing system language").Err(err).Send()
+		}
+		base, _ := tag.Base()
+		lang = language.Make(base.String())
+		langSet = true
 	}
-	base, _ := tag.Base()
-	Language = language.Make(base.String())
+	return lang
 }
 
 func SystemLang() string {

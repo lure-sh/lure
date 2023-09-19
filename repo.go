@@ -32,83 +32,123 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func addrepoCmd(c *cli.Context) error {
-	name := c.String("name")
-	repoURL := c.String("url")
+var addrepoCmd = &cli.Command{
+	Name:    "addrepo",
+	Usage:   "Add a new repository",
+	Aliases: []string{"ar"},
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "name",
+			Aliases:  []string{"n"},
+			Required: true,
+			Usage:    "Name of the new repo",
+		},
+		&cli.StringFlag{
+			Name:     "url",
+			Aliases:  []string{"u"},
+			Required: true,
+			Usage:    "URL of the new repo",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		name := c.String("name")
+		repoURL := c.String("url")
 
-	for _, repo := range cfg.Repos {
-		if repo.URL == repoURL {
-			log.Fatal("Repo already exists").Str("name", repo.Name).Send()
+		cfg := config.Config()
+
+		for _, repo := range cfg.Repos {
+			if repo.URL == repoURL {
+				log.Fatal("Repo already exists").Str("name", repo.Name).Send()
+			}
 		}
-	}
 
-	cfg.Repos = append(cfg.Repos, types.Repo{
-		Name: name,
-		URL:  repoURL,
-	})
+		cfg.Repos = append(cfg.Repos, types.Repo{
+			Name: name,
+			URL:  repoURL,
+		})
 
-	cfgFl, err := os.Create(config.ConfigPath)
-	if err != nil {
-		log.Fatal("Error opening config file").Err(err).Send()
-	}
+		cfgFl, err := os.Create(config.GetPaths().ConfigPath)
+		if err != nil {
+			log.Fatal("Error opening config file").Err(err).Send()
+		}
 
-	err = toml.NewEncoder(cfgFl).Encode(&cfg)
-	if err != nil {
-		log.Fatal("Error encoding config").Err(err).Send()
-	}
+		err = toml.NewEncoder(cfgFl).Encode(cfg)
+		if err != nil {
+			log.Fatal("Error encoding config").Err(err).Send()
+		}
 
-	err = repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repos").Err(err).Send()
-	}
+		err = repos.Pull(c.Context, cfg.Repos)
+		if err != nil {
+			log.Fatal("Error pulling repos").Err(err).Send()
+		}
 
-	return nil
+		return nil
+	},
 }
 
-func removerepoCmd(c *cli.Context) error {
-	name := c.String("name")
+var removerepoCmd = &cli.Command{
+	Name:    "removerepo",
+	Usage:   "Remove an existing repository",
+	Aliases: []string{"rr"},
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "name",
+			Aliases:  []string{"n"},
+			Required: true,
+			Usage:    "Name of the repo to be deleted",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		name := c.String("name")
+		cfg := config.Config()
 
-	found := false
-	index := 0
-	for i, repo := range cfg.Repos {
-		if repo.Name == name {
-			index = i
-			found = true
+		found := false
+		index := 0
+		for i, repo := range cfg.Repos {
+			if repo.Name == name {
+				index = i
+				found = true
+			}
 		}
-	}
-	if !found {
-		log.Fatal("Repo does not exist").Str("name", name).Send()
-	}
+		if !found {
+			log.Fatal("Repo does not exist").Str("name", name).Send()
+		}
 
-	cfg.Repos = slices.Delete(cfg.Repos, index, index+1)
+		cfg.Repos = slices.Delete(cfg.Repos, index, index+1)
 
-	cfgFl, err := os.Create(config.ConfigPath)
-	if err != nil {
-		log.Fatal("Error opening config file").Err(err).Send()
-	}
+		cfgFl, err := os.Create(config.GetPaths().ConfigPath)
+		if err != nil {
+			log.Fatal("Error opening config file").Err(err).Send()
+		}
 
-	err = toml.NewEncoder(cfgFl).Encode(&cfg)
-	if err != nil {
-		log.Fatal("Error encoding config").Err(err).Send()
-	}
+		err = toml.NewEncoder(cfgFl).Encode(&cfg)
+		if err != nil {
+			log.Fatal("Error encoding config").Err(err).Send()
+		}
 
-	err = os.RemoveAll(filepath.Join(config.RepoDir, name))
-	if err != nil {
-		log.Fatal("Error removing repo directory").Err(err).Send()
-	}
+		err = os.RemoveAll(filepath.Join(config.GetPaths().RepoDir, name))
+		if err != nil {
+			log.Fatal("Error removing repo directory").Err(err).Send()
+		}
 
-	err = db.DeletePkgs(gdb, "repository = ?", name)
-	if err != nil {
-		log.Fatal("Error removing packages from database").Err(err).Send()
-	}
+		err = db.DeletePkgs("repository = ?", name)
+		if err != nil {
+			log.Fatal("Error removing packages from database").Err(err).Send()
+		}
 
-	return nil
+		return nil
+	},
 }
 
-func refreshCmd(c *cli.Context) error {
-	err := repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repos").Err(err).Send()
-	}
-	return nil
+var refreshCmd = &cli.Command{
+	Name:    "refresh",
+	Usage:   "Pull all repositories that have changed",
+	Aliases: []string{"ref"},
+	Action: func(c *cli.Context) error {
+		err := repos.Pull(c.Context, config.Config().Repos)
+		if err != nil {
+			log.Fatal("Error pulling repos").Err(err).Send()
+		}
+		return nil
+	},
 }

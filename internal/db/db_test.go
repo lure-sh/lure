@@ -37,11 +37,11 @@ var testPkg = db.Package{
 		"ru": "Проверочный пакет",
 	}),
 	Homepage: db.NewJSON(map[string]string{
-		"en": "https://lure.arsenm.dev",
+		"en": "https://lure.elara.ws/",
 	}),
 	Maintainer: db.NewJSON(map[string]string{
-		"en": "Arsen Musayelyan <arsen@arsenm.dev>",
-		"ru": "Арсен Мусаелян <arsen@arsenm.dev>",
+		"en": "Elara Musayelyan <elara@elara.ws>",
+		"ru": "Элара Мусаелян <arsen@arsenm.dev>",
 	}),
 	Architectures: db.NewJSON([]string{"arm64", "amd64"}),
 	Licenses:      db.NewJSON([]string{"GPL-3.0-or-later"}),
@@ -59,23 +59,18 @@ var testPkg = db.Package{
 }
 
 func TestInit(t *testing.T) {
-	gdb, err := sqlx.Open("sqlite", ":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
-	err = db.Init(gdb, ":memory:")
-	if err != nil {
-		t.Fatalf("Expected no error, got %s", err)
-	}
-
-	_, err = gdb.Exec("SELECT * FROM pkgs")
+	_, err = db.DB().Exec("SELECT * FROM pkgs")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
-	ver, ok := db.GetVersion(gdb)
+	ver, ok := db.GetVersion()
 	if !ok {
 		t.Errorf("Expected version to be present")
 	} else if ver != db.CurrentVersion {
@@ -84,19 +79,19 @@ func TestInit(t *testing.T) {
 }
 
 func TestInsertPackage(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
-	err = db.InsertPackage(gdb, testPkg)
+	err = db.InsertPackage(testPkg)
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
 	dbPkg := db.Package{}
-	err = sqlx.Get(gdb, &dbPkg, "SELECT * FROM pkgs WHERE name = 'test' AND repository = 'default'")
+	err = sqlx.Get(db.DB(), &dbPkg, "SELECT * FROM pkgs WHERE name = 'test' AND repository = 'default'")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -107,28 +102,28 @@ func TestInsertPackage(t *testing.T) {
 }
 
 func TestGetPkgs(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
 	x1 := testPkg
 	x1.Name = "x1"
 	x2 := testPkg
 	x2.Name = "x2"
 
-	err = db.InsertPackage(gdb, x1)
+	err = db.InsertPackage(x1)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	err = db.InsertPackage(gdb, x2)
+	err = db.InsertPackage(x2)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	result, err := db.GetPkgs(gdb, "name LIKE 'x%'")
+	result, err := db.GetPkgs("name LIKE 'x%'")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -147,28 +142,28 @@ func TestGetPkgs(t *testing.T) {
 }
 
 func TestGetPkg(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
 	x1 := testPkg
 	x1.Name = "x1"
 	x2 := testPkg
 	x2.Name = "x2"
 
-	err = db.InsertPackage(gdb, x1)
+	err = db.InsertPackage(x1)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	err = db.InsertPackage(gdb, x2)
+	err = db.InsertPackage(x2)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	pkg, err := db.GetPkg(gdb, "name LIKE 'x%' ORDER BY name")
+	pkg, err := db.GetPkg("name LIKE 'x%' ORDER BY name")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
@@ -183,34 +178,34 @@ func TestGetPkg(t *testing.T) {
 }
 
 func TestDeletePkgs(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
 	x1 := testPkg
 	x1.Name = "x1"
 	x2 := testPkg
 	x2.Name = "x2"
 
-	err = db.InsertPackage(gdb, x1)
+	err = db.InsertPackage(x1)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	err = db.InsertPackage(gdb, x2)
+	err = db.InsertPackage(x2)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	err = db.DeletePkgs(gdb, "name = 'x1'")
+	err = db.DeletePkgs("name = 'x1'")
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
 	var dbPkg db.Package
-	err = gdb.Get(&dbPkg, "SELECT * FROM pkgs WHERE name LIKE 'x%' ORDER BY name LIMIT 1;")
+	err = db.DB().Get(&dbPkg, "SELECT * FROM pkgs WHERE name LIKE 'x%' ORDER BY name LIMIT 1;")
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
@@ -221,11 +216,11 @@ func TestDeletePkgs(t *testing.T) {
 }
 
 func TestJsonArrayContains(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
 	x1 := testPkg
 	x1.Name = "x1"
@@ -233,18 +228,18 @@ func TestJsonArrayContains(t *testing.T) {
 	x2.Name = "x2"
 	x2.Provides.Val = append(x2.Provides.Val, "x")
 
-	err = db.InsertPackage(gdb, x1)
+	err = db.InsertPackage(x1)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	err = db.InsertPackage(gdb, x2)
+	err = db.InsertPackage(x2)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
 	var dbPkg db.Package
-	err = gdb.Get(&dbPkg, "SELECT * FROM pkgs WHERE json_array_contains(provides, 'x');")
+	err = db.DB().Get(&dbPkg, "SELECT * FROM pkgs WHERE json_array_contains(provides, 'x');")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}

@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/dlcache"
 )
 
@@ -34,7 +35,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	dlcache.BasePath = dir
+	config.GetPaths().RepoDir = dir
 }
 
 func TestNew(t *testing.T) {
@@ -44,7 +45,7 @@ func TestNew(t *testing.T) {
 		t.Errorf("Expected no error, got %s", err)
 	}
 
-	exp := filepath.Join(dlcache.BasePath, sha1sum(id))
+	exp := filepath.Join(dlcache.BasePath(), sha1sum(id))
 	if dir != exp {
 		t.Errorf("Expected %s, got %s", exp, dir)
 	}

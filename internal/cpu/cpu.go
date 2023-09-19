@@ -21,14 +21,15 @@ package cpu
 import (
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"golang.org/x/sys/cpu"
 )
 
-// ARMVariant checks which variant of ARM lure is running
+// armVariant checks which variant of ARM lure is running
 // on, by using the same detection method as Go itself
-func ARMVariant() string {
+func armVariant() string {
 	armEnv := os.Getenv("LURE_ARM_VARIANT")
 	// ensure value has "arm" prefix, such as arm5 or arm6
 	if strings.HasPrefix(armEnv, "arm") {
@@ -44,34 +45,6 @@ func ARMVariant() string {
 	}
 }
 
-// CompatibleARM returns all the compatible ARM variants given the system architecture
-func CompatibleARM(variant string) []string {
-	switch variant {
-	case "arm7", "arm":
-		return []string{"arm7", "arm6", "arm5"}
-	case "arm6":
-		return []string{"arm6", "arm5"}
-	case "arm5":
-		return []string{"arm5"}
-	default:
-		return []string{variant}
-	}
-}
-
-// CompatibleARMReverse returns all the compatible ARM variants given the package's architecture
-func CompatibleARMReverse(variant string) []string {
-	switch variant {
-	case "arm7":
-		return []string{"arm7"}
-	case "arm6":
-		return []string{"arm6", "arm7"}
-	case "arm5", "arm":
-		return []string{"arm5", "arm6", "arm7"}
-	default:
-		return []string{variant}
-	}
-}
-
 // Arch returns the canonical CPU architecture of the system
 func Arch() string {
 	arch := os.Getenv("LURE_ARCH")
@@ -79,20 +52,65 @@ func Arch() string {
 		arch = runtime.GOARCH
 	}
 	if arch == "arm" {
-		arch = ARMVariant()
+		arch = armVariant()
 	}
 	return arch
 }
 
-// Arches returns all the architectures the system is compatible with
-func Arches() []string {
-	arch := os.Getenv("LURE_ARCH")
-	if arch == "" {
-		arch = runtime.GOARCH
+func IsCompatibleWith(target string, list []string) bool {
+	if target == "all" {
+		return true
 	}
+
+	for _, arch := range list {
+		if strings.HasPrefix(target, "arm") && strings.HasPrefix(arch, "arm") {
+			targetVer, err := getARMVersion(target)
+			if err != nil {
+				return false
+			}
+
+			archVer, err := getARMVersion(arch)
+			if err != nil {
+				return false
+			}
+
+			if targetVer >= archVer {
+				return true
+			}
+		}
+
+		if target == arch {
+			return true
+		}
+	}
+
+	return false
+}
+
+func CompatibleArches(arch string) ([]string, error) {
 	if strings.HasPrefix(arch, "arm") {
-		return append(CompatibleARM(arch), "arm")
-	} else {
-		return []string{Arch()}
+		ver, err := getARMVersion(arch)
+		if err != nil {
+			return nil, err
+		}
+
+		if ver > 5 {
+			var out []string
+			for i := ver; i >= 5; i-- {
+				out = append(out, "arm"+strconv.Itoa(i))
+			}
+			return out, nil
+		}
 	}
+
+	return []string{arch}, nil
+}
+
+func getARMVersion(arch string) (int, error) {
+	// Extract the version number from ARM architecture
+	version := strings.TrimPrefix(arch, "arm")
+	if version == "" {
+		return 5, nil // Default to arm5 if version is not specified
+	}
+	return strconv.Atoi(version)
 }

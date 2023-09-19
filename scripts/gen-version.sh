@@ -1,3 +1,3 @@
 #!/bin/bash
 
-git describe --tags > internal/config/version.txt
+git describe --tags > version.txt

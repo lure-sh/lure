@@ -19,4 +19,4 @@ uninstall:
 internal/config/version.txt:
 	go generate ./internal/config
 
-.PHONY: install clean uninstall
+.PHONY: install clean uninstall installmisc

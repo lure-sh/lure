@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jmoiron/sqlx"
 	"go.elara.ws/lure/internal/db"
 )
 
@@ -17,12 +16,12 @@ var logoData string
 
 var _ http.HandlerFunc
 
-func handleBadge(gdb *sqlx.DB) http.HandlerFunc {
+func handleBadge() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		repo := chi.URLParam(req, "repo")
 		name := chi.URLParam(req, "pkg")
 
-		pkg, err := db.GetPkg(gdb, "name = ? AND repository = ?", name, repo)
+		pkg, err := db.GetPkg("name = ? AND repository = ?", name, repo)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

@@ -33,50 +33,52 @@ import (
 func setCfgDirs(t *testing.T) {
 	t.Helper()
 
+	paths := config.GetPaths()
+
 	var err error
-	config.CacheDir, err = os.MkdirTemp("/tmp", "lure-pull-test.*")
+	paths.CacheDir, err = os.MkdirTemp("/tmp", "lure-pull-test.*")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
-	config.RepoDir = filepath.Join(config.CacheDir, "repo")
-	config.PkgsDir = filepath.Join(config.CacheDir, "pkgs")
+	paths.RepoDir = filepath.Join(paths.CacheDir, "repo")
+	paths.PkgsDir = filepath.Join(paths.CacheDir, "pkgs")
 
-	err = os.MkdirAll(config.RepoDir, 0o755)
+	err = os.MkdirAll(paths.RepoDir, 0o755)
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
-	err = os.MkdirAll(config.PkgsDir, 0o755)
+	err = os.MkdirAll(paths.PkgsDir, 0o755)
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
-	config.DBPath = filepath.Join(config.CacheDir, "db")
+	paths.DBPath = filepath.Join(paths.CacheDir, "db")
 }
 
 func removeCacheDir(t *testing.T) {
 	t.Helper()
 
-	err := os.RemoveAll(config.CacheDir)
+	err := os.RemoveAll(config.GetPaths().CacheDir)
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 }
 
 func TestPull(t *testing.T) {
-	gdb, err := db.Open(":memory:")
+	_, err := db.Open(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}
-	defer gdb.Close()
+	defer db.Close()
 
 	setCfgDirs(t)
 	defer removeCacheDir(t)
 
 	ctx := context.Background()
 
-	err = repos.Pull(ctx, gdb, []types.Repo{
+	err = repos.Pull(ctx, []types.Repo{
 		{
 			Name: "default",
 			URL:  "https://github.com/Arsen6331/lure-repo.git",
@@ -86,7 +88,7 @@ func TestPull(t *testing.T) {
 		t.Fatalf("Expected no error, got %s", err)
 	}
 
-	result, err := db.GetPkgs(gdb, "name LIKE 'itd%'")
+	result, err := db.GetPkgs("name LIKE 'itd%'")
 	if err != nil {
 		t.Fatalf("Expected no error, got %s", err)
 	}

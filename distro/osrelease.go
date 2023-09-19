@@ -103,7 +103,14 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 		Logo:             runner.Vars["LOGO"].Str,
 	}
 
-	if runner.Vars["ID_LIKE"].IsSet() {
+	distroUpdated := false
+	if distID, ok := os.LookupEnv("LURE_DISTRO"); ok {
+		out.ID = distID
+	}
+
+	if distLike, ok := os.LookupEnv("LURE_DISTRO_LIKE"); ok {
+		out.Like = strings.Split(distLike, " ")
+	} else if runner.Vars["ID_LIKE"].IsSet() && !distroUpdated {
 		out.Like = strings.Split(runner.Vars["ID_LIKE"].Str, " ")
 	}
 

@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/twitchtv/twirp"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/api"
@@ -34,9 +33,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-type lureWebAPI struct {
-	db *sqlx.DB
-}
+type lureWebAPI struct{}
 
 func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
 	query := "(name LIKE ? OR description LIKE ? OR json_array_contains(provides, ?))"
@@ -67,7 +64,7 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 		query += " LIMIT " + strconv.FormatInt(req.Limit, 10)
 	}
 
-	result, err := db.GetPkgs(l.db, query, args...)
+	result, err := db.GetPkgs(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +83,7 @@ func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.Se
 }
 
 func (l lureWebAPI) GetPkg(ctx context.Context, req *api.GetPackageRequest) (*api.Package, error) {
-	pkg, err := db.GetPkg(l.db, "name = ? AND repository = ?", req.Name, req.Repository)
+	pkg, err := db.GetPkg("name = ? AND repository = ?", req.Name, req.Repository)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +95,7 @@ func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptR
 		return nil, twirp.NewError(twirp.InvalidArgument, "name and repository must not contain . or /")
 	}
 
-	scriptPath := filepath.Join(config.RepoDir, req.Repository, req.Name, "lure.sh")
+	scriptPath := filepath.Join(config.GetPaths().RepoDir, req.Repository, req.Name, "lure.sh")
 	_, err := os.Stat(scriptPath)
 	if os.IsNotExist(err) {
 		return nil, twirp.NewError(twirp.NotFound, "requested package not found")

@@ -26,69 +26,69 @@ import (
 	"go.elara.ws/logger/log"
 )
 
-var (
+type Paths struct {
 	ConfigDir  string
 	ConfigPath string
 	CacheDir   string
 	RepoDir    string
 	PkgsDir    string
 	DBPath     string
-)
+}
 
-// DBPresent is true if the database
-// was present when LURE was started
-var DBPresent bool
+var paths *Paths
 
-func init() {
-	cfgDir, err := os.UserConfigDir()
-	if err != nil {
-		log.Fatal("Unable to detect user config directory").Err(err).Send()
-	}
+func GetPaths() *Paths {
+	if paths == nil {
+		paths = &Paths{}
 
-	ConfigDir = filepath.Join(cfgDir, "lure")
-
-	err = os.MkdirAll(ConfigDir, 0o755)
-	if err != nil {
-		log.Fatal("Unable to create LURE config directory").Err(err).Send()
-	}
-
-	ConfigPath = filepath.Join(ConfigDir, "lure.toml")
-
-	if _, err := os.Stat(ConfigPath); err != nil {
-		cfgFl, err := os.Create(ConfigPath)
+		cfgDir, err := os.UserConfigDir()
 		if err != nil {
-			log.Fatal("Unable to create LURE config file").Err(err).Send()
+			log.Fatal("Unable to detect user config directory").Err(err).Send()
 		}
 
-		err = toml.NewEncoder(cfgFl).Encode(&defaultConfig)
+		paths.ConfigDir = filepath.Join(cfgDir, "lure")
+
+		err = os.MkdirAll(paths.ConfigDir, 0o755)
 		if err != nil {
-			log.Fatal("Error encoding default configuration").Err(err).Send()
+			log.Fatal("Unable to create LURE config directory").Err(err).Send()
 		}
 
-		cfgFl.Close()
+		paths.ConfigPath = filepath.Join(paths.ConfigDir, "lure.toml")
+
+		if _, err := os.Stat(paths.ConfigPath); err != nil {
+			cfgFl, err := os.Create(paths.ConfigPath)
+			if err != nil {
+				log.Fatal("Unable to create LURE config file").Err(err).Send()
+			}
+
+			err = toml.NewEncoder(cfgFl).Encode(&defaultConfig)
+			if err != nil {
+				log.Fatal("Error encoding default configuration").Err(err).Send()
+			}
+
+			cfgFl.Close()
+		}
+
+		cacheDir, err := os.UserCacheDir()
+		if err != nil {
+			log.Fatal("Unable to detect cache directory").Err(err).Send()
+		}
+
+		paths.CacheDir = filepath.Join(cacheDir, "lure")
+		paths.RepoDir = filepath.Join(paths.CacheDir, "repo")
+		paths.PkgsDir = filepath.Join(paths.CacheDir, "pkgs")
+
+		err = os.MkdirAll(paths.RepoDir, 0o755)
+		if err != nil {
+			log.Fatal("Unable to create repo cache directory").Err(err).Send()
+		}
+
+		err = os.MkdirAll(paths.PkgsDir, 0o755)
+		if err != nil {
+			log.Fatal("Unable to create package cache directory").Err(err).Send()
+		}
+
+		paths.DBPath = filepath.Join(paths.CacheDir, "db")
 	}
-
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		log.Fatal("Unable to detect cache directory").Err(err).Send()
-	}
-
-	CacheDir = filepath.Join(cacheDir, "lure")
-	RepoDir = filepath.Join(CacheDir, "repo")
-	PkgsDir = filepath.Join(CacheDir, "pkgs")
-
-	err = os.MkdirAll(RepoDir, 0o755)
-	if err != nil {
-		log.Fatal("Unable to create repo cache directory").Err(err).Send()
-	}
-
-	err = os.MkdirAll(PkgsDir, 0o755)
-	if err != nil {
-		log.Fatal("Unable to create package cache directory").Err(err).Send()
-	}
-
-	DBPath = filepath.Join(CacheDir, "db")
-
-	fi, err := os.Stat(DBPath)
-	DBPresent = err == nil && !fi.IsDir()
+	return paths
 }

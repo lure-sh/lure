@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main
+package helpers
 
 import (
 	"errors"
@@ -40,7 +40,8 @@ var (
 	ErrNoDetectManNum = errors.New("manual number cannot be detected from the filename")
 )
 
-var helpers = shutils.ExecFuncs{
+// Helpers contains all the helper commands
+var Helpers = shutils.ExecFuncs{
 	"install-binary":       installHelperCmd("/usr/bin", 0o755),
 	"install-systemd-user": installHelperCmd("/usr/lib/systemd/user", 0o644),
 	"install-systemd":      installHelperCmd("/usr/lib/systemd/system", 0o644),
@@ -54,8 +55,9 @@ var helpers = shutils.ExecFuncs{
 	"git-version":          gitVersionCmd,
 }
 
-// rHelpers contains restricted read-only helpers that don't modify any state
-var rHelpers = shutils.ExecFuncs{
+// Restricted contains restricted read-only helper commands
+// that don't modify any state
+var Restricted = shutils.ExecFuncs{
 	"git-version": gitVersionCmd,
 }
 

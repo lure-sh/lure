@@ -23,71 +23,83 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/repos"
 	"go.elara.ws/lure/manager"
 	"golang.org/x/exp/slices"
 )
 
-func listCmd(c *cli.Context) error {
-	err := repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repositories").Err(err).Send()
-	}
-
-	where := "true"
-	args := []any(nil)
-	if c.NArg() > 0 {
-		where = "name LIKE ? OR json_array_contains(provides, ?)"
-		args = []any{c.Args().First(), c.Args().First()}
-	}
-
-	result, err := db.GetPkgs(gdb, where, args...)
-	if err != nil {
-		log.Fatal("Error getting packages").Err(err).Send()
-	}
-	defer result.Close()
-
-	var installed map[string]string
-	if c.Bool("installed") {
-		mgr := manager.Detect()
-		if mgr == nil {
-			log.Fatal("Unable to detect supported package manager on system").Send()
-		}
-
-		installed, err = mgr.ListInstalled(&manager.Opts{AsRoot: false})
+var listCmd = &cli.Command{
+	Name:    "list",
+	Usage:   "List LURE repo packages",
+	Aliases: []string{"ls"},
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "installed",
+			Aliases: []string{"I"},
+		},
+	},
+	Action: func(c *cli.Context) error {
+		err := repos.Pull(c.Context, config.Config().Repos)
 		if err != nil {
-			log.Fatal("Error listing installed packages").Err(err).Send()
+			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
-	}
 
-	for result.Next() {
-		var pkg db.Package
-		err := result.StructScan(&pkg)
+		where := "true"
+		args := []any(nil)
+		if c.NArg() > 0 {
+			where = "name LIKE ? OR json_array_contains(provides, ?)"
+			args = []any{c.Args().First(), c.Args().First()}
+		}
+
+		result, err := db.GetPkgs(where, args...)
 		if err != nil {
-			return err
+			log.Fatal("Error getting packages").Err(err).Send()
 		}
+		defer result.Close()
 
-		if slices.Contains(cfg.IgnorePkgUpdates, pkg.Name) {
-			continue
-		}
-
-		version := pkg.Version
+		var installed map[string]string
 		if c.Bool("installed") {
-			instVersion, ok := installed[pkg.Name]
-			if !ok {
-				continue
-			} else {
-				version = instVersion
+			mgr := manager.Detect()
+			if mgr == nil {
+				log.Fatal("Unable to detect a supported package manager on the system").Send()
+			}
+
+			installed, err = mgr.ListInstalled(&manager.Opts{AsRoot: false})
+			if err != nil {
+				log.Fatal("Error listing installed packages").Err(err).Send()
 			}
 		}
 
-		fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, version)
-	}
+		for result.Next() {
+			var pkg db.Package
+			err := result.StructScan(&pkg)
+			if err != nil {
+				return err
+			}
 
-	if err != nil {
-		log.Fatal("Error iterating over packages").Err(err).Send()
-	}
+			if slices.Contains(config.Config().IgnorePkgUpdates, pkg.Name) {
+				continue
+			}
 
-	return nil
+			version := pkg.Version
+			if c.Bool("installed") {
+				instVersion, ok := installed[pkg.Name]
+				if !ok {
+					continue
+				} else {
+					version = instVersion
+				}
+			}
+
+			fmt.Printf("%s/%s %s\n", pkg.Repository, pkg.Name, version)
+		}
+
+		if err != nil {
+			log.Fatal("Error iterating over packages").Err(err).Send()
+		}
+
+		return nil
+	},
 }

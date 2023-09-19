@@ -18,15 +18,12 @@
 
 package repos
 
-import (
-	"github.com/jmoiron/sqlx"
-	"go.elara.ws/lure/internal/db"
-)
+import "go.elara.ws/lure/internal/db"
 
 // FindPkgs looks for packages matching the inputs inside the database.
 // It returns a map that maps the package name input to the packages found for it.
 // It also returns a slice that contains the names of all packages that were not found.
-func FindPkgs(gdb *sqlx.DB, pkgs []string) (map[string][]db.Package, []string, error) {
+func FindPkgs(pkgs []string) (map[string][]db.Package, []string, error) {
 	found := map[string][]db.Package{}
 	notFound := []string(nil)
 
@@ -35,7 +32,7 @@ func FindPkgs(gdb *sqlx.DB, pkgs []string) (map[string][]db.Package, []string, e
 			continue
 		}
 
-		result, err := db.GetPkgs(gdb, "name LIKE ?", pkgName)
+		result, err := db.GetPkgs("name LIKE ?", pkgName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -54,7 +51,7 @@ func FindPkgs(gdb *sqlx.DB, pkgs []string) (map[string][]db.Package, []string, e
 		result.Close()
 
 		if added == 0 {
-			result, err := db.GetPkgs(gdb, "json_array_contains(provides, ?)", pkgName)
+			result, err := db.GetPkgs("json_array_contains(provides, ?)", pkgName)
 			if err != nil {
 				return nil, nil, err
 			}

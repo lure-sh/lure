@@ -21,7 +21,8 @@ package shutils
 import (
 	"context"
 	"io"
-	"os"
+	"io/fs"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -30,33 +31,36 @@ import (
 )
 
 func RestrictedReadDir(allowedPrefixes ...string) interp.ReadDirHandlerFunc {
-	return func(ctx context.Context, s string) ([]os.FileInfo, error) {
+	return func(ctx context.Context, s string) ([]fs.FileInfo, error) {
+		path := filepath.Clean(s)
 		for _, allowedPrefix := range allowedPrefixes {
-			if strings.HasPrefix(s, allowedPrefix) {
+			if strings.HasPrefix(path, allowedPrefix) {
 				return interp.DefaultReadDirHandler()(ctx, s)
 			}
 		}
 
-		return nil, os.ErrNotExist
+		return nil, fs.ErrNotExist
 	}
 }
 
 func RestrictedStat(allowedPrefixes ...string) interp.StatHandlerFunc {
-	return func(ctx context.Context, s string, b bool) (os.FileInfo, error) {
+	return func(ctx context.Context, s string, b bool) (fs.FileInfo, error) {
+		path := filepath.Clean(s)
 		for _, allowedPrefix := range allowedPrefixes {
-			if strings.HasPrefix(s, allowedPrefix) {
+			if strings.HasPrefix(path, allowedPrefix) {
 				return interp.DefaultStatHandler()(ctx, s, b)
 			}
 		}
 
-		return nil, os.ErrNotExist
+		return nil, fs.ErrNotExist
 	}
 }
 
 func RestrictedOpen(allowedPrefixes ...string) interp.OpenHandlerFunc {
-	return func(ctx context.Context, s string, i int, fm os.FileMode) (io.ReadWriteCloser, error) {
+	return func(ctx context.Context, s string, i int, fm fs.FileMode) (io.ReadWriteCloser, error) {
+		path := filepath.Clean(s)
 		for _, allowedPrefix := range allowedPrefixes {
-			if strings.HasPrefix(s, allowedPrefix) {
+			if strings.HasPrefix(path, allowedPrefix) {
 				return interp.DefaultOpenHandler()(ctx, s, i, fm)
 			}
 		}

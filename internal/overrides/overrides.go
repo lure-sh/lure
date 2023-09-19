@@ -58,7 +58,10 @@ func Resolve(info *distro.OSRelease, opts *Opts) ([]string, error) {
 		return nil, err
 	}
 
-	architectures := cpu.Arches()
+	architectures, err := cpu.CompatibleArches(cpu.Arch())
+	if err != nil {
+		return nil, err
+	}
 
 	distros := []string{info.ID}
 	if opts.LikeDistros {
@@ -66,47 +69,38 @@ func Resolve(info *distro.OSRelease, opts *Opts) ([]string, error) {
 	}
 
 	var out []string
-	for _, arch := range architectures {
+	for _, lang := range langs {
 		for _, distro := range distros {
-			if opts.Name == "" {
-				out = append(
-					out,
-					arch+"_"+distro,
-					distro,
-				)
-			} else {
-				out = append(
-					out,
-					opts.Name+"_"+arch+"_"+distro,
-					opts.Name+"_"+distro,
-				)
+			for _, arch := range architectures {
+				out = append(out, opts.Name+"_"+arch+"_"+distro+"_"+lang)
 			}
+
+			out = append(out, opts.Name+"_"+distro+"_"+lang)
 		}
-		if opts.Name == "" {
-			out = append(out, arch)
-		} else {
-			out = append(out, opts.Name+"_"+arch)
+
+		for _, arch := range architectures {
+			out = append(out, opts.Name+"_"+arch+"_"+lang)
 		}
+
+		out = append(out, opts.Name+"_"+lang)
 	}
+
+	for _, distro := range distros {
+		for _, arch := range architectures {
+			out = append(out, opts.Name+"_"+arch+"_"+distro)
+		}
+
+		out = append(out, opts.Name+"_"+distro)
+	}
+
+	for _, arch := range architectures {
+		out = append(out, opts.Name+"_"+arch)
+	}
+
 	out = append(out, opts.Name)
 
 	for index, item := range out {
-		out[index] = strings.ReplaceAll(item, "-", "_")
-	}
-
-	if len(langs) > 0 {
-		tmp := out
-		out = make([]string, 0, len(tmp)+(len(tmp)*len(langs)))
-		for _, lang := range langs {
-			for _, val := range tmp {
-				if val == "" {
-					continue
-				}
-
-				out = append(out, val+"_"+lang)
-			}
-		}
-		out = append(out, tmp...)
+		out[index] = strings.TrimPrefix(strings.ReplaceAll(item, "-", "_"), "_")
 	}
 
 	return out, nil

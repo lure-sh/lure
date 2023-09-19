@@ -33,61 +33,72 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func infoCmd(c *cli.Context) error {
-	args := c.Args()
-	if args.Len() < 1 {
-		log.Fatalf("Command info expected at least 1 argument, got %d", args.Len()).Send()
-	}
-
-	err := repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repositories").Err(err).Send()
-	}
-
-	found, _, err := repos.FindPkgs(gdb, args.Slice())
-	if err != nil {
-		log.Fatal("Error finding packages").Err(err).Send()
-	}
-
-	if len(found) == 0 {
-		os.Exit(1)
-	}
-
-	pkgs := cliutils.FlattenPkgs(found, "show", c.Bool("interactive"), translator)
-
-	var names []string
-	all := c.Bool("all")
-
-	if !all {
-		info, err := distro.ParseOSRelease(c.Context)
-		if err != nil {
-			log.Fatal("Error parsing os-release file").Err(err).Send()
+var infoCmd = &cli.Command{
+	Name:  "info",
+	Usage: "Print information about a package",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "all",
+			Aliases: []string{"a"},
+			Usage:   "Show all information, not just for the current distro",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		args := c.Args()
+		if args.Len() < 1 {
+			log.Fatalf("Command info expected at least 1 argument, got %d", args.Len()).Send()
 		}
-		names, err = overrides.Resolve(
-			info,
-			overrides.DefaultOpts.
-				WithLanguages([]string{config.SystemLang()}),
-		)
-		if err != nil {
-			log.Fatal("Error resolving overrides").Err(err).Send()
-		}
-	}
 
-	for _, pkg := range pkgs {
+		err := repos.Pull(c.Context, config.Config().Repos)
+		if err != nil {
+			log.Fatal("Error pulling repositories").Err(err).Send()
+		}
+
+		found, _, err := repos.FindPkgs(args.Slice())
+		if err != nil {
+			log.Fatal("Error finding packages").Err(err).Send()
+		}
+
+		if len(found) == 0 {
+			os.Exit(1)
+		}
+
+		pkgs := cliutils.FlattenPkgs(found, "show", c.Bool("interactive"))
+
+		var names []string
+		all := c.Bool("all")
+
 		if !all {
-			err = yaml.NewEncoder(os.Stdout).Encode(overrides.ResolvePackage(&pkg, names))
+			info, err := distro.ParseOSRelease(c.Context)
 			if err != nil {
-				log.Fatal("Error encoding script variables").Err(err).Send()
+				log.Fatal("Error parsing os-release file").Err(err).Send()
 			}
-		} else {
-			err = yaml.NewEncoder(os.Stdout).Encode(pkg)
+			names, err = overrides.Resolve(
+				info,
+				overrides.DefaultOpts.
+					WithLanguages([]string{config.SystemLang()}),
+			)
 			if err != nil {
-				log.Fatal("Error encoding script variables").Err(err).Send()
+				log.Fatal("Error resolving overrides").Err(err).Send()
 			}
 		}
 
-		fmt.Println("---")
-	}
+		for _, pkg := range pkgs {
+			if !all {
+				err = yaml.NewEncoder(os.Stdout).Encode(overrides.ResolvePackage(&pkg, names))
+				if err != nil {
+					log.Fatal("Error encoding script variables").Err(err).Send()
+				}
+			} else {
+				err = yaml.NewEncoder(os.Stdout).Encode(pkg)
+				if err != nil {
+					log.Fatal("Error encoding script variables").Err(err).Send()
+				}
+			}
 
-	return nil
+			fmt.Println("---")
+		}
+
+		return nil
+	},
 }

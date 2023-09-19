@@ -25,42 +25,61 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/distro"
+	"go.elara.ws/lure/internal/build"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/repos"
+	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/manager"
 	"go.elara.ws/vercmp"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
-func upgradeCmd(c *cli.Context) error {
-	info, err := distro.ParseOSRelease(c.Context)
-	if err != nil {
-		log.Fatal("Error parsing os-release file").Err(err).Send()
-	}
+var upgradeCmd = &cli.Command{
+	Name:    "upgrade",
+	Usage:   "Upgrade all installed packages",
+	Aliases: []string{"up"},
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "clean",
+			Aliases: []string{"c"},
+			Usage:   "Build package from scratch even if there's an already built package available",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		info, err := distro.ParseOSRelease(c.Context)
+		if err != nil {
+			log.Fatal("Error parsing os-release file").Err(err).Send()
+		}
 
-	mgr := manager.Detect()
-	if mgr == nil {
-		log.Fatal("Unable to detect supported package manager on system").Send()
-	}
+		mgr := manager.Detect()
+		if mgr == nil {
+			log.Fatal("Unable to detect a supported package manager on the system").Send()
+		}
 
-	err = repos.Pull(c.Context, gdb, cfg.Repos)
-	if err != nil {
-		log.Fatal("Error pulling repos").Err(err).Send()
-	}
+		err = repos.Pull(c.Context, config.Config().Repos)
+		if err != nil {
+			log.Fatal("Error pulling repos").Err(err).Send()
+		}
 
-	updates, err := checkForUpdates(c.Context, mgr, info)
-	if err != nil {
-		log.Fatal("Error checking for updates").Err(err).Send()
-	}
+		updates, err := checkForUpdates(c.Context, mgr, info)
+		if err != nil {
+			log.Fatal("Error checking for updates").Err(err).Send()
+		}
 
-	if len(updates) > 0 {
-		installPkgs(c.Context, updates, nil, mgr, c.Bool("clean"), c.Bool("interactive"))
-	} else {
-		log.Info("There is nothing to do.").Send()
-	}
+		if len(updates) > 0 {
+			build.InstallPkgs(c.Context, updates, nil, types.BuildOpts{
+				Manager:     mgr,
+				Clean:       c.Bool("clean"),
+				Interactive: c.Bool("interactive"),
+			})
+		} else {
+			log.Info("There is nothing to do.").Send()
+		}
 
-	return nil
+		return nil
+	},
 }
 
 func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRelease) ([]db.Package, error) {
@@ -70,14 +89,14 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 	}
 
 	pkgNames := maps.Keys(installed)
-	found, _, err := repos.FindPkgs(gdb, pkgNames)
+	found, _, err := repos.FindPkgs(pkgNames)
 	if err != nil {
 		return nil, err
 	}
 
 	var out []db.Package
 	for pkgName, pkgs := range found {
-		if slices.Contains(cfg.IgnorePkgUpdates, pkgName) {
+		if slices.Contains(config.Config().IgnorePkgUpdates, pkgName) {
 			continue
 		}
 

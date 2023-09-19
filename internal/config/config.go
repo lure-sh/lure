@@ -22,10 +22,11 @@ import (
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
+	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/types"
 )
 
-var defaultConfig = types.Config{
+var defaultConfig = &types.Config{
 	RootCmd:          "sudo",
 	PagerStyle:       "native",
 	IgnorePkgUpdates: []string{},
@@ -37,18 +38,30 @@ var defaultConfig = types.Config{
 	},
 }
 
-// Decode decodes the config file into the given
-// pointer
-func Decode(cfg *types.Config) error {
-	cfgFl, err := os.Open(ConfigPath)
-	if err != nil {
-		return err
-	}
-	defer cfgFl.Close()
+var config *types.Config
 
-	// Write defaults to pointer in case some values are not set in the config
-	*cfg = defaultConfig
-	// Set repos to nil so as to avoid a duplicate default
-	cfg.Repos = nil
-	return toml.NewDecoder(cfgFl).Decode(cfg)
+func Config() *types.Config {
+	if config == nil {
+		cfgFl, err := os.Open(GetPaths().ConfigPath)
+		if err != nil {
+			log.Warn("Error opening config file, using defaults").Err(err).Send()
+			return defaultConfig
+		}
+		defer cfgFl.Close()
+
+		// Copy the default configuration into config
+		defCopy := *defaultConfig
+		config = &defCopy
+		config.Repos = nil
+
+		err = toml.NewDecoder(cfgFl).Decode(config)
+		if err != nil {
+			log.Warn("Error decoding config file, using defaults").Err(err).Send()
+			// Set config back to nil so that we try again next time
+			config = nil
+			return defaultConfig
+		}
+	}
+
+	return config
 }

@@ -34,13 +34,13 @@ var (
 )
 
 func init() {
-	b := lipgloss.RoundedBorder()
-	b.Right = "\u251C"
-	titleStyle = lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+	b1 := lipgloss.RoundedBorder()
+	b1.Right = "\u251C"
+	titleStyle = lipgloss.NewStyle().BorderStyle(b1).Padding(0, 1)
 
-	b = lipgloss.RoundedBorder()
-	b.Left = "\u2524"
-	infoStyle = titleStyle.Copy().BorderStyle(b)
+	b2 := lipgloss.RoundedBorder()
+	b2.Left = "\u2524"
+	infoStyle = titleStyle.Copy().BorderStyle(b2)
 }
 
 type Pager struct {

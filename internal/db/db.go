@@ -62,40 +62,52 @@ type version struct {
 	Version int `db:"version"`
 }
 
-func Open(dsn string) (*sqlx.DB, error) {
-	if dsn != ":memory:" {
-		fi, err := os.Stat(config.DBPath)
-		if err == nil {
-			// TODO: This should be removed by the first stable release.
-			if fi.IsDir() {
-				log.Warn("Your database is using the old database engine; rebuilding").Send()
+var (
+	conn   *sqlx.DB
+	closed = true
+)
 
-				err = os.RemoveAll(config.DBPath)
-				if err != nil {
-					log.Fatal("Error removing old database").Err(err).Send()
-				}
-				config.DBPresent = false
-			}
-		}
+func DB() *sqlx.DB {
+	if conn != nil && !closed {
+		return conn
 	}
-
-	db, err := sqlx.Open("sqlite", dsn)
+	db, err := Open(config.GetPaths().DBPath)
 	if err != nil {
 		log.Fatal("Error opening database").Err(err).Send()
 	}
+	conn = db
+	return conn
+}
 
-	err = Init(db, dsn)
+func Open(dsn string) (*sqlx.DB, error) {
+	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
-		log.Fatal("Error initializing database").Err(err).Send()
+		return nil, err
+	}
+	conn = db
+	closed = false
+
+	err = initDB(dsn)
+	if err != nil {
+		return nil, err
 	}
 
 	return db, nil
 }
 
+func Close() error {
+	closed = true
+	if conn != nil {
+		return conn.Close()
+	} else {
+		return nil
+	}
+}
+
 // Init initializes the database
-func Init(db *sqlx.DB, dsn string) error {
-	*db = *db.Unsafe()
-	_, err := db.Exec(`
+func initDB(dsn string) error {
+	conn = conn.Unsafe()
+	_, err := conn.Exec(`
 		CREATE TABLE IF NOT EXISTS pkgs (
 			name          TEXT NOT NULL,
 			repository    TEXT NOT NULL,
@@ -123,49 +135,57 @@ func Init(db *sqlx.DB, dsn string) error {
 		return err
 	}
 
-	ver, ok := GetVersion(db)
+	ver, ok := GetVersion()
 	if !ok {
 		log.Warn("Database version does not exist. Run lure fix if something isn't working.").Send()
-		return addVersion(db, CurrentVersion)
+		return addVersion(CurrentVersion)
 	}
 
 	if ver != CurrentVersion {
 		log.Warn("Database version mismatch; rebuilding").Int("version", ver).Int("expected", CurrentVersion).Send()
 
-		db.Close()
-		err = os.Remove(config.DBPath)
+		conn.Close()
+		err = os.Remove(config.GetPaths().DBPath)
 		if err != nil {
 			return err
 		}
-		config.DBPresent = false
 
 		tdb, err := Open(dsn)
 		if err != nil {
 			return err
 		}
-		*db = *tdb
+		conn = tdb
 	}
 
 	return nil
 }
 
-func GetVersion(db *sqlx.DB) (int, bool) {
+func IsEmpty() bool {
+	var count int
+	err := DB().Get(&count, "SELECT count(1) FROM pkgs;")
+	if err != nil {
+		return true
+	}
+	return count == 0
+}
+
+func GetVersion() (int, bool) {
 	var ver version
-	err := db.Get(&ver, "SELECT * FROM lure_db_version LIMIT 1;")
+	err := DB().Get(&ver, "SELECT * FROM lure_db_version LIMIT 1;")
 	if err != nil {
 		return 0, false
 	}
 	return ver.Version, true
 }
 
-func addVersion(db *sqlx.DB, ver int) error {
-	_, err := db.Exec(`INSERT INTO lure_db_version(version) VALUES (?);`, ver)
+func addVersion(ver int) error {
+	_, err := DB().Exec(`INSERT INTO lure_db_version(version) VALUES (?);`, ver)
 	return err
 }
 
 // InsertPackage adds a package to the database
-func InsertPackage(db *sqlx.DB, pkg Package) error {
-	_, err := db.NamedExec(`
+func InsertPackage(pkg Package) error {
+	_, err := DB().NamedExec(`
 		INSERT OR REPLACE INTO pkgs (
 			name,
 			repository,
@@ -204,8 +224,8 @@ func InsertPackage(db *sqlx.DB, pkg Package) error {
 }
 
 // GetPkgs returns a result containing packages that match the where conditions
-func GetPkgs(db *sqlx.DB, where string, args ...any) (*sqlx.Rows, error) {
-	stream, err := db.Queryx("SELECT * FROM pkgs WHERE "+where, args...)
+func GetPkgs(where string, args ...any) (*sqlx.Rows, error) {
+	stream, err := DB().Queryx("SELECT * FROM pkgs WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -213,15 +233,15 @@ func GetPkgs(db *sqlx.DB, where string, args ...any) (*sqlx.Rows, error) {
 }
 
 // GetPkg returns a single package that match the where conditions
-func GetPkg(db *sqlx.DB, where string, args ...any) (*Package, error) {
+func GetPkg(where string, args ...any) (*Package, error) {
 	out := &Package{}
-	err := db.Get(out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
+	err := DB().Get(out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
 	return out, err
 }
 
 // DeletePkgs deletes all packages matching the where conditions
-func DeletePkgs(db *sqlx.DB, where string, args ...any) error {
-	_, err := db.Exec("DELETE FROM pkgs WHERE "+where, args...)
+func DeletePkgs(where string, args ...any) error {
+	_, err := DB().Exec("DELETE FROM pkgs WHERE "+where, args...)
 	return err
 }
 

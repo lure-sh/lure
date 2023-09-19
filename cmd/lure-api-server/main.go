@@ -30,6 +30,7 @@ import (
 	"go.elara.ws/logger"
 	"go.elara.ws/logger/log"
 	"go.elara.ws/lure/internal/api"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/repos"
 )
 
@@ -54,7 +55,7 @@ func main() {
 		log.Logger = logger.NewMulti(log.Logger, logger.NewJSON(fl))
 	}
 
-	err := repos.Pull(ctx, gdb, cfg.Repos)
+	err := repos.Pull(ctx, config.Config().Repos)
 	if err != nil {
 		log.Fatal("Error pulling repositories").Err(err).Send()
 	}
@@ -63,14 +64,14 @@ func main() {
 	go repoPullWorker(ctx, sigCh)
 
 	apiServer := api.NewAPIServer(
-		lureWebAPI{db: gdb},
+		lureWebAPI{},
 		twirp.WithServerPathPrefix(""),
 	)
 
 	r := chi.NewRouter()
 	r.With(allowAllCORSHandler, withAcceptLanguage).Handle("/*", apiServer)
 	r.Post("/webhook", handleWebhook(sigCh))
-	r.Get("/badge/{repo}/{pkg}", handleBadge(gdb))
+	r.Get("/badge/{repo}/{pkg}", handleBadge())
 
 	ln, err := net.Listen("tcp", *addr)
 	if err != nil {

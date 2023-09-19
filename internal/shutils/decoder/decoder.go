@@ -56,16 +56,16 @@ func (ite InvalidTypeError) Error() string {
 // Decoder provides methods for decoding variable values
 type Decoder struct {
 	info   *distro.OSRelease
-	runner *interp.Runner
+	Runner *interp.Runner
 	// Enable distro overrides (true by default)
 	Overrides bool
-	// Enable using like distros for overrides (true by default)
+	// Enable using like distros for overrides
 	LikeDistros bool
 }
 
 // New creates a new variable decoder
 func New(info *distro.OSRelease, runner *interp.Runner) *Decoder {
-	return &Decoder{info, runner, true, true}
+	return &Decoder{info, runner, true, len(info.Like) > 0}
 }
 
 // DecodeVar decodes a variable to val using reflection.
@@ -173,7 +173,7 @@ func (d *Decoder) GetFunc(name string) (ScriptFunc, bool) {
 	}
 
 	return func(ctx context.Context, opts ...interp.RunnerOption) error {
-		sub := d.runner.Subshell()
+		sub := d.Runner.Subshell()
 		for _, opt := range opts {
 			opt(sub)
 		}
@@ -188,7 +188,7 @@ func (d *Decoder) getFunc(name string) *syntax.Stmt {
 	}
 
 	for _, fnName := range names {
-		fn, ok := d.runner.Funcs[fnName]
+		fn, ok := d.Runner.Funcs[fnName]
 		if ok {
 			return fn
 		}
@@ -205,11 +205,11 @@ func (d *Decoder) getVar(name string) *expand.Variable {
 	}
 
 	for _, varName := range names {
-		val, ok := d.runner.Vars[varName]
+		val, ok := d.Runner.Vars[varName]
 		if ok {
 			// Resolve nameref variables
 			_, resolved := val.Resolve(expand.FuncEnviron(func(s string) string {
-				if val, ok := d.runner.Vars[s]; ok {
+				if val, ok := d.Runner.Vars[s]; ok {
 					return val.String()
 				}
 				return ""

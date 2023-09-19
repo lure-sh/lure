@@ -26,16 +26,16 @@ import (
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/pager"
-	"go.elara.ws/translate"
+	"go.elara.ws/lure/internal/translations"
 )
 
 // YesNoPrompt asks the user a yes or no question, using def as the default answer
-func YesNoPrompt(msg string, interactive, def bool, t translate.Translator) (bool, error) {
+func YesNoPrompt(msg string, interactive, def bool) (bool, error) {
 	if interactive {
 		var answer bool
 		err := survey.AskOne(
 			&survey.Confirm{
-				Message: t.TranslateTo(msg, config.Language),
+				Message: translations.Translator().TranslateTo(msg, config.Language()),
 				Default: def,
 			},
 			&answer,
@@ -49,12 +49,13 @@ func YesNoPrompt(msg string, interactive, def bool, t translate.Translator) (boo
 // PromptViewScript asks the user if they'd like to see a script,
 // shows it if they answer yes, then asks if they'd still like to
 // continue, and exits if they answer no.
-func PromptViewScript(script, name, style string, interactive bool, t translate.Translator) error {
+func PromptViewScript(script, name, style string, interactive bool) error {
 	if !interactive {
 		return nil
 	}
 
-	view, err := YesNoPrompt(t.TranslateTo("Would you like to view the build script for", config.Language)+" "+name, interactive, false, t)
+	scriptPrompt := translations.Translator().TranslateTo("Would you like to view the build script for", config.Language()) + " " + name
+	view, err := YesNoPrompt(scriptPrompt, interactive, false)
 	if err != nil {
 		return err
 	}
@@ -65,13 +66,13 @@ func PromptViewScript(script, name, style string, interactive bool, t translate.
 			return err
 		}
 
-		cont, err := YesNoPrompt("Would you still like to continue?", interactive, false, t)
+		cont, err := YesNoPrompt("Would you still like to continue?", interactive, false)
 		if err != nil {
 			return err
 		}
 
 		if !cont {
-			log.Fatal(t.TranslateTo("User chose not to continue after reading script", config.Language)).Send()
+			log.Fatal(translations.Translator().TranslateTo("User chose not to continue after reading script", config.Language())).Send()
 		}
 	}
 
@@ -98,11 +99,11 @@ func ShowScript(path, name, style string) error {
 
 // FlattenPkgs attempts to flatten the a map of slices of packages into a single slice
 // of packages by prompting the user if multiple packages match.
-func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool, t translate.Translator) []db.Package {
+func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool) []db.Package {
 	var outPkgs []db.Package
 	for _, pkgs := range found {
 		if len(pkgs) > 1 && interactive {
-			choices, err := PkgPrompt(pkgs, verb, interactive, t)
+			choices, err := PkgPrompt(pkgs, verb, interactive)
 			if err != nil {
 				log.Fatal("Error prompting for choice of package").Send()
 			}
@@ -116,7 +117,7 @@ func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool, t
 
 // PkgPrompt asks the user to choose between multiple packages.
 // The user may choose multiple packages.
-func PkgPrompt(options []db.Package, verb string, interactive bool, t translate.Translator) ([]db.Package, error) {
+func PkgPrompt(options []db.Package, verb string, interactive bool) ([]db.Package, error) {
 	if !interactive {
 		return []db.Package{options[0]}, nil
 	}
@@ -128,7 +129,7 @@ func PkgPrompt(options []db.Package, verb string, interactive bool, t translate.
 
 	prompt := &survey.MultiSelect{
 		Options: names,
-		Message: t.TranslateTo("Choose which package(s) to "+verb, config.Language),
+		Message: translations.Translator().TranslateTo("Choose which package(s) to "+verb, config.Language()),
 	}
 
 	var choices []int
