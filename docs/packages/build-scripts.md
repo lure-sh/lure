@@ -21,6 +21,7 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
     - [conflicts](#conflicts)
     - [deps](#deps)
     - [build_deps](#build_deps)
+    - [opt_deps](#opt_deps)
     - [replaces](#replaces)
     - [sources](#sources)
     - [checksums](#checksums)
@@ -159,6 +160,17 @@ The `deps` array contains the dependencies for the package. LURE repos will be c
 ### build_deps
 
 The `build_deps` array contains the dependencies that are required to build the package. They will be installed before the build starts. Similarly to the `deps` array, LURE repos will be checked first.
+
+### opt_deps
+
+The `opt_deps` array contains optional dependencies for the package. A description can be added after ": ", but it's not required.
+
+```bash
+opt_deps_arch=(
+    'git: Download git repositories'
+    'aria2: Download files'
+)
+```
 
 ### replaces
 
