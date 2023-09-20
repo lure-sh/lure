@@ -1,6 +1,6 @@
 /*
  * LURE - Linux User REpository
- * Copyright (C) 2023 Arsen Musayelyan
+ * Copyright (C) 2023 Elara Musayelyan
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

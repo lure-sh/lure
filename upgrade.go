@@ -1,6 +1,6 @@
 /*
  * LURE - Linux User REpository
- * Copyright (C) 2023 Arsen Musayelyan
+ * Copyright (C) 2023 Elara Musayelyan
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/distro"
 	"go.elara.ws/lure/internal/build"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/repos"
 	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/manager"
