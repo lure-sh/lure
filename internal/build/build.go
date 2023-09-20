@@ -121,6 +121,11 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 		return nil, nil, err
 	}
 
+	err = installOptDeps(ctx, vars, opts, installed)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	builtPaths, builtNames, repoDeps, err := installDeps(ctx, opts, vars)
 	if err != nil {
 		return nil, nil, err
@@ -314,6 +319,30 @@ func installBuildDeps(ctx context.Context, vars *types.BuildVars, opts types.Bui
 		InstallPkgs(ctx, flattened, notFound, opts)
 	}
 	return buildDeps, nil
+}
+
+func installOptDeps(ctx context.Context, vars *types.BuildVars, opts types.BuildOpts, installed map[string]string) error {
+	if len(vars.OptDepends) > 0 {
+		optDeps, err := cliutils.ChooseOptDepends(vars.OptDepends, "install", opts.Interactive)
+		if err != nil {
+			return err
+		}
+
+		if len(optDeps) == 0 {
+			return nil
+		}
+
+		found, notFound, err := repos.FindPkgs(optDeps)
+		if err != nil {
+			return err
+		}
+
+		found = filterBuildDeps(found, installed)
+		flattened := cliutils.FlattenPkgs(found, "install", opts.Interactive)
+		optDeps = packageNames(flattened)
+		InstallPkgs(ctx, flattened, notFound, opts)
+	}
+	return nil
 }
 
 func installDeps(ctx context.Context, opts types.BuildOpts, vars *types.BuildVars) (builtPaths, builtNames, repoDeps []string, err error) {

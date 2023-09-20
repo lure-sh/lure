@@ -98,12 +98,12 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 				// empty. In this case, we need to update the DB fully
 				// rather than just incrementally.
 				if db.IsEmpty() {
-					err = processRepoChanges(ctx, repo, r, w, old, new)
+					err = processRepoFull(ctx, repo, repoDir)
 					if err != nil {
 						return err
 					}
 				} else {
-					err = processRepoFull(ctx, repo, repoDir)
+					err = processRepoChanges(ctx, repo, r, w, old, new)
 					if err != nil {
 						return err
 					}

@@ -43,6 +43,7 @@ type BuildVars struct {
 	Conflicts     []string `sh:"conflicts"`
 	Depends       []string `sh:"deps"`
 	BuildDepends  []string `sh:"build_deps"`
+	OptDepends    []string `sh:"opt_deps"`
 	Replaces      []string `sh:"replaces"`
 	Sources       []string `sh:"sources"`
 	Checksums     []string `sh:"checksums"`

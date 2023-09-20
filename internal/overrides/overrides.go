@@ -163,6 +163,7 @@ type ResolvedPackage struct {
 	Replaces      []string `sh:"replaces"`
 	Depends       []string `sh:"deps"`
 	BuildDepends  []string `sh:"build_deps"`
+	OptDepends    []string `sh:"opt_deps"`
 }
 
 func ResolvePackage(pkg *db.Package, overrides []string) *ResolvedPackage {

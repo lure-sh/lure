@@ -20,6 +20,7 @@ package cliutils
 
 import (
 	"os"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"go.elara.ws/lure/internal/config"
@@ -116,7 +117,6 @@ func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool) [
 }
 
 // PkgPrompt asks the user to choose between multiple packages.
-// The user may choose multiple packages.
 func PkgPrompt(options []db.Package, verb string, interactive bool) (db.Package, error) {
 	if !interactive {
 		return options[0], nil
@@ -139,4 +139,30 @@ func PkgPrompt(options []db.Package, verb string, interactive bool) (db.Package,
 	}
 
 	return options[choice], nil
+}
+
+// ChooseOptDepends asks the user to choose between multiple optional dependencies.
+// The user may choose multiple items.
+func ChooseOptDepends(options []string, verb string, interactive bool) ([]string, error) {
+	if !interactive {
+		return []string{}, nil
+	}
+
+	prompt := &survey.MultiSelect{
+		Options: options,
+		Message: translations.Translator().TranslateTo("Choose which optional package(s) to install", config.Language()),
+	}
+
+	var choices []int
+	err := survey.AskOne(prompt, &choices)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]string, len(choices))
+	for i, choiceIndex := range choices {
+		out[i], _, _ = strings.Cut(options[choiceIndex], ": ")
+	}
+
+	return out, nil
 }

@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/jmoiron/sqlx"
 	"go.elara.ws/lure/internal/config"
@@ -33,7 +32,7 @@ import (
 	"modernc.org/sqlite"
 )
 
-const CurrentVersion = 1
+const CurrentVersion = 2
 
 func init() {
 	sqlite.MustRegisterScalarFunction("json_array_contains", 2, JsonArrayContains)
@@ -55,6 +54,7 @@ type Package struct {
 	Replaces      JSON[[]string]            `sh:"replaces" db:"replaces"`
 	Depends       JSON[map[string][]string] `db:"depends"`
 	BuildDepends  JSON[map[string][]string] `db:"builddepends"`
+	OptDepends    JSON[map[string][]string] `db:"optdepends"`
 	Repository    string                    `db:"repository"`
 }
 
@@ -124,6 +124,7 @@ func initDB(dsn string) error {
 			replaces      TEXT CHECK(replaces = 'null' OR (JSON_VALID(replaces) AND JSON_TYPE(replaces) = 'array')),
 			depends       TEXT CHECK(depends = 'null' OR (JSON_VALID(depends) AND JSON_TYPE(depends) = 'object')),
 			builddepends  TEXT CHECK(builddepends = 'null' OR (JSON_VALID(builddepends) AND JSON_TYPE(builddepends) = 'object')),
+			optdepends    TEXT CHECK(optdepends = 'null' OR (JSON_VALID(optdepends) AND JSON_TYPE(optdepends) = 'object')),
 			UNIQUE(name, repository)
 		);
 
@@ -136,28 +137,25 @@ func initDB(dsn string) error {
 	}
 
 	ver, ok := GetVersion()
-	if !ok {
+	if ok && ver != CurrentVersion {
+		log.Warn("Database version mismatch; resetting").Int("version", ver).Int("expected", CurrentVersion).Send()
+		Reset()
+		return initDB(dsn)
+	} else if !ok {
 		log.Warn("Database version does not exist. Run lure fix if something isn't working.").Send()
 		return addVersion(CurrentVersion)
 	}
 
-	if ver != CurrentVersion {
-		log.Warn("Database version mismatch; rebuilding").Int("version", ver).Int("expected", CurrentVersion).Send()
-
-		conn.Close()
-		err = os.Remove(config.GetPaths().DBPath)
-		if err != nil {
-			return err
-		}
-
-		tdb, err := Open(dsn)
-		if err != nil {
-			return err
-		}
-		conn = tdb
-	}
-
 	return nil
+}
+
+func Reset() error {
+	_, err := DB().Exec("DROP TABLE IF EXISTS pkgs;")
+	if err != nil {
+		return err
+	}
+	_, err = DB().Exec("DROP TABLE IF EXISTS lure_db_version;")
+	return err
 }
 
 func IsEmpty() bool {
@@ -201,7 +199,8 @@ func InsertPackage(pkg Package) error {
 			conflicts,
 			replaces,
 			depends,
-			builddepends
+			builddepends,
+			optdepends
 		) VALUES (
 			:name,
 			:repository,
@@ -217,7 +216,8 @@ func InsertPackage(pkg Package) error {
 			:conflicts,
 			:replaces,
 			:depends,
-			:builddepends
+			:builddepends,
+			:optdepends
 		);
 	`, pkg)
 	return err
