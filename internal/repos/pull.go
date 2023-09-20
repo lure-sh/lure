@@ -34,7 +34,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/distro"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"

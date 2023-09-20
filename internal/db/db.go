@@ -27,7 +27,7 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"golang.org/x/exp/slices"
 	"modernc.org/sqlite"

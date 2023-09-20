@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/lure/distro"

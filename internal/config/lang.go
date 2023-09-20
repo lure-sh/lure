@@ -22,7 +22,7 @@ import (
 	"os"
 	"strings"
 
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"golang.org/x/text/language"
 )
 

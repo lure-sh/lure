@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 )
 
 type Paths struct {

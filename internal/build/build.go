@@ -20,7 +20,7 @@ import (
 
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/distro"
 	"go.elara.ws/lure/internal/cliutils"
 	"go.elara.ws/lure/internal/config"

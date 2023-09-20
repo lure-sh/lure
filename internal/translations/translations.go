@@ -4,7 +4,7 @@ import (
 	"embed"
 
 	"go.elara.ws/logger"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/translate"
 	"golang.org/x/text/language"
 )

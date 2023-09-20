@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/logger/log"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/types"
 )
 
