@@ -22,9 +22,9 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/pager"
 	"go.elara.ws/lure/internal/translations"
 )

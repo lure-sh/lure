@@ -26,10 +26,10 @@ import (
 	"strings"
 
 	"github.com/twitchtv/twirp"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/api"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/log"
 	"golang.org/x/text/language"
 )
 

@@ -22,9 +22,9 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/repos"
 )
 

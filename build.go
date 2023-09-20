@@ -23,9 +23,9 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/build"
 	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/osutils"
 	"go.elara.ws/lure/internal/repos"
 	"go.elara.ws/lure/internal/types"

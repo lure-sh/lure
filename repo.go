@@ -24,9 +24,9 @@ import (
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/repos"
 	"go.elara.ws/lure/internal/types"
 	"golang.org/x/exp/slices"
