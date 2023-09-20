@@ -24,7 +24,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	//"time"
 
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
