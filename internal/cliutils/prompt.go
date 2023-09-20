@@ -103,11 +103,11 @@ func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool) [
 	var outPkgs []db.Package
 	for _, pkgs := range found {
 		if len(pkgs) > 1 && interactive {
-			choices, err := PkgPrompt(pkgs, verb, interactive)
+			choice, err := PkgPrompt(pkgs, verb, interactive)
 			if err != nil {
 				log.Fatal("Error prompting for choice of package").Send()
 			}
-			outPkgs = append(outPkgs, choices...)
+			outPkgs = append(outPkgs, choice)
 		} else if len(pkgs) == 1 || !interactive {
 			outPkgs = append(outPkgs, pkgs[0])
 		}
@@ -117,9 +117,9 @@ func FlattenPkgs(found map[string][]db.Package, verb string, interactive bool) [
 
 // PkgPrompt asks the user to choose between multiple packages.
 // The user may choose multiple packages.
-func PkgPrompt(options []db.Package, verb string, interactive bool) ([]db.Package, error) {
+func PkgPrompt(options []db.Package, verb string, interactive bool) (db.Package, error) {
 	if !interactive {
-		return []db.Package{options[0]}, nil
+		return options[0], nil
 	}
 
 	names := make([]string, len(options))
@@ -127,21 +127,16 @@ func PkgPrompt(options []db.Package, verb string, interactive bool) ([]db.Packag
 		names[i] = option.Repository + "/" + option.Name + " " + option.Version
 	}
 
-	prompt := &survey.MultiSelect{
+	prompt := &survey.Select{
 		Options: names,
-		Message: translations.Translator().TranslateTo("Choose which package(s) to "+verb, config.Language()),
+		Message: translations.Translator().TranslateTo("Choose which package to "+verb, config.Language()),
 	}
 
-	var choices []int
-	err := survey.AskOne(prompt, &choices)
+	var choice int
+	err := survey.AskOne(prompt, &choice)
 	if err != nil {
-		return nil, err
+		return db.Package{}, err
 	}
 
-	out := make([]db.Package, len(choices))
-	for i, choiceIndex := range choices {
-		out[i] = options[choiceIndex]
-	}
-
-	return out, nil
+	return options[choice], nil
 }
