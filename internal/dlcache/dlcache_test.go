@@ -26,8 +26,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/dlcache"
+	"go.elara.ws/lure/pkg/config"
 )
 
 func init() {

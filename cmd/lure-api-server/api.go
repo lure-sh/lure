@@ -27,9 +27,9 @@ import (
 
 	"github.com/twitchtv/twirp"
 	"go.elara.ws/lure/internal/api"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/config"
+	"go.elara.ws/lure/pkg/db"
 	"golang.org/x/text/language"
 )
 

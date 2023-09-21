@@ -22,14 +22,14 @@ import (
 	"context"
 	"path/filepath"
 
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/config"
+	"go.elara.ws/lure/pkg/db"
 )
 
-// InstallPkgs installs non-LURE packages via the package manager, then builds and installs LURE
-// packages
+// InstallPkgs installs native packages via the package manager,
+// then builds and installs the LURE packages
 func InstallPkgs(ctx context.Context, lurePkgs []db.Package, nativePkgs []string, opts types.BuildOpts) {
 	if len(nativePkgs) > 0 {
 		err := opts.Manager.Install(nil, nativePkgs...)
@@ -41,7 +41,7 @@ func InstallPkgs(ctx context.Context, lurePkgs []db.Package, nativePkgs []string
 	InstallScripts(ctx, GetScriptPaths(lurePkgs), opts)
 }
 
-// GetScriptPaths generates a slice of script paths corresponding to the
+// GetScriptPaths returns a slice of script paths corresponding to the
 // given packages
 func GetScriptPaths(pkgs []db.Package) []string {
 	var scripts []string
@@ -52,7 +52,7 @@ func GetScriptPaths(pkgs []db.Package) []string {
 	return scripts
 }
 
-// InstallScripts builds and installs LURE build scripts
+// InstallScripts builds and installs the given LURE build scripts
 func InstallScripts(ctx context.Context, scripts []string, opts types.BuildOpts) {
 	for _, script := range scripts {
 		opts.Script = script

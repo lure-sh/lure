@@ -34,13 +34,13 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/lure/distro"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/config"
+	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/pkg/distro"
 	"go.elara.ws/vercmp"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
@@ -49,7 +49,7 @@ import (
 
 // Pull pulls the provided repositories. If a repo doesn't exist, it will be cloned
 // and its packages will be written to the DB. If it does exist, it will be pulled.
-// In this case, only changed packages will be processed.
+// In this case, only changed packages will be processed if possible.
 func Pull(ctx context.Context, repos []types.Repo) error {
 	for _, repo := range repos {
 		repoURL, err := url.Parse(repo.URL)
@@ -149,9 +149,11 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 		}
 		fl.Close()
 
-		currentVer, _, _ := strings.Cut(config.Version, "-")
-		if vercmp.Compare(currentVer, repoCfg.Repo.MinVersion) == -1 {
-			log.Warn("LURE repo's minumum LURE version is greater than the current version. Try updating LURE if something doesn't work.").Str("repo", repo.Name).Send()
+		if config.Version != "unknown" {
+			currentVer, _, _ := strings.Cut(config.Version, "-")
+			if vercmp.Compare(currentVer, repoCfg.Repo.MinVersion) == -1 {
+				log.Warn("LURE repo's minumum LURE version is greater than the current version. Try updating LURE if something doesn't work.").Str("repo", repo.Name).Send()
+			}
 		}
 	}
 

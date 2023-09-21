@@ -20,7 +20,6 @@ package distro
 
 import (
 	"context"
-	"errors"
 	"os"
 	"strings"
 
@@ -30,8 +29,7 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
-var ErrParse = errors.New("could not parse os-release file")
-
+// OSRelease contains information from an os-release file
 type OSRelease struct {
 	Name             string
 	PrettyName       string
@@ -50,7 +48,8 @@ var parsed *OSRelease
 
 // OSReleaseName returns a struct parsed from the system's os-release
 // file. It checks /etc/os-release as well as /usr/lib/os-release.
-// The returned OSRelease struct is a singleton.
+// The first time it's called, it'll parse the os-release file.
+// Subsequent calls will return the same value.
 func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 	if parsed != nil {
 		return parsed, nil
@@ -87,7 +86,7 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 
 	err = runner.Run(ctx, file)
 	if err != nil {
-		return nil, ErrParse
+		return nil, err
 	}
 
 	out := &OSRelease{

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/pkg/db"
 )
 
 //go:embed badge-logo.txt

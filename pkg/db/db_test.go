@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/pkg/db"
 )
 
 var testPkg = db.Package{

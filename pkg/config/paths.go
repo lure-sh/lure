@@ -26,6 +26,7 @@ import (
 	"go.elara.ws/lure/internal/log"
 )
 
+// Paths contains various paths used by LURE
 type Paths struct {
 	ConfigDir  string
 	ConfigPath string
@@ -37,6 +38,10 @@ type Paths struct {
 
 var paths *Paths
 
+// GetPaths returns a Paths struct.
+// The first time it's called, it'll generate the struct
+// using information from the system.
+// Subsequent calls will return the same value.
 func GetPaths() *Paths {
 	if paths == nil {
 		paths = &Paths{}

@@ -3,23 +3,29 @@
 
 package api
 
-import context "context"
-import fmt "fmt"
-import http "net/http"
-import io "io"
-import json "encoding/json"
-import strconv "strconv"
-import strings "strings"
+import (
+	context "context"
+	fmt "fmt"
+	http "net/http"
+	io "io"
+	json "encoding/json"
+	strconv "strconv"
+	strings "strings"
+)
 
-import protojson "google.golang.org/protobuf/encoding/protojson"
-import proto "google.golang.org/protobuf/proto"
-import twirp "github.com/twitchtv/twirp"
-import ctxsetters "github.com/twitchtv/twirp/ctxsetters"
+import (
+	protojson "google.golang.org/protobuf/encoding/protojson"
+	proto "google.golang.org/protobuf/proto"
+	twirp "github.com/twitchtv/twirp"
+	ctxsetters "github.com/twitchtv/twirp/ctxsetters"
+)
 
-import bytes "bytes"
-import errors "errors"
-import path "path"
-import url "net/url"
+import (
+	bytes "bytes"
+	errors "errors"
+	path "path"
+	url "net/url"
+)
 
 // Version compatibility assertion.
 // If the constant is not defined in the package, that likely means

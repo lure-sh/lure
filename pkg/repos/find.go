@@ -18,10 +18,10 @@
 
 package repos
 
-import "go.elara.ws/lure/internal/db"
+import "go.elara.ws/lure/pkg/db"
 
 // FindPkgs looks for packages matching the inputs inside the database.
-// It returns a map that maps the package name input to the packages found for it.
+// It returns a map that maps the package name input to any packages found for it.
 // It also returns a slice that contains the names of all packages that were not found.
 func FindPkgs(pkgs []string) (map[string][]db.Package, []string, error) {
 	found := map[string][]db.Package{}

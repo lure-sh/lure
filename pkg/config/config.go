@@ -40,6 +40,9 @@ var defaultConfig = &types.Config{
 
 var config *types.Config
 
+// Config returns a LURE configuration struct.
+// The first time it's called, it'll load the config from a file.
+// Subsequent calls will just return the same value.
 func Config() *types.Config {
 	if config == nil {
 		cfgFl, err := os.Open(GetPaths().ConfigPath)

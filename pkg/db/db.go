@@ -26,16 +26,18 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/config"
 	"golang.org/x/exp/slices"
 	"modernc.org/sqlite"
 )
 
+// CurrentVersion is the current version of the database.
+// The database is reset if its version doesn't match this.
 const CurrentVersion = 2
 
 func init() {
-	sqlite.MustRegisterScalarFunction("json_array_contains", 2, JsonArrayContains)
+	sqlite.MustRegisterScalarFunction("json_array_contains", 2, jsonArrayContains)
 }
 
 // Package is a LURE package's database representation
@@ -67,11 +69,14 @@ var (
 	closed = true
 )
 
+// DB returns the LURE database.
+// The first time it's called, it opens the SQLite database file.
+// Subsequent calls return the same connection.
 func DB() *sqlx.DB {
 	if conn != nil && !closed {
 		return conn
 	}
-	db, err := Open(config.GetPaths().DBPath)
+	db, err := open(config.GetPaths().DBPath)
 	if err != nil {
 		log.Fatal("Error opening database").Err(err).Send()
 	}
@@ -79,7 +84,7 @@ func DB() *sqlx.DB {
 	return conn
 }
 
-func Open(dsn string) (*sqlx.DB, error) {
+func open(dsn string) (*sqlx.DB, error) {
 	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
@@ -95,6 +100,7 @@ func Open(dsn string) (*sqlx.DB, error) {
 	return db, nil
 }
 
+// Close closes the database
 func Close() error {
 	closed = true
 	if conn != nil {
@@ -104,7 +110,7 @@ func Close() error {
 	}
 }
 
-// Init initializes the database
+// initDB initializes the database
 func initDB(dsn string) error {
 	conn = conn.Unsafe()
 	_, err := conn.Exec(`
@@ -139,7 +145,7 @@ func initDB(dsn string) error {
 	ver, ok := GetVersion()
 	if ok && ver != CurrentVersion {
 		log.Warn("Database version mismatch; resetting").Int("version", ver).Int("expected", CurrentVersion).Send()
-		Reset()
+		reset()
 		return initDB(dsn)
 	} else if !ok {
 		log.Warn("Database version does not exist. Run lure fix if something isn't working.").Send()
@@ -149,7 +155,8 @@ func initDB(dsn string) error {
 	return nil
 }
 
-func Reset() error {
+// reset drops all the database tables
+func reset() error {
 	_, err := DB().Exec("DROP TABLE IF EXISTS pkgs;")
 	if err != nil {
 		return err
@@ -158,6 +165,7 @@ func Reset() error {
 	return err
 }
 
+// IsEmpty returns true if the database has no packages in it, otherwise it returns false.
 func IsEmpty() bool {
 	var count int
 	err := DB().Get(&count, "SELECT count(1) FROM pkgs;")
@@ -167,6 +175,8 @@ func IsEmpty() bool {
 	return count == 0
 }
 
+// GetVersion returns the database version and a boolean indicating
+// whether the database contained a version number
 func GetVersion() (int, bool) {
 	var ver version
 	err := DB().Get(&ver, "SELECT * FROM lure_db_version LIMIT 1;")
@@ -232,7 +242,7 @@ func GetPkgs(where string, args ...any) (*sqlx.Rows, error) {
 	return stream, nil
 }
 
-// GetPkg returns a single package that match the where conditions
+// GetPkg returns a single package that matches the where conditions
 func GetPkg(where string, args ...any) (*Package, error) {
 	out := &Package{}
 	err := DB().Get(out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
@@ -245,7 +255,9 @@ func DeletePkgs(where string, args ...any) error {
 	return err
 }
 
-func JsonArrayContains(ctx *sqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
+// jsonArrayContains is an SQLite function that checks if a JSON array
+// in the database contains a given value
+func jsonArrayContains(ctx *sqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
 	value, ok := args[0].(string)
 	if !ok {
 		return nil, errors.New("both arguments to json_array_contains must be strings")
@@ -265,10 +277,12 @@ func JsonArrayContains(ctx *sqlite.FunctionContext, args []driver.Value) (driver
 	return slices.Contains(array, item), nil
 }
 
+// JSON represents a JSON value in the database
 type JSON[T any] struct {
 	Val T
 }
 
+// NewJSON creates a new database JSON value
 func NewJSON[T any](v T) JSON[T] {
 	return JSON[T]{Val: v}
 }

@@ -31,6 +31,10 @@ var (
 	langSet bool
 )
 
+// Language returns the system language.
+// The first time it's called, it'll detect the langauge based on
+// the $LANG environment variable.
+// Subsequent calls will just return the same value.
 func Language() language.Tag {
 	if !langSet {
 		syslang := SystemLang()
@@ -45,6 +49,8 @@ func Language() language.Tag {
 	return lang
 }
 
+// SystemLang returns the system language based on
+// the $LANG environment variable.
 func SystemLang() string {
 	lang := os.Getenv("LANG")
 	lang, _, _ = strings.Cut(lang, ".")

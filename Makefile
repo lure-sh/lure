@@ -1,7 +1,8 @@
 PREFIX ?= /usr/local
+GIT_VERSION = $(shell git describe --tags )
 
-lure: internal/config/version.txt
-	CGO_ENABLED=0 go build
+lure:
+	CGO_ENABLED=0 go build -ldflags="-X 'go.elara.ws/lure/pkg/config.Version=$(GIT_VERSION)'"
 
 clean:
 	rm -f lure
@@ -15,8 +16,5 @@ installmisc:
 
 uninstall:
 	rm -f /usr/local/bin/lure
-	
-internal/config/version.txt:
-	go generate ./internal/config
 
-.PHONY: install clean uninstall installmisc
+.PHONY: install clean uninstall installmisc lure

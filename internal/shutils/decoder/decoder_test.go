@@ -27,8 +27,8 @@ import (
 	"strings"
 	"testing"
 
-	"go.elara.ws/lure/distro"
 	"go.elara.ws/lure/internal/shutils/decoder"
+	"go.elara.ws/lure/pkg/distro"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )

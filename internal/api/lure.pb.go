@@ -7,10 +7,11 @@
 package api
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -734,21 +735,23 @@ func file_lure_proto_rawDescGZIP() []byte {
 	return file_lure_proto_rawDescData
 }
 
-var file_lure_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_lure_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_lure_proto_goTypes = []interface{}{
-	(SORT_BY)(0),                   // 0: lure.SORT_BY
-	(FILTER_TYPE)(0),               // 1: lure.FILTER_TYPE
-	(*SearchRequest)(nil),          // 2: lure.SearchRequest
-	(*StringList)(nil),             // 3: lure.StringList
-	(*Package)(nil),                // 4: lure.Package
-	(*GetPackageRequest)(nil),      // 5: lure.GetPackageRequest
-	(*SearchResponse)(nil),         // 6: lure.SearchResponse
-	(*GetBuildScriptRequest)(nil),  // 7: lure.GetBuildScriptRequest
-	(*GetBuildScriptResponse)(nil), // 8: lure.GetBuildScriptResponse
-	nil,                            // 9: lure.Package.DependsEntry
-	nil,                            // 10: lure.Package.BuildDependsEntry
-}
+var (
+	file_lure_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+	file_lure_proto_msgTypes  = make([]protoimpl.MessageInfo, 9)
+	file_lure_proto_goTypes   = []interface{}{
+		(SORT_BY)(0),                   // 0: lure.SORT_BY
+		(FILTER_TYPE)(0),               // 1: lure.FILTER_TYPE
+		(*SearchRequest)(nil),          // 2: lure.SearchRequest
+		(*StringList)(nil),             // 3: lure.StringList
+		(*Package)(nil),                // 4: lure.Package
+		(*GetPackageRequest)(nil),      // 5: lure.GetPackageRequest
+		(*SearchResponse)(nil),         // 6: lure.SearchResponse
+		(*GetBuildScriptRequest)(nil),  // 7: lure.GetBuildScriptRequest
+		(*GetBuildScriptResponse)(nil), // 8: lure.GetBuildScriptResponse
+		nil,                            // 9: lure.Package.DependsEntry
+		nil,                            // 10: lure.Package.BuildDependsEntry
+	}
+)
 var file_lure_proto_depIdxs = []int32{
 	0,  // 0: lure.SearchRequest.sort_by:type_name -> lure.SORT_BY
 	1,  // 1: lure.SearchRequest.filter_type:type_name -> lure.FILTER_TYPE
