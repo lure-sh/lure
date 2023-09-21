@@ -117,7 +117,7 @@ The addrepo command adds a repository to LURE if it doesn't already exist. The `
 Example:
 
 ```shell
-lure ar -n default -u https://github.com/Arsen6331/lure-repo
+lure ar -n default -u https://github.com/Elara6331/lure-repo
 ```
 
 ### removerepo

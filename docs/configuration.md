@@ -36,7 +36,7 @@ The `repo` array in the config specifies which repos are added to LURE. Each rep
 ```toml
 [[repo]]
 name = 'default'
-url = 'https://github.com/Arsen6331/lure-repo.git'
+url = 'https://github.com/Elara6331/lure-repo.git'
 ```
 
 The `default` repo is added by default. Any amount of repos may be added.

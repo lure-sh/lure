@@ -55,7 +55,7 @@ LURE uses build scripts similar to the AUR's PKGBUILDs. This is the documentatio
 
 ## Distro Overrides
 
-Allowing LURE to run on different distros provides some challenges. For example, some distros use different names for their packages. This is solved using distro overrides. Any variable or function used in a LURE build script may be overridden based on distro and CPU architecture. The way you do this is by appending the distro and/or architecture to the end of the name. For example, [ITD](https://gitea.arsenm.dev/Arsen6331/itd) depends on the `pactl` command as well as DBus and BlueZ. These are named somewhat differently on different distros. For ITD, I use the following for the dependencies:
+Allowing LURE to run on different distros provides some challenges. For example, some distros use different names for their packages. This is solved using distro overrides. Any variable or function used in a LURE build script may be overridden based on distro and CPU architecture. The way you do this is by appending the distro and/or architecture to the end of the name. For example, [ITD](https://gitea.elara.ws/Elara6331/itd) depends on the `pactl` command as well as DBus and BlueZ. These are named somewhat differently on different distros. For ITD, I use the following for the dependencies:
 
 ```bash
 deps=('dbus' 'bluez' 'pulseaudio-utils')
@@ -118,7 +118,7 @@ The `homepage` field contains the URL to the website of the project packaged by 
 The `maintainer` field contains the name and email address of the person maintaining the package. Example:
 
 ```text
-Arsen Musayelyan <arsen@arsenm.dev>
+Elara Musayelyan <elara@elara.ws>
 ```
 
 While LURE does not require this field to be set, Debian has deprecated unset maintainer fields, and may disallow their use in `.deb` packages in the future.
@@ -202,11 +202,11 @@ If the URL scheme starts with `git+`, the source will be downloaded as a git rep
 Examples:
 
 ```text
-git+https://gitea.arsenm.dev/Arsen6331/itd?~rev=resource-loading&~depth=1
+git+https://gitea.elara.ws/Elara6331/itd?~rev=resource-loading&~depth=1
 ```
 
 ```text
-git+https://gitea.arsenm.dev/Arsen6331/lure?~rev=v0.0.1&~recursive=true
+git+https://gitea.elara.ws/Elara6331/lure?~rev=v0.0.1&~recursive=true
 ```
 
 ### checksums
