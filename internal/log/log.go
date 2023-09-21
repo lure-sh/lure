@@ -19,12 +19,10 @@
 package log
 
 import (
-	"os"
-
 	"go.elara.ws/logger"
 )
 
-var Logger logger.Logger = logger.NewCLI(os.Stderr)
+var Logger logger.Logger = logger.NewNop()
 
 // NoPanic prevents the logger from panicking on panic events
 func NoPanic() {
