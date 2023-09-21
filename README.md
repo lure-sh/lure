@@ -19,7 +19,7 @@ LURE is written in pure Go and has zero dependencies after building. The only th
 The LURE install script will automatically download and install the appropriate LURE package on your system. To use it, simply run the following command:
 
 ```bash
-curl https://www.elara.ws/lure.sh | bash
+curl -fsSL lure.elara.ws/install | bash
 ```
 
 **IMPORTANT**: This method is not recommended as it executes any code that is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
