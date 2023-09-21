@@ -42,7 +42,7 @@ sudo make install
 
 ## Why?
 
-Arch Linux's AUR is a very useful feature. It's one of the main reasons I and many others use Arch on most of their devices. However, Arch is not always a good choice. Whether you're running a server that needs to be stable over long periods of time, or you're a beginner and feel intimidated by Arch, there are many different reasons not to use it. Such useful functionality should not be restricted to only a single distro. That is what LURE is meant to solve.
+LURE was created because packaging software for multiple Linux distros can be difficult and error-prone, and installing those packages can be a nightmare for users unless they're available in their distro's official repositories. It automates the process of building and installing unofficial packages.
 
 ---
 
@@ -54,19 +54,19 @@ The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ## Web Interface
 
-LURE now has a web interface! It's open source, licensed under the AGPLv3 (https://gitea.elara.ws/Elara6331/lure-web), and is available at https://lure.elara.ws.
+LURE has an open source web interface, licensed under the AGPLv3 (https://gitea.elara.ws/Elara6331/lure-web), and it's available at https://lure.elara.ws/.
 
 ---
 
 ## Repositories
 
-Unlike the AUR, LURE supports third-party repositories. Also unlike the AUR, LURE's repos are single git repositories containing all the build scripts. Inside each LURE repo, there is a separate directory for each package, containing a `lure.sh` script, which is a PKGBUILD-like build script for LURE. The default repository is hosted on Github: https://github.com/Elara6331/lure-repo, and information about its packages is displayed at https://lure.elara.ws/pkgs.
+LURE's repos are git repositories that contain a directory for each package, with a `lure.sh` file inside. The `lure.sh` file tells LURE how to build the package and information about it. `lure.sh` scripts are similar to the AUR's PKGBUILD scripts.
 
 ---
 
-## Dependencies
+## Acknowledgements
 
-As mentioned before, LURE has zero dependencies after compilation. Thanks to the following projects for making this possible:
+Thanks to the following projects for making LURE possible:
 
 - https://github.com/mvdan/sh
 - https://github.com/go-git/go-git
@@ -74,9 +74,3 @@ As mentioned before, LURE has zero dependencies after compilation. Thanks to the
 - https://github.com/goreleaser/nfpm
 - https://github.com/charmbracelet/bubbletea
 - https://gitlab.com/cznic/sqlite
-
----
-
-## Planned Features
-
-- Automated docker-based testing tool
