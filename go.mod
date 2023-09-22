@@ -9,7 +9,6 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.8.0
-	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.9.0
 	github.com/goreleaser/nfpm/v2 v2.33.0
@@ -20,7 +19,6 @@ require (
 	github.com/muesli/reflow v0.3.0
 	github.com/pelletier/go-toml/v2 v2.1.0
 	github.com/schollz/progressbar/v3 v3.13.1
-	github.com/twitchtv/twirp v8.1.3+incompatible
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.elara.ws/logger v0.0.0-20230421022458-e80700db2090
@@ -29,7 +27,6 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/sys v0.12.0
 	golang.org/x/text v0.13.0
-	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.25.0
 	mvdan.cc/sh/v3 v3.7.0
