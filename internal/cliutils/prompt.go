@@ -26,8 +26,8 @@ import (
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/pager"
 	"go.elara.ws/lure/internal/translations"
-	"go.elara.ws/lure/pkg/config"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
 )
 
 // YesNoPrompt asks the user a yes or no question, using def as the default answer

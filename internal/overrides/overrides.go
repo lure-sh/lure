@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"go.elara.ws/lure/internal/cpu"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/pkg/distro"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"

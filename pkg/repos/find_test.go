@@ -25,7 +25,7 @@ import (
 	"testing"
 
 	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/pkg/repos"
 )
 

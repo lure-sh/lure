@@ -27,7 +27,7 @@ import (
 	"go.elara.ws/lure/internal/osutils"
 	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/pkg/build"
-	"go.elara.ws/lure/pkg/config"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 )

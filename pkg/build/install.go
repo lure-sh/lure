@@ -24,8 +24,8 @@ import (
 
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/config"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
 )
 
 // InstallPkgs installs native packages via the package manager,

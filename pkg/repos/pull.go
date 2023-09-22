@@ -34,12 +34,12 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/pelletier/go-toml/v2"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/config"
-	"go.elara.ws/lure/pkg/db"
 	"go.elara.ws/lure/pkg/distro"
 	"go.elara.ws/vercmp"
 	"mvdan.cc/sh/v3/expand"
@@ -50,7 +50,12 @@ import (
 // Pull pulls the provided repositories. If a repo doesn't exist, it will be cloned
 // and its packages will be written to the DB. If it does exist, it will be pulled.
 // In this case, only changed packages will be processed if possible.
+// If repos is set to nil, the repos in the LURE config will be used.
 func Pull(ctx context.Context, repos []types.Repo) error {
+	if repos == nil {
+		repos = config.Config().Repos
+	}
+
 	for _, repo := range repos {
 		repoURL, err := url.Parse(repo.URL)
 		if err != nil {

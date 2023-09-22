@@ -30,7 +30,6 @@ import (
 	"strings"
 
 	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/pkg/config"
 	"go.elara.ws/lure/pkg/repos"
 )
 
@@ -88,7 +87,7 @@ func repoPullWorker(ctx context.Context, sigCh <-chan struct{}) {
 	for {
 		select {
 		case <-sigCh:
-			err := repos.Pull(ctx, config.Config().Repos)
+			err := repos.Pull(ctx, nil)
 			if err != nil {
 				log.Warn("Error while pulling repositories").Err(err).Send()
 			}

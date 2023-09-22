@@ -18,7 +18,7 @@
 
 package repos
 
-import "go.elara.ws/lure/pkg/db"
+import "go.elara.ws/lure/internal/db"
 
 // FindPkgs looks for packages matching the inputs inside the database.
 // It returns a map that maps the package name input to any packages found for it.

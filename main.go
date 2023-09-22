@@ -30,8 +30,8 @@ import (
 	"go.elara.ws/logger"
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/translations"
-	"go.elara.ws/lure/pkg/config"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/pkg/manager"
 )
 

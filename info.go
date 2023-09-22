@@ -27,7 +27,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/lure/internal/cliutils"
 	"go.elara.ws/lure/internal/overrides"
-	"go.elara.ws/lure/pkg/config"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/pkg/distro"
 	"go.elara.ws/lure/pkg/repos"
 	"gopkg.in/yaml.v3"

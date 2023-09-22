@@ -30,7 +30,6 @@ import (
 	"go.elara.ws/logger"
 	"go.elara.ws/lure/cmd/lure-api-server/internal/api"
 	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/pkg/config"
 	"go.elara.ws/lure/pkg/repos"
 )
 
@@ -55,7 +54,7 @@ func main() {
 		log.Logger = logger.NewMulti(log.Logger, logger.NewJSON(fl))
 	}
 
-	err := repos.Pull(ctx, config.Config().Repos)
+	err := repos.Pull(ctx, nil)
 	if err != nil {
 		log.Fatal("Error pulling repositories").Err(err).Send()
 	}
