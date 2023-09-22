@@ -28,7 +28,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/twitchtv/twirp"
 	"go.elara.ws/logger"
-	"go.elara.ws/lure/internal/api"
+	"go.elara.ws/lure/cmd/lure-api-server/internal/api"
 	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/pkg/config"
 	"go.elara.ws/lure/pkg/repos"

@@ -20,90 +20,46 @@ package main
 
 import (
 	"context"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
+	"io"
 
 	"github.com/twitchtv/twirp"
-	"go.elara.ws/lure/internal/api"
+	"go.elara.ws/lure/cmd/lure-api-server/internal/api"
 	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/pkg/config"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/pkg/search"
 	"golang.org/x/text/language"
 )
 
 type lureWebAPI struct{}
 
 func (l lureWebAPI) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
-	query := "(name LIKE ? OR description LIKE ? OR json_array_contains(provides, ?))"
-	args := []any{"%" + req.Query + "%", "%" + req.Query + "%", req.Query}
-
-	if req.FilterValue != nil && req.FilterType != api.FILTER_TYPE_NO_FILTER {
-		switch req.FilterType {
-		case api.FILTER_TYPE_IN_REPOSITORY:
-			query += " AND repository = ?"
-		case api.FILTER_TYPE_SUPPORTS_ARCH:
-			query += " AND json_array_contains(architectures, ?)"
-		}
-		args = append(args, *req.FilterValue)
-	}
-
-	if req.SortBy != api.SORT_BY_UNSORTED {
-		switch req.SortBy {
-		case api.SORT_BY_NAME:
-			query += " ORDER BY name"
-		case api.SORT_BY_REPOSITORY:
-			query += " ORDER BY repository"
-		case api.SORT_BY_VERSION:
-			query += " ORDER BY version"
-		}
-	}
-
-	if req.Limit != 0 {
-		query += " LIMIT " + strconv.FormatInt(req.Limit, 10)
-	}
-
-	result, err := db.GetPkgs(query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &api.SearchResponse{}
-	for result.Next() {
-		pkg := &db.Package{}
-		err = result.StructScan(pkg)
-		if err != nil {
-			return nil, err
-		}
-		out.Packages = append(out.Packages, dbPkgToAPI(ctx, pkg))
-	}
-
-	return out, err
+	pkgs, err := search.Search(search.Options{
+		Filter: search.Filter(req.FilterType),
+		SortBy: search.SortBy(req.SortBy),
+		Limit:  req.Limit,
+		Query:  req.Query,
+	})
+	return &api.SearchResponse{Packages: searchPkgsToAPI(ctx, pkgs)}, err
 }
 
 func (l lureWebAPI) GetPkg(ctx context.Context, req *api.GetPackageRequest) (*api.Package, error) {
-	pkg, err := db.GetPkg("name = ? AND repository = ?", req.Name, req.Repository)
+	pkg, err := search.GetPkg(req.Repository, req.Name)
 	if err != nil {
 		return nil, err
 	}
-	return dbPkgToAPI(ctx, pkg), nil
+	return searchPkgToAPI(ctx, pkg), nil
 }
 
 func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptRequest) (*api.GetBuildScriptResponse, error) {
-	if strings.ContainsAny(req.Name, "./") || strings.ContainsAny(req.Repository, "./") {
-		return nil, twirp.NewError(twirp.InvalidArgument, "name and repository must not contain . or /")
-	}
-
-	scriptPath := filepath.Join(config.GetPaths().RepoDir, req.Repository, req.Name, "lure.sh")
-	_, err := os.Stat(scriptPath)
-	if os.IsNotExist(err) {
-		return nil, twirp.NewError(twirp.NotFound, "requested package not found")
+	r, err := search.GetScript(req.Repository, req.Name)
+	if err == search.ErrScriptNotFound {
+		return nil, twirp.NewError(twirp.NotFound, err.Error())
+	} else if err == search.ErrInvalidArgument {
+		return nil, twirp.NewError(twirp.InvalidArgument, err.Error())
 	} else if err != nil {
 		return nil, err
 	}
 
-	data, err := os.ReadFile(scriptPath)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -111,23 +67,31 @@ func (l lureWebAPI) GetBuildScript(ctx context.Context, req *api.GetBuildScriptR
 	return &api.GetBuildScriptResponse{Script: string(data)}, nil
 }
 
-func dbPkgToAPI(ctx context.Context, pkg *db.Package) *api.Package {
+func searchPkgsToAPI(ctx context.Context, pkgs []search.Package) []*api.Package {
+	out := make([]*api.Package, len(pkgs))
+	for i, pkg := range pkgs {
+		out[i] = searchPkgToAPI(ctx, pkg)
+	}
+	return out
+}
+
+func searchPkgToAPI(ctx context.Context, pkg search.Package) *api.Package {
 	return &api.Package{
 		Name:          pkg.Name,
 		Repository:    pkg.Repository,
 		Version:       pkg.Version,
 		Release:       int64(pkg.Release),
 		Epoch:         ptr(int64(pkg.Epoch)),
-		Description:   performTranslation(ctx, pkg.Description.Val),
-		Homepage:      performTranslation(ctx, pkg.Homepage.Val),
-		Maintainer:    performTranslation(ctx, pkg.Maintainer.Val),
-		Architectures: pkg.Architectures.Val,
-		Licenses:      pkg.Licenses.Val,
-		Provides:      pkg.Provides.Val,
-		Conflicts:     pkg.Conflicts.Val,
-		Replaces:      pkg.Replaces.Val,
-		Depends:       dbMapToAPI(pkg.Depends.Val),
-		BuildDepends:  dbMapToAPI(pkg.BuildDepends.Val),
+		Description:   performTranslation(ctx, pkg.Description),
+		Homepage:      performTranslation(ctx, pkg.Homepage),
+		Maintainer:    performTranslation(ctx, pkg.Maintainer),
+		Architectures: pkg.Architectures,
+		Licenses:      pkg.Licenses,
+		Provides:      pkg.Provides,
+		Conflicts:     pkg.Conflicts,
+		Replaces:      pkg.Replaces,
+		Depends:       mapToAPI(pkg.Depends),
+		BuildDepends:  mapToAPI(pkg.BuildDepends),
 	}
 }
 
@@ -135,7 +99,7 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func dbMapToAPI(m map[string][]string) map[string]*api.StringList {
+func mapToAPI(m map[string][]string) map[string]*api.StringList {
 	out := make(map[string]*api.StringList, len(m))
 	for override, list := range m {
 		out[override] = &api.StringList{Entries: list}

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"go.elara.ws/lure/pkg/db"
+	"go.elara.ws/lure/pkg/search"
 )
 
 //go:embed badge-logo.txt
@@ -21,7 +21,7 @@ func handleBadge() http.HandlerFunc {
 		repo := chi.URLParam(req, "repo")
 		name := chi.URLParam(req, "pkg")
 
-		pkg, err := db.GetPkg("name = ? AND repository = ?", name, repo)
+		pkg, err := search.GetPkg(repo, name)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -31,7 +31,7 @@ func handleBadge() http.HandlerFunc {
 	}
 }
 
-func genVersion(pkg *db.Package) string {
+func genVersion(pkg search.Package) string {
 	sb := strings.Builder{}
 	if pkg.Epoch != 0 {
 		sb.WriteString(strconv.Itoa(int(pkg.Epoch)))
