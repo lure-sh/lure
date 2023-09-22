@@ -76,10 +76,11 @@ func convertPkg(p db.Package) Package {
 
 // Options contains the options for a search.
 type Options struct {
-	Filter Filter
-	SortBy SortBy
-	Limit  int64
-	Query  string
+	Filter      Filter
+	FilterValue string
+	SortBy      SortBy
+	Limit       int64
+	Query       string
 }
 
 // Search searches for packages in the database based on the given options.
@@ -94,7 +95,7 @@ func Search(opts Options) ([]Package, error) {
 		case FilterSupportsArch:
 			query += " AND json_array_contains(architectures, ?)"
 		}
-		args = append(args, opts.Filter)
+		args = append(args, opts.FilterValue)
 	}
 
 	if opts.SortBy != SortByNone {
