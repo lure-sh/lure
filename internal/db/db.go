@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/jmoiron/sqlx"
 	"go.elara.ws/lure/internal/config"
@@ -66,6 +67,7 @@ type version struct {
 }
 
 var (
+	mu     sync.Mutex
 	conn   *sqlx.DB
 	closed = true
 )
@@ -76,13 +78,18 @@ var (
 func DB(ctx context.Context) *sqlx.DB {
 	log := loggerctx.From(ctx)
 	if conn != nil && !closed {
-		return conn
+		return getConn()
 	}
-	db, err := open(ctx, config.GetPaths(ctx).DBPath)
+	_, err := open(ctx, config.GetPaths(ctx).DBPath)
 	if err != nil {
 		log.Fatal("Error opening database").Err(err).Send()
 	}
-	conn = db
+	return getConn()
+}
+
+func getConn() *sqlx.DB {
+	mu.Lock()
+	defer mu.Unlock()
 	return conn
 }
 
@@ -91,8 +98,11 @@ func open(ctx context.Context, dsn string) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	mu.Lock()
 	conn = db
 	closed = false
+	mu.Unlock()
 
 	err = initDB(ctx, dsn)
 	if err != nil {
