@@ -79,9 +79,11 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		if err != nil {
 			return 0, "", err
 		}
-		r = localFl
 		size = fi.Size()
-		name = fi.Name()
+		if name == "" {
+			name = fi.Name()
+		}
+		r = localFl
 	} else {
 		res, err := http.Get(u.String())
 		if err != nil {
