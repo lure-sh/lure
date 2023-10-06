@@ -95,6 +95,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		}
 		r = res.Body
 	}
+	defer r.Close()
 
 	opts.PostprocDisabled = archive == "false"
 
