@@ -227,7 +227,7 @@ func extractFile(r io.Reader, format archiver.Format, name string, opts Options)
 	return nil
 }
 
-var cdHeaderRgx = regexp.MustCompile(`filename="(.+)"`)
+var cdHeaderRgx = regexp.MustCompile(`filename="?(.+)"?`)
 
 // getFilename attempts to parse the Content-Disposition
 // HTTP response header and extract a filename. If the
