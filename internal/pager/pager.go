@@ -60,6 +60,7 @@ func (p *Pager) Run() error {
 	prog := tea.NewProgram(
 		p.model,
 		tea.WithMouseCellMotion(),
+		tea.WithAltScreen(),
 	)
 
 	_, err := prog.Run()
@@ -74,7 +75,7 @@ type pagerModel struct {
 }
 
 func (pm pagerModel) Init() tea.Cmd {
-	return tea.ClearScreen
+	return nil
 }
 
 func (pm pagerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
