@@ -19,6 +19,7 @@
 package dlcache_test
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
@@ -26,8 +27,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go.elara.ws/lure/internal/dlcache"
 	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/dlcache"
 )
 
 func init() {
@@ -35,7 +36,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	config.GetPaths().RepoDir = dir
+	config.GetPaths(context.Background()).RepoDir = dir
 }
 
 func TestNew(t *testing.T) {

@@ -19,11 +19,12 @@
 package config
 
 import (
+	"context"
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/loggerctx"
 )
 
 var defaultConfig = &types.Config{
@@ -43,9 +44,10 @@ var config *types.Config
 // Config returns a LURE configuration struct.
 // The first time it's called, it'll load the config from a file.
 // Subsequent calls will just return the same value.
-func Config() *types.Config {
+func Config(ctx context.Context) *types.Config {
+	log := loggerctx.From(ctx)
 	if config == nil {
-		cfgFl, err := os.Open(GetPaths().ConfigPath)
+		cfgFl, err := os.Open(GetPaths(ctx).ConfigPath)
 		if err != nil {
 			log.Warn("Error opening config file, using defaults").Err(err).Send()
 			return defaultConfig

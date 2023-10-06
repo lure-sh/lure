@@ -39,16 +39,16 @@ import (
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"go.elara.ws/lure/internal/cliutils"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/cpu"
+	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/internal/dl"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/internal/shutils/helpers"
 	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
 	"go.elara.ws/lure/pkg/distro"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 	"mvdan.cc/sh/v3/expand"
@@ -59,6 +59,8 @@ import (
 // BuildPackage builds the script at the given path. It returns two slices. One contains the paths
 // to the built package(s), the other contains the names of the built package(s).
 func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string, error) {
+	log := loggerctx.From(ctx)
+
 	info, err := distro.ParseOSRelease(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -77,7 +79,7 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 		return nil, nil, err
 	}
 
-	dirs := getDirs(vars, opts.Script)
+	dirs := getDirs(ctx, vars, opts.Script)
 
 	// If opts.Clean isn't set and we find the package already built,
 	// just return it rather than rebuilding
@@ -93,7 +95,7 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 	}
 
 	// Ask the user if they'd like to see the build script
-	err = cliutils.PromptViewScript(opts.Script, vars.Name, config.Config().PagerStyle, opts.Interactive)
+	err = cliutils.PromptViewScript(ctx, opts.Script, vars.Name, config.Config(ctx).PagerStyle, opts.Interactive)
 	if err != nil {
 		log.Fatal("Failed to prompt user to view build script").Err(err).Send()
 	}
@@ -114,7 +116,7 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 		return nil, nil, err
 	}
 
-	cont, err := performChecks(vars, opts.Interactive, installed)
+	cont, err := performChecks(ctx, vars, opts.Interactive, installed)
 	if err != nil {
 		return nil, nil, err
 	} else if !cont {
@@ -181,7 +183,7 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 		return nil, nil, err
 	}
 
-	err = removeBuildDeps(buildDeps, opts)
+	err = removeBuildDeps(ctx, buildDeps, opts)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -251,8 +253,8 @@ func executeFirstPass(ctx context.Context, info *distro.OSRelease, fl *syntax.Fi
 }
 
 // getDirs returns the appropriate directories for the script
-func getDirs(vars *types.BuildVars, script string) types.Directories {
-	baseDir := filepath.Join(config.GetPaths().PkgsDir, vars.Name)
+func getDirs(ctx context.Context, vars *types.BuildVars, script string) types.Directories {
+	baseDir := filepath.Join(config.GetPaths(ctx).PkgsDir, vars.Name)
 	return types.Directories{
 		BaseDir:   baseDir,
 		SrcDir:    filepath.Join(baseDir, "src"),
@@ -297,9 +299,10 @@ func prepareDirs(dirs types.Directories) error {
 }
 
 // performChecks checks various things on the system to ensure that the package can be installed.
-func performChecks(vars *types.BuildVars, interactive bool, installed map[string]string) (bool, error) {
+func performChecks(ctx context.Context, vars *types.BuildVars, interactive bool, installed map[string]string) (bool, error) {
+	log := loggerctx.From(ctx)
 	if !cpu.IsCompatibleWith(cpu.Arch(), vars.Architectures) {
-		cont, err := cliutils.YesNoPrompt("Your system's CPU architecture doesn't match this package. Do you want to build anyway?", interactive, true)
+		cont, err := cliutils.YesNoPrompt(ctx, "Your system's CPU architecture doesn't match this package. Do you want to build anyway?", interactive, true)
 		if err != nil {
 			return false, err
 		}
@@ -322,9 +325,10 @@ func performChecks(vars *types.BuildVars, interactive bool, installed map[string
 // installBuildDeps installs any build dependencies that aren't already installed and returns
 // a slice containing the names of all the packages it installed.
 func installBuildDeps(ctx context.Context, vars *types.BuildVars, opts types.BuildOpts, installed map[string]string) ([]string, error) {
+	log := loggerctx.From(ctx)
 	var buildDeps []string
 	if len(vars.BuildDepends) > 0 {
-		found, notFound, err := repos.FindPkgs(vars.BuildDepends)
+		found, notFound, err := repos.FindPkgs(ctx, vars.BuildDepends)
 		if err != nil {
 			return nil, err
 		}
@@ -333,7 +337,7 @@ func installBuildDeps(ctx context.Context, vars *types.BuildVars, opts types.Bui
 
 		log.Info("Installing build dependencies").Send()
 
-		flattened := cliutils.FlattenPkgs(found, "install", opts.Interactive)
+		flattened := cliutils.FlattenPkgs(ctx, found, "install", opts.Interactive)
 		buildDeps = packageNames(flattened)
 		InstallPkgs(ctx, flattened, notFound, opts)
 	}
@@ -344,7 +348,7 @@ func installBuildDeps(ctx context.Context, vars *types.BuildVars, opts types.Bui
 // If the user chooses to install any optional dependencies, it performs the installation.
 func installOptDeps(ctx context.Context, vars *types.BuildVars, opts types.BuildOpts, installed map[string]string) error {
 	if len(vars.OptDepends) > 0 {
-		optDeps, err := cliutils.ChooseOptDepends(vars.OptDepends, "install", opts.Interactive)
+		optDeps, err := cliutils.ChooseOptDepends(ctx, vars.OptDepends, "install", opts.Interactive)
 		if err != nil {
 			return err
 		}
@@ -353,13 +357,13 @@ func installOptDeps(ctx context.Context, vars *types.BuildVars, opts types.Build
 			return nil
 		}
 
-		found, notFound, err := repos.FindPkgs(optDeps)
+		found, notFound, err := repos.FindPkgs(ctx, optDeps)
 		if err != nil {
 			return err
 		}
 
 		found = removeAlreadyInstalled(found, installed)
-		flattened := cliutils.FlattenPkgs(found, "install", opts.Interactive)
+		flattened := cliutils.FlattenPkgs(ctx, found, "install", opts.Interactive)
 		InstallPkgs(ctx, flattened, notFound, opts)
 	}
 	return nil
@@ -369,18 +373,19 @@ func installOptDeps(ctx context.Context, vars *types.BuildVars, opts types.Build
 // of the packages it built, as well as all the dependencies it didn't find in the LURE repo so
 // they can be installed from the system repos.
 func buildLUREDeps(ctx context.Context, opts types.BuildOpts, vars *types.BuildVars) (builtPaths, builtNames, repoDeps []string, err error) {
+	log := loggerctx.From(ctx)
 	if len(vars.Depends) > 0 {
 		log.Info("Installing dependencies").Send()
 
-		found, notFound, err := repos.FindPkgs(vars.Depends)
+		found, notFound, err := repos.FindPkgs(ctx, vars.Depends)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 		repoDeps = notFound
 
 		// If there are multiple options for some packages, flatten them all into a single slice
-		pkgs := cliutils.FlattenPkgs(found, "install", opts.Interactive)
-		scripts := GetScriptPaths(pkgs)
+		pkgs := cliutils.FlattenPkgs(ctx, found, "install", opts.Interactive)
+		scripts := GetScriptPaths(ctx, pkgs)
 		for _, script := range scripts {
 			newOpts := opts
 			newOpts.Script = script
@@ -410,6 +415,7 @@ func buildLUREDeps(ctx context.Context, opts types.BuildOpts, vars *types.BuildV
 
 // executeFunctions executes the special LURE functions, such as version(), prepare(), etc.
 func executeFunctions(ctx context.Context, dec *decoder.Decoder, dirs types.Directories, vars *types.BuildVars) (err error) {
+	log := loggerctx.From(ctx)
 	version, ok := dec.GetFunc("version")
 	if ok {
 		log.Info("Executing version()").Send()
@@ -585,9 +591,9 @@ func buildContents(vars *types.BuildVars, dirs types.Directories) ([]*files.Cont
 
 // removeBuildDeps asks the user if they'd like to remove the build dependencies that were
 // installed by installBuildDeps. If so, it uses the package manager to do that.
-func removeBuildDeps(buildDeps []string, opts types.BuildOpts) error {
+func removeBuildDeps(ctx context.Context, buildDeps []string, opts types.BuildOpts) error {
 	if len(buildDeps) > 0 {
-		remove, err := cliutils.YesNoPrompt("Would you like to remove the build dependencies?", opts.Interactive, false)
+		remove, err := cliutils.YesNoPrompt(ctx, "Would you like to remove the build dependencies?", opts.Interactive, false)
 		if err != nil {
 			return err
 		}
@@ -688,6 +694,7 @@ func createBuildEnvVars(info *distro.OSRelease, dirs types.Directories) []string
 
 // getSources downloads the sources from the script.
 func getSources(ctx context.Context, srcdir string, bv *types.BuildVars) error {
+	log := loggerctx.From(ctx)
 	if len(bv.Sources) != len(bv.Checksums) {
 		log.Fatal("The checksums array must be the same length as sources").Send()
 	}

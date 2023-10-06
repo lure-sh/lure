@@ -19,10 +19,11 @@
 package config
 
 import (
+	"context"
 	"os"
 	"strings"
 
-	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"golang.org/x/text/language"
 )
 
@@ -35,7 +36,8 @@ var (
 // The first time it's called, it'll detect the langauge based on
 // the $LANG environment variable.
 // Subsequent calls will just return the same value.
-func Language() language.Tag {
+func Language(ctx context.Context) language.Tag {
+	log := loggerctx.From(ctx)
 	if !langSet {
 		syslang := SystemLang()
 		tag, err := language.Parse(syslang)

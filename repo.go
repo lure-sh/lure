@@ -24,10 +24,10 @@ import (
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/repos"
 	"golang.org/x/exp/slices"
 )
@@ -51,10 +51,13 @@ var addrepoCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		name := c.String("name")
 		repoURL := c.String("url")
 
-		cfg := config.Config()
+		cfg := config.Config(ctx)
 
 		for _, repo := range cfg.Repos {
 			if repo.URL == repoURL {
@@ -67,7 +70,7 @@ var addrepoCmd = &cli.Command{
 			URL:  repoURL,
 		})
 
-		cfgFl, err := os.Create(config.GetPaths().ConfigPath)
+		cfgFl, err := os.Create(config.GetPaths(ctx).ConfigPath)
 		if err != nil {
 			log.Fatal("Error opening config file").Err(err).Send()
 		}
@@ -77,7 +80,7 @@ var addrepoCmd = &cli.Command{
 			log.Fatal("Error encoding config").Err(err).Send()
 		}
 
-		err = repos.Pull(c.Context, cfg.Repos)
+		err = repos.Pull(ctx, cfg.Repos)
 		if err != nil {
 			log.Fatal("Error pulling repos").Err(err).Send()
 		}
@@ -99,8 +102,11 @@ var removerepoCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		name := c.String("name")
-		cfg := config.Config()
+		cfg := config.Config(ctx)
 
 		found := false
 		index := 0
@@ -116,7 +122,7 @@ var removerepoCmd = &cli.Command{
 
 		cfg.Repos = slices.Delete(cfg.Repos, index, index+1)
 
-		cfgFl, err := os.Create(config.GetPaths().ConfigPath)
+		cfgFl, err := os.Create(config.GetPaths(ctx).ConfigPath)
 		if err != nil {
 			log.Fatal("Error opening config file").Err(err).Send()
 		}
@@ -126,12 +132,12 @@ var removerepoCmd = &cli.Command{
 			log.Fatal("Error encoding config").Err(err).Send()
 		}
 
-		err = os.RemoveAll(filepath.Join(config.GetPaths().RepoDir, name))
+		err = os.RemoveAll(filepath.Join(config.GetPaths(ctx).RepoDir, name))
 		if err != nil {
 			log.Fatal("Error removing repo directory").Err(err).Send()
 		}
 
-		err = db.DeletePkgs("repository = ?", name)
+		err = db.DeletePkgs(ctx, "repository = ?", name)
 		if err != nil {
 			log.Fatal("Error removing packages from database").Err(err).Send()
 		}
@@ -145,7 +151,9 @@ var refreshCmd = &cli.Command{
 	Usage:   "Pull all repositories that have changed",
 	Aliases: []string{"ref"},
 	Action: func(c *cli.Context) error {
-		err := repos.Pull(c.Context, config.Config().Repos)
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+		err := repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repos").Err(err).Send()
 		}

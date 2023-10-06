@@ -23,11 +23,11 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/lure/internal/cliutils"
-	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/build"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/build"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 )
@@ -44,6 +44,9 @@ var installCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		args := c.Args()
 		if args.Len() < 1 {
 			log.Fatalf("Command install expected at least 1 argument, got %d", args.Len()).Send()
@@ -54,18 +57,18 @@ var installCmd = &cli.Command{
 			log.Fatal("Unable to detect a supported package manager on the system").Send()
 		}
 
-		err := repos.Pull(c.Context, config.Config().Repos)
+		err := repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
 
-		found, notFound, err := repos.FindPkgs(args.Slice())
+		found, notFound, err := repos.FindPkgs(ctx, args.Slice())
 		if err != nil {
 			log.Fatal("Error finding packages").Err(err).Send()
 		}
 
-		pkgs := cliutils.FlattenPkgs(found, "install", c.Bool("interactive"))
-		build.InstallPkgs(c.Context, pkgs, notFound, types.BuildOpts{
+		pkgs := cliutils.FlattenPkgs(ctx, found, "install", c.Bool("interactive"))
+		build.InstallPkgs(ctx, pkgs, notFound, types.BuildOpts{
 			Manager:     mgr,
 			Clean:       c.Bool("clean"),
 			Interactive: c.Bool("interactive"),
@@ -73,7 +76,8 @@ var installCmd = &cli.Command{
 		return nil
 	},
 	BashComplete: func(c *cli.Context) {
-		result, err := db.GetPkgs("true")
+		log := loggerctx.From(c.Context)
+		result, err := db.GetPkgs(c.Context, "true")
 		if err != nil {
 			log.Fatal("Error getting packages").Err(err).Send()
 		}
@@ -96,6 +100,8 @@ var removeCmd = &cli.Command{
 	Usage:   "Remove an installed package",
 	Aliases: []string{"rm"},
 	Action: func(c *cli.Context) error {
+		log := loggerctx.From(c.Context)
+
 		args := c.Args()
 		if args.Len() < 1 {
 			log.Fatalf("Command remove expected at least 1 argument, got %d", args.Len()).Send()

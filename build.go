@@ -23,11 +23,11 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/osutils"
 	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/pkg/build"
-	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 )
@@ -54,12 +54,15 @@ var buildCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		script := c.String("script")
 		if c.String("package") != "" {
-			script = filepath.Join(config.GetPaths().RepoDir, c.String("package"), "lure.sh")
+			script = filepath.Join(config.GetPaths(ctx).RepoDir, c.String("package"), "lure.sh")
 		}
 
-		err := repos.Pull(c.Context, config.Config().Repos)
+		err := repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
@@ -69,7 +72,7 @@ var buildCmd = &cli.Command{
 			log.Fatal("Unable to detect a supported package manager on the system").Send()
 		}
 
-		pkgPaths, _, err := build.BuildPackage(c.Context, types.BuildOpts{
+		pkgPaths, _, err := build.BuildPackage(ctx, types.BuildOpts{
 			Script:      script,
 			Manager:     mgr,
 			Clean:       c.Bool("clean"),

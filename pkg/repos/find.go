@@ -18,12 +18,16 @@
 
 package repos
 
-import "go.elara.ws/lure/internal/db"
+import (
+	"context"
+
+	"go.elara.ws/lure/internal/db"
+)
 
 // FindPkgs looks for packages matching the inputs inside the database.
 // It returns a map that maps the package name input to any packages found for it.
 // It also returns a slice that contains the names of all packages that were not found.
-func FindPkgs(pkgs []string) (map[string][]db.Package, []string, error) {
+func FindPkgs(ctx context.Context, pkgs []string) (map[string][]db.Package, []string, error) {
 	found := map[string][]db.Package{}
 	notFound := []string(nil)
 
@@ -32,7 +36,7 @@ func FindPkgs(pkgs []string) (map[string][]db.Package, []string, error) {
 			continue
 		}
 
-		result, err := db.GetPkgs("name LIKE ?", pkgName)
+		result, err := db.GetPkgs(ctx, "name LIKE ?", pkgName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -51,7 +55,7 @@ func FindPkgs(pkgs []string) (map[string][]db.Package, []string, error) {
 		result.Close()
 
 		if added == 0 {
-			result, err := db.GetPkgs("json_array_contains(provides, ?)", pkgName)
+			result, err := db.GetPkgs(ctx, "json_array_contains(provides, ?)", pkgName)
 			if err != nil {
 				return nil, nil, err
 			}

@@ -23,12 +23,12 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/build"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/build"
 	"go.elara.ws/lure/pkg/distro"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 	"go.elara.ws/vercmp"
@@ -48,7 +48,10 @@ var upgradeCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		info, err := distro.ParseOSRelease(c.Context)
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
+		info, err := distro.ParseOSRelease(ctx)
 		if err != nil {
 			log.Fatal("Error parsing os-release file").Err(err).Send()
 		}
@@ -58,18 +61,18 @@ var upgradeCmd = &cli.Command{
 			log.Fatal("Unable to detect a supported package manager on the system").Send()
 		}
 
-		err = repos.Pull(c.Context, config.Config().Repos)
+		err = repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repos").Err(err).Send()
 		}
 
-		updates, err := checkForUpdates(c.Context, mgr, info)
+		updates, err := checkForUpdates(ctx, mgr, info)
 		if err != nil {
 			log.Fatal("Error checking for updates").Err(err).Send()
 		}
 
 		if len(updates) > 0 {
-			build.InstallPkgs(c.Context, updates, nil, types.BuildOpts{
+			build.InstallPkgs(ctx, updates, nil, types.BuildOpts{
 				Manager:     mgr,
 				Clean:       c.Bool("clean"),
 				Interactive: c.Bool("interactive"),
@@ -89,14 +92,14 @@ func checkForUpdates(ctx context.Context, mgr manager.Manager, info *distro.OSRe
 	}
 
 	pkgNames := maps.Keys(installed)
-	found, _, err := repos.FindPkgs(pkgNames)
+	found, _, err := repos.FindPkgs(ctx, pkgNames)
 	if err != nil {
 		return nil, err
 	}
 
 	var out []db.Package
 	for pkgName, pkgs := range found {
-		if slices.Contains(config.Config().IgnorePkgUpdates, pkgName) {
+		if slices.Contains(config.Config(ctx).IgnorePkgUpdates, pkgName) {
 			continue
 		}
 

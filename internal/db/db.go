@@ -19,6 +19,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -26,8 +27,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"golang.org/x/exp/slices"
 	"modernc.org/sqlite"
 )
@@ -72,11 +73,12 @@ var (
 // DB returns the LURE database.
 // The first time it's called, it opens the SQLite database file.
 // Subsequent calls return the same connection.
-func DB() *sqlx.DB {
+func DB(ctx context.Context) *sqlx.DB {
+	log := loggerctx.From(ctx)
 	if conn != nil && !closed {
 		return conn
 	}
-	db, err := open(config.GetPaths().DBPath)
+	db, err := open(ctx, config.GetPaths(ctx).DBPath)
 	if err != nil {
 		log.Fatal("Error opening database").Err(err).Send()
 	}
@@ -84,7 +86,7 @@ func DB() *sqlx.DB {
 	return conn
 }
 
-func open(dsn string) (*sqlx.DB, error) {
+func open(ctx context.Context, dsn string) (*sqlx.DB, error) {
 	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
@@ -92,7 +94,7 @@ func open(dsn string) (*sqlx.DB, error) {
 	conn = db
 	closed = false
 
-	err = initDB(dsn)
+	err = initDB(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +113,10 @@ func Close() error {
 }
 
 // initDB initializes the database
-func initDB(dsn string) error {
+func initDB(ctx context.Context, dsn string) error {
+	log := loggerctx.From(ctx)
 	conn = conn.Unsafe()
-	_, err := conn.Exec(`
+	_, err := conn.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS pkgs (
 			name          TEXT NOT NULL,
 			repository    TEXT NOT NULL,
@@ -142,33 +145,33 @@ func initDB(dsn string) error {
 		return err
 	}
 
-	ver, ok := GetVersion()
+	ver, ok := GetVersion(ctx)
 	if ok && ver != CurrentVersion {
 		log.Warn("Database version mismatch; resetting").Int("version", ver).Int("expected", CurrentVersion).Send()
-		reset()
-		return initDB(dsn)
+		reset(ctx)
+		return initDB(ctx, dsn)
 	} else if !ok {
 		log.Warn("Database version does not exist. Run lure fix if something isn't working.").Send()
-		return addVersion(CurrentVersion)
+		return addVersion(ctx, CurrentVersion)
 	}
 
 	return nil
 }
 
 // reset drops all the database tables
-func reset() error {
-	_, err := DB().Exec("DROP TABLE IF EXISTS pkgs;")
+func reset(ctx context.Context) error {
+	_, err := DB(ctx).ExecContext(ctx, "DROP TABLE IF EXISTS pkgs;")
 	if err != nil {
 		return err
 	}
-	_, err = DB().Exec("DROP TABLE IF EXISTS lure_db_version;")
+	_, err = DB(ctx).ExecContext(ctx, "DROP TABLE IF EXISTS lure_db_version;")
 	return err
 }
 
 // IsEmpty returns true if the database has no packages in it, otherwise it returns false.
-func IsEmpty() bool {
+func IsEmpty(ctx context.Context) bool {
 	var count int
-	err := DB().Get(&count, "SELECT count(1) FROM pkgs;")
+	err := DB(ctx).GetContext(ctx, &count, "SELECT count(1) FROM pkgs;")
 	if err != nil {
 		return true
 	}
@@ -177,23 +180,23 @@ func IsEmpty() bool {
 
 // GetVersion returns the database version and a boolean indicating
 // whether the database contained a version number
-func GetVersion() (int, bool) {
+func GetVersion(ctx context.Context) (int, bool) {
 	var ver version
-	err := DB().Get(&ver, "SELECT * FROM lure_db_version LIMIT 1;")
+	err := DB(ctx).GetContext(ctx, &ver, "SELECT * FROM lure_db_version LIMIT 1;")
 	if err != nil {
 		return 0, false
 	}
 	return ver.Version, true
 }
 
-func addVersion(ver int) error {
-	_, err := DB().Exec(`INSERT INTO lure_db_version(version) VALUES (?);`, ver)
+func addVersion(ctx context.Context, ver int) error {
+	_, err := DB(ctx).ExecContext(ctx, `INSERT INTO lure_db_version(version) VALUES (?);`, ver)
 	return err
 }
 
 // InsertPackage adds a package to the database
-func InsertPackage(pkg Package) error {
-	_, err := DB().NamedExec(`
+func InsertPackage(ctx context.Context, pkg Package) error {
+	_, err := DB(ctx).NamedExecContext(ctx, `
 		INSERT OR REPLACE INTO pkgs (
 			name,
 			repository,
@@ -234,8 +237,8 @@ func InsertPackage(pkg Package) error {
 }
 
 // GetPkgs returns a result containing packages that match the where conditions
-func GetPkgs(where string, args ...any) (*sqlx.Rows, error) {
-	stream, err := DB().Queryx("SELECT * FROM pkgs WHERE "+where, args...)
+func GetPkgs(ctx context.Context, where string, args ...any) (*sqlx.Rows, error) {
+	stream, err := DB(ctx).QueryxContext(ctx, "SELECT * FROM pkgs WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -243,15 +246,15 @@ func GetPkgs(where string, args ...any) (*sqlx.Rows, error) {
 }
 
 // GetPkg returns a single package that matches the where conditions
-func GetPkg(where string, args ...any) (*Package, error) {
+func GetPkg(ctx context.Context, where string, args ...any) (*Package, error) {
 	out := &Package{}
-	err := DB().Get(out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
+	err := DB(ctx).GetContext(ctx, out, "SELECT * FROM pkgs WHERE "+where+" LIMIT 1", args...)
 	return out, err
 }
 
 // DeletePkgs deletes all packages matching the where conditions
-func DeletePkgs(where string, args ...any) error {
-	_, err := DB().Exec("DELETE FROM pkgs WHERE "+where, args...)
+func DeletePkgs(ctx context.Context, where string, args ...any) error {
+	_, err := DB(ctx).ExecContext(ctx, "DELETE FROM pkgs WHERE "+where, args...)
 	return err
 }
 

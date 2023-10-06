@@ -22,15 +22,17 @@ import (
 	"context"
 	"path/filepath"
 
-	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/types"
+	"go.elara.ws/lure/pkg/loggerctx"
 )
 
 // InstallPkgs installs native packages via the package manager,
 // then builds and installs the LURE packages
 func InstallPkgs(ctx context.Context, lurePkgs []db.Package, nativePkgs []string, opts types.BuildOpts) {
+	log := loggerctx.From(ctx)
+
 	if len(nativePkgs) > 0 {
 		err := opts.Manager.Install(nil, nativePkgs...)
 		if err != nil {
@@ -38,15 +40,15 @@ func InstallPkgs(ctx context.Context, lurePkgs []db.Package, nativePkgs []string
 		}
 	}
 
-	InstallScripts(ctx, GetScriptPaths(lurePkgs), opts)
+	InstallScripts(ctx, GetScriptPaths(ctx, lurePkgs), opts)
 }
 
 // GetScriptPaths returns a slice of script paths corresponding to the
 // given packages
-func GetScriptPaths(pkgs []db.Package) []string {
+func GetScriptPaths(ctx context.Context, pkgs []db.Package) []string {
 	var scripts []string
 	for _, pkg := range pkgs {
-		scriptPath := filepath.Join(config.GetPaths().RepoDir, pkg.Repository, pkg.Name, "lure.sh")
+		scriptPath := filepath.Join(config.GetPaths(ctx).RepoDir, pkg.Repository, pkg.Name, "lure.sh")
 		scripts = append(scripts, scriptPath)
 	}
 	return scripts
@@ -54,6 +56,7 @@ func GetScriptPaths(pkgs []db.Package) []string {
 
 // InstallScripts builds and installs the given LURE build scripts
 func InstallScripts(ctx context.Context, scripts []string, opts types.BuildOpts) {
+	log := loggerctx.From(ctx)
 	for _, script := range scripts {
 		opts.Script = script
 		builtPkgs, _, err := BuildPackage(ctx, opts)

@@ -36,11 +36,11 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/shutils"
 	"go.elara.ws/lure/internal/shutils/decoder"
 	"go.elara.ws/lure/internal/types"
 	"go.elara.ws/lure/pkg/distro"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/vercmp"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
@@ -52,8 +52,10 @@ import (
 // In this case, only changed packages will be processed if possible.
 // If repos is set to nil, the repos in the LURE config will be used.
 func Pull(ctx context.Context, repos []types.Repo) error {
+	log := loggerctx.From(ctx)
+
 	if repos == nil {
-		repos = config.Config().Repos
+		repos = config.Config(ctx).Repos
 	}
 
 	for _, repo := range repos {
@@ -63,7 +65,7 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 		}
 
 		log.Info("Pulling repository").Str("name", repo.Name).Send()
-		repoDir := filepath.Join(config.GetPaths().RepoDir, repo.Name)
+		repoDir := filepath.Join(config.GetPaths(ctx).RepoDir, repo.Name)
 
 		var repoFS billy.Filesystem
 		gitDir := filepath.Join(repoDir, ".git")
@@ -93,7 +95,7 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 			repoFS = w.Filesystem
 
 			// Make sure the DB is created even if the repo is up to date
-			if !errors.Is(err, git.NoErrAlreadyUpToDate) || db.IsEmpty() {
+			if !errors.Is(err, git.NoErrAlreadyUpToDate) || db.IsEmpty(ctx) {
 				new, err := r.Head()
 				if err != nil {
 					return err
@@ -102,7 +104,7 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 				// If the DB was not present at startup, that means it's
 				// empty. In this case, we need to update the DB fully
 				// rather than just incrementally.
-				if db.IsEmpty() {
+				if db.IsEmpty(ctx) {
 					err = processRepoFull(ctx, repo, repoDir)
 					if err != nil {
 						return err
@@ -271,7 +273,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 				return err
 			}
 
-			err = db.DeletePkgs("name = ? AND repository = ?", pkg.Name, repo.Name)
+			err = db.DeletePkgs(ctx, "name = ? AND repository = ?", pkg.Name, repo.Name)
 			if err != nil {
 				return err
 			}
@@ -306,7 +308,7 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 
 			resolveOverrides(runner, &pkg)
 
-			err = db.InsertPackage(pkg)
+			err = db.InsertPackage(ctx, pkg)
 			if err != nil {
 				return err
 			}
@@ -376,7 +378,7 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string) error
 
 		resolveOverrides(runner, &pkg)
 
-		err = db.InsertPackage(pkg)
+		err = db.InsertPackage(ctx, pkg)
 		if err != nil {
 			return err
 		}

@@ -19,11 +19,12 @@
 package config
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/loggerctx"
 )
 
 // Paths contains various paths used by LURE
@@ -42,7 +43,8 @@ var paths *Paths
 // The first time it's called, it'll generate the struct
 // using information from the system.
 // Subsequent calls will return the same value.
-func GetPaths() *Paths {
+func GetPaths(ctx context.Context) *Paths {
+	log := loggerctx.From(ctx)
 	if paths == nil {
 		paths = &Paths{}
 

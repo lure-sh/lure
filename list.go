@@ -22,9 +22,9 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 	"go.elara.ws/lure/pkg/repos"
 	"golang.org/x/exp/slices"
@@ -41,7 +41,10 @@ var listCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		err := repos.Pull(c.Context, config.Config().Repos)
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
+		err := repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
@@ -53,7 +56,7 @@ var listCmd = &cli.Command{
 			args = []any{c.Args().First(), c.Args().First()}
 		}
 
-		result, err := db.GetPkgs(where, args...)
+		result, err := db.GetPkgs(ctx, where, args...)
 		if err != nil {
 			log.Fatal("Error getting packages").Err(err).Send()
 		}
@@ -79,7 +82,7 @@ var listCmd = &cli.Command{
 				return err
 			}
 
-			if slices.Contains(config.Config().IgnorePkgUpdates, pkg.Name) {
+			if slices.Contains(config.Config(ctx).IgnorePkgUpdates, pkg.Name) {
 				continue
 			}
 

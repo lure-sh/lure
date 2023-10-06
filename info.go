@@ -22,13 +22,12 @@ import (
 	"fmt"
 	"os"
 
-	"go.elara.ws/lure/internal/log"
-
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/lure/internal/cliutils"
-	"go.elara.ws/lure/internal/overrides"
 	"go.elara.ws/lure/internal/config"
+	"go.elara.ws/lure/internal/overrides"
 	"go.elara.ws/lure/pkg/distro"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/repos"
 	"gopkg.in/yaml.v3"
 )
@@ -44,17 +43,20 @@ var infoCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		args := c.Args()
 		if args.Len() < 1 {
 			log.Fatalf("Command info expected at least 1 argument, got %d", args.Len()).Send()
 		}
 
-		err := repos.Pull(c.Context, config.Config().Repos)
+		err := repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repositories").Err(err).Send()
 		}
 
-		found, _, err := repos.FindPkgs(args.Slice())
+		found, _, err := repos.FindPkgs(ctx, args.Slice())
 		if err != nil {
 			log.Fatal("Error finding packages").Err(err).Send()
 		}
@@ -63,13 +65,13 @@ var infoCmd = &cli.Command{
 			os.Exit(1)
 		}
 
-		pkgs := cliutils.FlattenPkgs(found, "show", c.Bool("interactive"))
+		pkgs := cliutils.FlattenPkgs(ctx, found, "show", c.Bool("interactive"))
 
 		var names []string
 		all := c.Bool("all")
 
 		if !all {
-			info, err := distro.ParseOSRelease(c.Context)
+			info, err := distro.ParseOSRelease(ctx)
 			if err != nil {
 				log.Fatal("Error parsing os-release file").Err(err).Send()
 			}

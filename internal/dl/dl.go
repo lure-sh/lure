@@ -37,7 +37,7 @@ import (
 	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.elara.ws/lure/internal/dlcache"
-	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"golang.org/x/exp/slices"
 )
 
@@ -154,6 +154,7 @@ type UpdatingDownloader interface {
 // it downloads the source to a new cache directory and links it
 // to the destination.
 func Download(ctx context.Context, opts Options) (err error) {
+	log := loggerctx.From(ctx)
 	normalized, err := normalizeURL(opts.URL)
 	if err != nil {
 		return err
@@ -168,7 +169,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 	}
 
 	var t Type
-	cacheDir, ok := dlcache.Get(opts.URL)
+	cacheDir, ok := dlcache.Get(ctx, opts.URL)
 	if ok {
 		var updated bool
 		if d, ok := d.(UpdatingDownloader); ok {
@@ -216,7 +217,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 
 	log.Info("Downloading source").Str("source", opts.Name).Str("downloader", d.Name()).Send()
 
-	cacheDir, err = dlcache.New(opts.URL)
+	cacheDir, err = dlcache.New(ctx, opts.URL)
 	if err != nil {
 		return err
 	}

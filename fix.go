@@ -22,9 +22,9 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/log"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/repos"
 )
 
@@ -32,8 +32,11 @@ var fixCmd = &cli.Command{
 	Name:  "fix",
 	Usage: "Attempt to fix problems with LURE",
 	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
 		db.Close()
-		paths := config.GetPaths()
+		paths := config.GetPaths(ctx)
 
 		log.Info("Removing cache directory").Send()
 
@@ -49,7 +52,7 @@ var fixCmd = &cli.Command{
 			log.Fatal("Unable to create new cache directory").Err(err).Send()
 		}
 
-		err = repos.Pull(c.Context, config.Config().Repos)
+		err = repos.Pull(ctx, config.Config(ctx).Repos)
 		if err != nil {
 			log.Fatal("Error pulling repos").Err(err).Send()
 		}

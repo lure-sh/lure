@@ -19,10 +19,11 @@
 package translations
 
 import (
+	"context"
 	"embed"
 
 	"go.elara.ws/logger"
-	"go.elara.ws/lure/internal/log"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/translate"
 	"golang.org/x/text/language"
 )
@@ -32,7 +33,8 @@ var translationFS embed.FS
 
 var translator *translate.Translator
 
-func Translator() *translate.Translator {
+func Translator(ctx context.Context) *translate.Translator {
+	log := loggerctx.From(ctx)
 	if translator == nil {
 		t, err := translate.NewFromFS(translationFS)
 		if err != nil {
@@ -43,6 +45,6 @@ func Translator() *translate.Translator {
 	return translator
 }
 
-func NewLogger(l logger.Logger, lang language.Tag) *translate.TranslatedLogger {
-	return translate.NewLogger(l, *Translator(), lang)
+func NewLogger(ctx context.Context, l logger.Logger, lang language.Tag) *translate.TranslatedLogger {
+	return translate.NewLogger(l, *Translator(ctx), lang)
 }

@@ -19,6 +19,7 @@
 package dlcache
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
@@ -29,19 +30,19 @@ import (
 )
 
 // BasePath returns the base path of the download cache
-func BasePath() string {
-	return filepath.Join(config.GetPaths().RepoDir, "dl")
+func BasePath(ctx context.Context) string {
+	return filepath.Join(config.GetPaths(ctx).RepoDir, "dl")
 }
 
 // New creates a new directory with the given ID in the cache.
 // If a directory with the same ID already exists,
 // it will be deleted before creating a new one.
-func New(id string) (string, error) {
+func New(ctx context.Context, id string) (string, error) {
 	h, err := hashID(id)
 	if err != nil {
 		return "", err
 	}
-	itemPath := filepath.Join(BasePath(), h)
+	itemPath := filepath.Join(BasePath(ctx), h)
 
 	fi, err := os.Stat(itemPath)
 	if err == nil || (fi != nil && !fi.IsDir()) {
@@ -64,12 +65,12 @@ func New(id string) (string, error) {
 // returns the directory and true. If it
 // does not exist, it returns an empty string
 // and false.
-func Get(id string) (string, bool) {
+func Get(ctx context.Context, id string) (string, bool) {
 	h, err := hashID(id)
 	if err != nil {
 		return "", false
 	}
-	itemPath := filepath.Join(BasePath(), h)
+	itemPath := filepath.Join(BasePath(ctx), h)
 
 	_, err = os.Stat(itemPath)
 	if err != nil {

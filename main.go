@@ -28,10 +28,10 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/logger"
-	"go.elara.ws/lure/internal/log"
-	"go.elara.ws/lure/internal/translations"
 	"go.elara.ws/lure/internal/config"
 	"go.elara.ws/lure/internal/db"
+	"go.elara.ws/lure/internal/translations"
+	"go.elara.ws/lure/pkg/loggerctx"
 	"go.elara.ws/lure/pkg/manager"
 )
 
@@ -88,16 +88,17 @@ var versionCmd = &cli.Command{
 }
 
 func main() {
-	log.Logger = translations.NewLogger(logger.NewCLI(os.Stderr), config.Language())
+	ctx := context.Background()
+	log := translations.NewLogger(ctx, logger.NewCLI(os.Stderr), config.Language(ctx))
+	ctx = loggerctx.With(ctx, log)
 
-	if !config.Config().Unsafe.AllowRunAsRoot && os.Geteuid() == 0 {
+	if !config.Config(ctx).Unsafe.AllowRunAsRoot && os.Geteuid() == 0 {
 		log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
 	}
 
 	// Set the root command to the one set in the LURE config
-	manager.DefaultRootCmd = config.Config().RootCmd
+	manager.DefaultRootCmd = config.Config(ctx).RootCmd
 
-	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
