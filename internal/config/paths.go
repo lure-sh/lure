@@ -22,6 +22,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/pelletier/go-toml/v2"
 	"go.elara.ws/lure/pkg/loggerctx"
@@ -37,13 +38,19 @@ type Paths struct {
 	DBPath     string
 }
 
-var paths *Paths
+var (
+	pathsMtx sync.Mutex
+	paths    *Paths
+)
 
 // GetPaths returns a Paths struct.
 // The first time it's called, it'll generate the struct
 // using information from the system.
 // Subsequent calls will return the same value.
 func GetPaths(ctx context.Context) *Paths {
+	pathsMtx.Lock()
+	defer pathsMtx.Unlock()
+
 	log := loggerctx.From(ctx)
 	if paths == nil {
 		paths = &Paths{}

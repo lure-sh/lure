@@ -22,12 +22,14 @@ import (
 	"context"
 	"os"
 	"strings"
+	"sync"
 
 	"go.elara.ws/lure/pkg/loggerctx"
 	"golang.org/x/text/language"
 )
 
 var (
+	langMtx sync.Mutex
 	lang    language.Tag
 	langSet bool
 )
@@ -37,6 +39,8 @@ var (
 // the $LANG environment variable.
 // Subsequent calls will just return the same value.
 func Language(ctx context.Context) language.Tag {
+	langMtx.Lock()
+	defer langMtx.Unlock()
 	log := loggerctx.From(ctx)
 	if !langSet {
 		syslang := SystemLang()
