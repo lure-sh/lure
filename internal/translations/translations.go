@@ -21,6 +21,7 @@ package translations
 import (
 	"context"
 	"embed"
+	"sync"
 
 	"go.elara.ws/logger"
 	"go.elara.ws/lure/pkg/loggerctx"
@@ -31,9 +32,14 @@ import (
 //go:embed files
 var translationFS embed.FS
 
-var translator *translate.Translator
+var (
+	mu         sync.Mutex
+	translator *translate.Translator
+)
 
 func Translator(ctx context.Context) *translate.Translator {
+	mu.Lock()
+	defer mu.Unlock()
 	log := loggerctx.From(ctx)
 	if translator == nil {
 		t, err := translate.NewFromFS(translationFS)
