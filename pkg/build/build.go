@@ -146,7 +146,7 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 
 	log.Info("Downloading sources").Send()
 
-	err = getSources(ctx, dirs.SrcDir, vars)
+	err = getSources(ctx, dirs, vars)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -693,7 +693,7 @@ func createBuildEnvVars(info *distro.OSRelease, dirs types.Directories) []string
 }
 
 // getSources downloads the sources from the script.
-func getSources(ctx context.Context, srcdir string, bv *types.BuildVars) error {
+func getSources(ctx context.Context, dirs types.Directories, bv *types.BuildVars) error {
 	log := loggerctx.From(ctx)
 	if len(bv.Sources) != len(bv.Checksums) {
 		log.Fatal("The checksums array must be the same length as sources").Send()
@@ -703,9 +703,12 @@ func getSources(ctx context.Context, srcdir string, bv *types.BuildVars) error {
 		opts := dl.Options{
 			Name:        fmt.Sprintf("%s[%d]", bv.Name, i),
 			URL:         src,
-			Destination: srcdir,
+			Destination: dirs.SrcDir,
 			Progress:    os.Stderr,
+			LocalDir:    dirs.ScriptDir,
 		}
+
+		println("ld", opts.LocalDir)
 
 		if !strings.EqualFold(bv.Checksums[i], "SKIP") {
 			// If the checksum contains a colon, use the part before the colon

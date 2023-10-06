@@ -68,13 +68,30 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 
 	u.RawQuery = query.Encode()
 
-	res, err := http.Get(u.String())
-	if err != nil {
-		return 0, "", err
-	}
-
-	if name == "" {
-		name = getFilename(res)
+	var r io.ReadCloser
+	var size int64
+	if u.Scheme == "local" {
+		localFl, err := os.Open(filepath.Join(opts.LocalDir, u.Path))
+		if err != nil {
+			return 0, "", err
+		}
+		fi, err := localFl.Stat()
+		if err != nil {
+			return 0, "", err
+		}
+		r = localFl
+		size = fi.Size()
+		name = fi.Name()
+	} else {
+		res, err := http.Get(u.String())
+		if err != nil {
+			return 0, "", err
+		}
+		size = res.ContentLength
+		if name == "" {
+			name = getFilename(res)
+		}
+		r = res.Body
 	}
 
 	opts.PostprocDisabled = archive == "false"
@@ -89,7 +106,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 	var bar io.WriteCloser
 	if opts.Progress != nil {
 		bar = progressbar.NewOptions64(
-			res.ContentLength,
+			size,
 			progressbar.OptionSetDescription(name),
 			progressbar.OptionSetWriter(opts.Progress),
 			progressbar.OptionShowBytes(true),
@@ -120,11 +137,11 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		w = io.MultiWriter(fl, bar)
 	}
 
-	_, err = io.Copy(w, res.Body)
+	_, err = io.Copy(w, r)
 	if err != nil {
 		return 0, "", err
 	}
-	res.Body.Close()
+	r.Close()
 
 	if opts.Hash != nil {
 		sum := h.Sum(nil)
@@ -142,14 +159,14 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		return 0, "", err
 	}
 
-	format, r, err := archiver.Identify(name, fl)
+	format, ar, err := archiver.Identify(name, fl)
 	if err == archiver.ErrNoMatch {
 		return TypeFile, name, nil
 	} else if err != nil {
 		return 0, "", err
 	}
 
-	err = extractFile(r, format, name, opts)
+	err = extractFile(ar, format, name, opts)
 	if err != nil {
 		return 0, "", err
 	}

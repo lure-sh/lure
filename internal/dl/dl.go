@@ -87,6 +87,7 @@ type Options struct {
 	CacheDisabled    bool
 	PostprocDisabled bool
 	Progress         io.Writer
+	LocalDir         string
 }
 
 func (opts Options) NewHash() (hash.Hash, error) {
@@ -182,6 +183,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 				URL:           opts.URL,
 				Destination:   cacheDir,
 				Progress:      opts.Progress,
+				LocalDir:      opts.LocalDir,
 			})
 			if err != nil {
 				return err
@@ -229,6 +231,7 @@ func Download(ctx context.Context, opts Options) (err error) {
 		URL:           opts.URL,
 		Destination:   cacheDir,
 		Progress:      opts.Progress,
+		LocalDir:      opts.LocalDir,
 	})
 	if err != nil {
 		return err
