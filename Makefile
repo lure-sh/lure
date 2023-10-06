@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 GIT_VERSION = $(shell git describe --tags )
 
 lure:
-	CGO_ENABLED=0 go build -ldflags="-X 'go.elara.ws/lure/pkg/config.Version=$(GIT_VERSION)'"
+	CGO_ENABLED=0 go build -ldflags="-X 'go.elara.ws/lure/internal/config.Version=$(GIT_VERSION)'"
 
 clean:
 	rm -f lure

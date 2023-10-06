@@ -7,7 +7,7 @@ builds:
       - CGO_ENABLED=0
     binary: lure
     ldflags:
-      - -X go.elara.ws/lure/pkg/config.Version={{.Version}}
+      - -X go.elara.ws/lure/internal/config.Version={{.Version}}
     goos:
       - linux
     goarch:
