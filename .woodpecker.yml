@@ -1,3 +1,4 @@
+platform: linux/amd64
 pipeline:
   release:
     image: goreleaser/goreleaser
