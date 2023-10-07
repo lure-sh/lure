@@ -35,7 +35,7 @@ var defaultConfig = &types.Config{
 	Repos: []types.Repo{
 		{
 			Name: "default",
-			URL:  "https://github.com/Elara6331/lure-repo.git",
+			URL:  "https://github.com/lure-sh/lure-repo.git",
 		},
 	},
 }
