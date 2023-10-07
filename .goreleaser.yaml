@@ -17,8 +17,8 @@ builds:
       - arm
       - riscv64
 archives:
-  - file_name_template: >-
-      {{- .PackageName}}-
+  - name_template: >-
+      {{- .ProjectName}}-
       {{- .Version}}-
       {{- .Os}}-
       {{- if .Arch | eq "amd64"}}x86_64
