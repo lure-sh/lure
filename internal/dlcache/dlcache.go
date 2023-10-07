@@ -31,7 +31,7 @@ import (
 
 // BasePath returns the base path of the download cache
 func BasePath(ctx context.Context) string {
-	return filepath.Join(config.GetPaths(ctx).RepoDir, "dl")
+	return filepath.Join(config.GetPaths(ctx).CacheDir, "dl")
 }
 
 // New creates a new directory with the given ID in the cache.
