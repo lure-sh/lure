@@ -32,7 +32,7 @@ nfpms:
       386: i386
       amd64: x86_64
       arm64: aarch64
-    homepage: 'https://lure.elara.ws'
+    homepage: 'https://lure.sh'
     maintainer: 'Elara Musayelyan <elara@elara.ws>'
     license: GPLv3
     formats:
@@ -53,7 +53,7 @@ nfpms:
         dst: /usr/share/zsh/site-functions/_lure
 aurs:
   - name: linux-user-repository-bin
-    homepage: 'https://lure.elara.ws'
+    homepage: 'https://lure.sh'
     description: "Linux User REpository"
     maintainers:
       - 'Elara Musayelyan <elara@elara.ws>'

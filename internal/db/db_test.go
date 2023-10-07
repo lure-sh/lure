@@ -37,11 +37,11 @@ var testPkg = db.Package{
 		"ru": "Проверочный пакет",
 	}),
 	Homepage: db.NewJSON(map[string]string{
-		"en": "https://lure.elara.ws/",
+		"en": "https://lure.sh/",
 	}),
 	Maintainer: db.NewJSON(map[string]string{
 		"en": "Elara Musayelyan <elara@elara.ws>",
-		"ru": "Элара Мусаелян <arsen@arsenm.dev>",
+		"ru": "Элара Мусаелян <elara@elara.ws>",
 	}),
 	Architectures: db.NewJSON([]string{"arm64", "amd64"}),
 	Licenses:      db.NewJSON([]string{"GPL-3.0-or-later"}),

@@ -3,7 +3,7 @@
 # LURE (Linux User REpository)
 
 [![Go Report Card](https://goreportcard.com/badge/go.elara.ws/lure)](https://goreportcard.com/report/go.elara.ws/lure)
-[![status-badge](https://ci.elara.ws/api/badges/Elara6331/lure/status.svg)](https://ci.elara.ws/Elara6331/lure)
+[![status-badge](https://ci.elara.ws/api/badges/lure/lure/status.svg)](https://ci.elara.ws/lure/lure)
 [![linux-user-repository-bin AUR package](https://img.shields.io/aur/version/linux-user-repository-bin?label=linux-user-repository-bin&logo=archlinux)](https://aur.archlinux.org/packages/linux-user-repository-bin/)
 
 LURE is a distro-agnostic build system for Linux, similar to the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository). It is currently in **beta**. Most major bugs have been fixed, and most major features have been added. LURE is ready for general use, but may still break or change occasionally.
@@ -19,14 +19,14 @@ LURE is written in pure Go and has zero dependencies after building. The only th
 The LURE install script will automatically download and install the appropriate LURE package on your system. To use it, simply run the following command:
 
 ```bash
-curl -fsSL lure.elara.ws/install | bash
+curl -fsSL lure.sh/install | bash
 ```
 
 **IMPORTANT**: This method is not recommended as it executes any code that is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
 
 ### Packages
 
-Distro packages and binary archives are provided at the latest Gitea release: https://gitea.elara.ws/Elara6331/lure/releases/latest
+Distro packages and binary archives are provided at the latest Gitea release: https://gitea.elara.ws/lure/lure/releases/latest
 
 LURE is also available on the AUR as [linux-user-repository-bin](https://aur.archlinux.org/packages/linux-user-repository-bin)
 
@@ -54,7 +54,7 @@ The documentation for LURE is in the [docs](docs) directory in this repo.
 
 ## Web Interface
 
-LURE has an open source web interface, licensed under the AGPLv3 (https://gitea.elara.ws/Elara6331/lure-web), and it's available at https://lure.elara.ws/.
+LURE has an open source web interface, licensed under the AGPLv3 (https://gitea.elara.ws/lure/lure-web), and it's available at https://lure.sh/.
 
 ---
 

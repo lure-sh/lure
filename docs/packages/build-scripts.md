@@ -206,7 +206,7 @@ git+https://gitea.elara.ws/Elara6331/itd?~rev=resource-loading&~depth=1
 ```
 
 ```text
-git+https://gitea.elara.ws/Elara6331/lure?~rev=v0.0.1&~recursive=true
+git+https://gitea.elara.ws/lure/lure?~rev=v0.0.1&~recursive=true
 ```
 
 ### checksums
