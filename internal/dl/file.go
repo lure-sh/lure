@@ -22,12 +22,12 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -247,19 +247,18 @@ func extractFile(r io.Reader, format archiver.Format, name string, opts Options)
 	return nil
 }
 
-var cdHeaderRgx = regexp.MustCompile(`filename="?(.+)"?`)
-
 // getFilename attempts to parse the Content-Disposition
 // HTTP response header and extract a filename. If the
 // header does not exist, it will use the last element
 // of the path.
 func getFilename(res *http.Response) (name string) {
-	cd := res.Header.Get("Content-Disposition")
-	matches := cdHeaderRgx.FindStringSubmatch(cd)
-	if len(matches) > 1 {
-		name = matches[1]
-	} else {
-		name = path.Base(res.Request.URL.Path)
+	_, params, err := mime.ParseMediaType(res.Header.Get("Content-Disposition"))
+	if err != nil {
+		return path.Base(res.Request.URL.Path)
 	}
-	return name
+	if filename, ok := params["filename"]; ok {
+		return filename
+	} else {
+		return path.Base(res.Request.URL.Path)
+	}
 }
