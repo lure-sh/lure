@@ -17,21 +17,28 @@ builds:
       - arm
       - riscv64
 archives:
-  - replacements:
-      386: i386
-      amd64: x86_64
-      arm64: aarch64
+  - file_name_template: >-
+      {{- .PackageName}}-
+      {{- .Version}}-
+      {{- .Os}}-
+      {{- if .Arch | eq "amd64"}}x86_64
+      {{- else if .Arch | eq "386"}}i386
+      {{- else if .Arch | eq "arm64"}}aarch64
+      {{- else }}{{ .Arch }}{{ end -}}
     files:
       - scripts/completion/*
 nfpms:
   - id: lure
     package_name: linux-user-repository
-    file_name_template: '{{.PackageName}}-{{.Version}}-{{.Os}}-{{.Arch}}'
+    file_name_template: >-
+      {{- .PackageName}}-
+      {{- .Version}}-
+      {{- .Os}}-
+      {{- if .Arch | eq "amd64"}}x86_64
+      {{- else if .Arch | eq "386"}}i386
+      {{- else if .Arch | eq "arm64"}}aarch64
+      {{- else }}{{ .Arch }}{{ end -}}
     description: "Linux User REpository"
-    replacements:
-      386: i386
-      amd64: x86_64
-      arm64: aarch64
     homepage: 'https://lure.sh'
     maintainer: 'Elara Musayelyan <elara@elara.ws>'
     license: GPLv3
