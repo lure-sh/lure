@@ -80,11 +80,11 @@ else
   error "No supported package manager detected!"
 fi
 
-latestVersion=$(curl -sI 'https://gitea.elara.ws/Elara6331/lure/releases/latest' | grep -io 'location: .*' | rev | cut -d '/' -f1 | rev | tr -d '[:space:]')
+latestVersion=$(curl -sI 'https://gitea.elara.ws/lure/lure/releases/latest' | grep -io 'location: .*' | rev | cut -d '/' -f1 | rev | tr -d '[:space:]')
 info "Found latest LURE version:" $latestVersion
 
 fname="$(mktemp -u -p /tmp "lure.XXXXXXXXXX").${pkgFormat}"
-url="https://gitea.elara.ws/Elara6331/lure/releases/download/${latestVersion}/linux-user-repository-${latestVersion#v}-linux-$(uname -m).${pkgFormat}"
+url="https://gitea.elara.ws/lure/lure/releases/download/${latestVersion}/linux-user-repository-${latestVersion#v}-linux-$(uname -m).${pkgFormat}"
 
 info "Downloading LURE package" 
 curl -L $url -o $fname
