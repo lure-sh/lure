@@ -708,8 +708,6 @@ func getSources(ctx context.Context, dirs types.Directories, bv *types.BuildVars
 			LocalDir:    dirs.ScriptDir,
 		}
 
-		println("ld", opts.LocalDir)
-
 		if !strings.EqualFold(bv.Checksums[i], "SKIP") {
 			// If the checksum contains a colon, use the part before the colon
 			// as the algorithm and the part after as the actual checksum.
