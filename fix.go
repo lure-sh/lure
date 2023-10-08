@@ -22,10 +22,10 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/pkg/loggerctx"
-	"go.elara.ws/lure/pkg/repos"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/pkg/loggerctx"
+	"lure.sh/lure/pkg/repos"
 )
 
 var fixCmd = &cli.Command{

@@ -1,4 +1,4 @@
-module go.elara.ws/lure
+module lure.sh/lure
 
 go 1.18
 

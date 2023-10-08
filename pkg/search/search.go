@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
 )
 
 // Filter represents search filters.

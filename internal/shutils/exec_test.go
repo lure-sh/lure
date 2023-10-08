@@ -23,9 +23,9 @@ import (
 	"strings"
 	"testing"
 
-	"go.elara.ws/lure/internal/shutils"
-	"go.elara.ws/lure/internal/shutils/decoder"
-	"go.elara.ws/lure/pkg/distro"
+	"lure.sh/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils/decoder"
+	"lure.sh/lure/pkg/distro"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )

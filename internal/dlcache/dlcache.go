@@ -26,7 +26,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.elara.ws/lure/internal/config"
+	"lure.sh/lure/internal/config"
 )
 
 // BasePath returns the base path of the download cache

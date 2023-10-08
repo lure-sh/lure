@@ -24,8 +24,8 @@ import (
 	"sync"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/loggerctx"
+	"lure.sh/lure/internal/types"
+	"lure.sh/lure/pkg/loggerctx"
 )
 
 var defaultConfig = &types.Config{

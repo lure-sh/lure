@@ -30,7 +30,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"go.elara.ws/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/interp"
 )

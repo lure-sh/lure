@@ -23,8 +23,8 @@ import (
 	"reflect"
 	"testing"
 
-	"go.elara.ws/lure/internal/overrides"
-	"go.elara.ws/lure/pkg/distro"
+	"lure.sh/lure/internal/overrides"
+	"lure.sh/lure/pkg/distro"
 	"golang.org/x/text/language"
 )
 

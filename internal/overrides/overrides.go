@@ -22,9 +22,9 @@ import (
 	"reflect"
 	"strings"
 
-	"go.elara.ws/lure/internal/cpu"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/pkg/distro"
+	"lure.sh/lure/internal/cpu"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/pkg/distro"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 )

@@ -36,8 +36,8 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
-	"go.elara.ws/lure/internal/dlcache"
-	"go.elara.ws/lure/pkg/loggerctx"
+	"lure.sh/lure/internal/dlcache"
+	"lure.sh/lure/pkg/loggerctx"
 	"golang.org/x/exp/slices"
 )
 

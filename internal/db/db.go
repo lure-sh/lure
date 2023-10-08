@@ -28,8 +28,8 @@ import (
 	"sync"
 
 	"github.com/jmoiron/sqlx"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/pkg/loggerctx"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/pkg/loggerctx"
 	"golang.org/x/exp/slices"
 	"modernc.org/sqlite"
 )

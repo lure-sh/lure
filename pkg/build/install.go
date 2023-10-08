@@ -22,10 +22,10 @@ import (
 	"context"
 	"path/filepath"
 
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/loggerctx"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/internal/types"
+	"lure.sh/lure/pkg/loggerctx"
 )
 
 // InstallPkgs installs native packages via the package manager,

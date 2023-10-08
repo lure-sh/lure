@@ -24,10 +24,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/repos"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/internal/types"
+	"lure.sh/lure/pkg/repos"
 )
 
 func setCfgDirs(t *testing.T) {

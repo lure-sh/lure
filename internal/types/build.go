@@ -18,7 +18,7 @@
 
 package types
 
-import "go.elara.ws/lure/pkg/manager"
+import "lure.sh/lure/pkg/manager"
 
 type BuildOpts struct {
 	Script      string

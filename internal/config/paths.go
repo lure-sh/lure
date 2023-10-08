@@ -25,7 +25,7 @@ import (
 	"sync"
 
 	"github.com/pelletier/go-toml/v2"
-	"go.elara.ws/lure/pkg/loggerctx"
+	"lure.sh/lure/pkg/loggerctx"
 )
 
 // Paths contains various paths used by LURE

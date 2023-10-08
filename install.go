@@ -22,14 +22,14 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v2"
-	"go.elara.ws/lure/internal/cliutils"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/build"
-	"go.elara.ws/lure/pkg/loggerctx"
-	"go.elara.ws/lure/pkg/manager"
-	"go.elara.ws/lure/pkg/repos"
+	"lure.sh/lure/internal/cliutils"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/internal/types"
+	"lure.sh/lure/pkg/build"
+	"lure.sh/lure/pkg/loggerctx"
+	"lure.sh/lure/pkg/manager"
+	"lure.sh/lure/pkg/repos"
 )
 
 var installCmd = &cli.Command{

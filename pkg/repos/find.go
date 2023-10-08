@@ -21,7 +21,7 @@ package repos
 import (
 	"context"
 
-	"go.elara.ws/lure/internal/db"
+	"lure.sh/lure/internal/db"
 )
 
 // FindPkgs looks for packages matching the inputs inside the database.

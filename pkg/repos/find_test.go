@@ -24,9 +24,9 @@ import (
 	"strings"
 	"testing"
 
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/types"
-	"go.elara.ws/lure/pkg/repos"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/internal/types"
+	"lure.sh/lure/pkg/repos"
 )
 
 func TestFindPkgs(t *testing.T) {

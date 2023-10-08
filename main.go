@@ -28,11 +28,11 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 	"go.elara.ws/logger"
-	"go.elara.ws/lure/internal/config"
-	"go.elara.ws/lure/internal/db"
-	"go.elara.ws/lure/internal/translations"
-	"go.elara.ws/lure/pkg/loggerctx"
-	"go.elara.ws/lure/pkg/manager"
+	"lure.sh/lure/internal/config"
+	"lure.sh/lure/internal/db"
+	"lure.sh/lure/internal/translations"
+	"lure.sh/lure/pkg/loggerctx"
+	"lure.sh/lure/pkg/manager"
 )
 
 var app = &cli.App{
