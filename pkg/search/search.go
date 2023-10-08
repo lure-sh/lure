@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"errors"
 	"io"
 	"io/fs"
@@ -84,7 +85,7 @@ type Options struct {
 }
 
 // Search searches for packages in the database based on the given options.
-func Search(opts Options) ([]Package, error) {
+func Search(ctx context.Context, opts Options) ([]Package, error) {
 	query := "(name LIKE ? OR description LIKE ? OR json_array_contains(provides, ?))"
 	args := []any{"%" + opts.Query + "%", "%" + opts.Query + "%", opts.Query}
 
@@ -113,7 +114,7 @@ func Search(opts Options) ([]Package, error) {
 		query += " LIMIT " + strconv.FormatInt(opts.Limit, 10)
 	}
 
-	result, err := db.GetPkgs(query, args...)
+	result, err := db.GetPkgs(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,8 +133,8 @@ func Search(opts Options) ([]Package, error) {
 }
 
 // GetPkg gets a single package from the database and returns it.
-func GetPkg(repo, name string) (Package, error) {
-	pkg, err := db.GetPkg("name = ? AND repository = ?", name, repo)
+func GetPkg(ctx context.Context, repo, name string) (Package, error) {
+	pkg, err := db.GetPkg(ctx, "name = ? AND repository = ?", name, repo)
 	return convertPkg(*pkg), err
 }
 
@@ -148,12 +149,12 @@ var (
 )
 
 // GetScript returns a reader containing the build script for a given package.
-func GetScript(repo, name string) (io.ReadCloser, error) {
+func GetScript(ctx context.Context, repo, name string) (io.ReadCloser, error) {
 	if strings.Contains(name, "./") || strings.ContainsAny(repo, "./") {
 		return nil, ErrInvalidArgument
 	}
 
-	scriptPath := filepath.Join(config.GetPaths().RepoDir, repo, name, "lure.sh")
+	scriptPath := filepath.Join(config.GetPaths(ctx).RepoDir, repo, name, "lure.sh")
 	fl, err := os.Open(scriptPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, ErrScriptNotFound
