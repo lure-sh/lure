@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -14,8 +15,10 @@ import (
 )
 
 var helperCmd = &cli.Command{
-	Name:  "helper",
-	Usage: "Run a lure helper command",
+	Name:        "helper",
+	Usage:       "Run a lure helper command",
+	ArgsUsage:   `<helper_name|"list">`,
+	Subcommands: []*cli.Command{helperListCmd},
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "dest-dir",
@@ -27,6 +30,10 @@ var helperCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		log := loggerctx.From(ctx)
+
+		if c.Args().Len() < 1 {
+			cli.ShowSubcommandHelpAndExit(c, 1)
+		}
 
 		wd, err := os.Getwd()
 		if err != nil {
@@ -57,5 +64,23 @@ var helperCmd = &cli.Command{
 		}
 
 		return helper(hc, c.Args().First(), c.Args().Slice()[1:])
+	},
+	CustomHelpTemplate: cli.CommandHelpTemplate,
+	BashComplete: func(ctx *cli.Context) {
+		for name := range helpers.Helpers {
+			fmt.Println(name)
+		}
+	},
+}
+
+var helperListCmd = &cli.Command{
+	Name:    "list",
+	Usage:   "List all the available helper commands",
+	Aliases: []string{"ls"},
+	Action: func(ctx *cli.Context) error {
+		for name := range helpers.Helpers {
+			fmt.Println(name)
+		}
+		return nil
 	},
 }
