@@ -36,7 +36,7 @@ func FindPkgs(ctx context.Context, pkgs []string) (map[string][]db.Package, []st
 			continue
 		}
 
-		result, err := db.GetPkgs(ctx, "name LIKE ?", pkgName)
+		result, err := db.GetPkgs(ctx, "json_array_contains(provides, ?)", pkgName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -55,7 +55,7 @@ func FindPkgs(ctx context.Context, pkgs []string) (map[string][]db.Package, []st
 		result.Close()
 
 		if added == 0 {
-			result, err := db.GetPkgs(ctx, "json_array_contains(provides, ?)", pkgName)
+			result, err := db.GetPkgs(ctx, "name LIKE ?", pkgName)
 			if err != nil {
 				return nil, nil, err
 			}
