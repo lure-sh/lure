@@ -22,7 +22,7 @@ The LURE install script will automatically download and install the appropriate 
 curl -fsSL lure.sh/install | bash
 ```
 
-**IMPORTANT**: This method is not recommended as it executes any code that is stored at that URL. In order to make sure nothing malicious is going to occur, download the script and inspect it before running.
+**IMPORTANT**: This will download and run the script from https://lure.sh/install. Please look through any script you download from the internet (including this one) before running it.
 
 ### Packages
 
