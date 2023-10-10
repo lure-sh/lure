@@ -158,12 +158,14 @@ func BuildPackage(ctx context.Context, opts types.BuildOpts) ([]string, []string
 
 	log.Info("Building package metadata").Str("name", vars.Name).Send()
 
-	pkgInfo, err := buildPkgMetadata(vars, dirs, append(repoDeps, builtNames...))
+	pkgFormat := getPkgFormat(opts.Manager)
+
+	pkgInfo, err := buildPkgMetadata(vars, dirs, pkgFormat, append(repoDeps, builtNames...))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	packager, err := nfpm.Get(getPkgFormat(opts.Manager))
+	packager, err := nfpm.Get(pkgFormat)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -477,7 +479,7 @@ func executeFunctions(ctx context.Context, dec *decoder.Decoder, dirs types.Dire
 }
 
 // buildPkgMetadata builds the metadata for the package that's going to be built.
-func buildPkgMetadata(vars *types.BuildVars, dirs types.Directories, deps []string) (*nfpm.Info, error) {
+func buildPkgMetadata(vars *types.BuildVars, dirs types.Directories, pkgFormat string, deps []string) (*nfpm.Info, error) {
 	pkgInfo := &nfpm.Info{
 		Name:        vars.Name,
 		Description: vars.Description,
@@ -494,6 +496,13 @@ func buildPkgMetadata(vars *types.BuildVars, dirs types.Directories, deps []stri
 			Provides:  vars.Provides,
 			Depends:   deps,
 		},
+	}
+
+	if pkgFormat == "apk" {
+		// Alpine refuses to install packages that provide themselves, so remove any such provides
+		pkgInfo.Overridables.Provides = slices.DeleteFunc(pkgInfo.Overridables.Provides, func(s string) bool {
+			return s == pkgInfo.Name
+		})
 	}
 
 	if vars.Epoch != 0 {
