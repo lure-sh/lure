@@ -62,8 +62,9 @@ var app = &cli.App{
 		removerepoCmd,
 		refreshCmd,
 		fixCmd,
-		versionCmd,
+		genCmd,
 		helperCmd,
+		versionCmd,
 	},
 	Before: func(c *cli.Context) error {
 		ctx := c.Context
