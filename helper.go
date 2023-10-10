@@ -16,7 +16,7 @@ import (
 
 var helperCmd = &cli.Command{
 	Name:        "helper",
-	Usage:       "Run a lure helper command",
+	Usage:       "Run a LURE helper command",
 	ArgsUsage:   `<helper_name|"list">`,
 	Subcommands: []*cli.Command{helperListCmd},
 	Flags: []cli.Flag{
