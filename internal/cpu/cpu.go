@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/exp/slices"
 	"golang.org/x/sys/cpu"
 )
 
@@ -58,7 +59,7 @@ func Arch() string {
 }
 
 func IsCompatibleWith(target string, list []string) bool {
-	if target == "all" {
+	if target == "all" || slices.Contains(list, "all") {
 		return true
 	}
 
