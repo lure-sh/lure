@@ -29,5 +29,3 @@ package() {
 	cd "$srcdir/{{.name}}-${version}"
 	python3 setup.py install --root="${pkgdir}/" --optimize=1 || return 1
 }
-
-
