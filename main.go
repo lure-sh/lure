@@ -63,13 +63,22 @@ var app = &cli.App{
 		refreshCmd,
 		fixCmd,
 		versionCmd,
+		helperCmd,
 	},
 	Before: func(c *cli.Context) error {
-		args := strings.Split(c.String("pm-args"), " ")
-		if len(args) == 1 && args[0] == "" {
-			return nil
+		ctx := c.Context
+		log := loggerctx.From(ctx)
+
+		cmd := c.Args().First()
+		if cmd != "helper" && !config.Config(ctx).Unsafe.AllowRunAsRoot && os.Geteuid() == 0 {
+			log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
 		}
-		manager.Args = append(manager.Args, args...)
+
+		if trimmed := strings.TrimSpace(c.String("pm-args")); trimmed != "" {
+			args := strings.Split(trimmed, " ")
+			manager.Args = append(manager.Args, args...)
+		}
+
 		return nil
 	},
 	After: func(ctx *cli.Context) error {
@@ -91,10 +100,6 @@ func main() {
 	ctx := context.Background()
 	log := translations.NewLogger(ctx, logger.NewCLI(os.Stderr), config.Language(ctx))
 	ctx = loggerctx.With(ctx, log)
-
-	if !config.Config(ctx).Unsafe.AllowRunAsRoot && os.Geteuid() == 0 {
-		log.Fatal("Running LURE as root is forbidden as it may cause catastrophic damage to your system").Send()
-	}
 
 	// Set the root command to the one set in the LURE config
 	manager.DefaultRootCmd = config.Config(ctx).RootCmd
