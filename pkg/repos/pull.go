@@ -34,6 +34,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/pelletier/go-toml/v2"
+	"go.elara.ws/vercmp"
 	"lure.sh/lure/internal/config"
 	"lure.sh/lure/internal/db"
 	"lure.sh/lure/internal/shutils"
@@ -41,7 +42,6 @@ import (
 	"lure.sh/lure/internal/types"
 	"lure.sh/lure/pkg/distro"
 	"lure.sh/lure/pkg/loggerctx"
-	"go.elara.ws/vercmp"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
@@ -156,9 +156,11 @@ func Pull(ctx context.Context, repos []types.Repo) error {
 		}
 		fl.Close()
 
-		if config.Version != "unknown" {
-			currentVer, _, _ := strings.Cut(config.Version, "-")
-			if vercmp.Compare(currentVer, repoCfg.Repo.MinVersion) == -1 {
+		// If the version doesn't have a "v" prefix, it's not a standard version.
+		// It may be "unknown" or a git version, but either way, there's no way
+		// to compare it to the repo version, so only compare versions with the "v".
+		if strings.HasPrefix(config.Version, "v") {
+			if vercmp.Compare(config.Version, repoCfg.Repo.MinVersion) == -1 {
 				log.Warn("LURE repo's minumum LURE version is greater than the current version. Try updating LURE if something doesn't work.").Str("repo", repo.Name).Send()
 			}
 		}
