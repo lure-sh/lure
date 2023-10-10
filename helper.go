@@ -35,6 +35,11 @@ var helperCmd = &cli.Command{
 			cli.ShowSubcommandHelpAndExit(c, 1)
 		}
 
+		helper, ok := helpers.Helpers[c.Args().First()]
+		if !ok {
+			log.Fatal("No such helper command").Str("name", c.Args().First()).Send()
+		}
+
 		wd, err := os.Getwd()
 		if err != nil {
 			log.Fatal("Error getting working directory").Err(err).Send()
@@ -43,11 +48,6 @@ var helperCmd = &cli.Command{
 		info, err := distro.ParseOSRelease(ctx)
 		if err != nil {
 			log.Fatal("Error getting working directory").Err(err).Send()
-		}
-
-		helper, ok := helpers.Helpers[c.Args().First()]
-		if !ok {
-			log.Fatal("No such helper command").Str("name", c.Args().First()).Send()
 		}
 
 		hc := interp.HandlerContext{
