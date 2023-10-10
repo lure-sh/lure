@@ -1,4 +1,4 @@
-name='{{.name}}'
+name='{{.name | tolower}}'
 version='{{.version}}'
 release='1'
 desc='{{.description}}'
@@ -6,8 +6,8 @@ homepage='https://example.com'
 maintainer='Example <user@example.com>'
 architectures=('all')
 license=('custom:Unknown')
-provides=('{{.name}}')
-conflicts=('{{.name}}')
+provides=('{{.name | tolower}}')
+conflicts=('{{.name | tolower}}')
 
 deps=("python3")
 deps_arch=("python")

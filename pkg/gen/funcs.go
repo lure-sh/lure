@@ -1,8 +1,12 @@
 package gen
 
-import "text/template"
+import (
+	"strings"
+	"text/template"
+)
 
 var funcs = template.FuncMap{
+	"tolower": strings.ToLower,
 	"firstchar": func(s string) string {
 		return s[:1]
 	},
