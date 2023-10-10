@@ -36,9 +36,11 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/vmihailenco/msgpack/v5"
+	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/blake2s"
+	"golang.org/x/exp/slices"
 	"lure.sh/lure/internal/dlcache"
 	"lure.sh/lure/pkg/loggerctx"
-	"golang.org/x/exp/slices"
 )
 
 const manifestFileName = ".lure_cache_manifest"
@@ -91,11 +93,8 @@ type Options struct {
 }
 
 func (opts Options) NewHash() (hash.Hash, error) {
-	if opts.HashAlgorithm == "" {
-		opts.HashAlgorithm = "sha256"
-	}
 	switch opts.HashAlgorithm {
-	case "sha256":
+	case "", "sha256":
 		return sha256.New(), nil
 	case "sha224":
 		return sha256.New224(), nil
@@ -107,8 +106,17 @@ func (opts Options) NewHash() (hash.Hash, error) {
 		return sha1.New(), nil
 	case "md5":
 		return md5.New(), nil
+	case "blake2s-128":
+		return blake2s.New256(nil)
+	case "blake2s-256":
+		return blake2s.New256(nil)
+	case "blake2b-256":
+		return blake2b.New(32, nil)
+	case "blake2b-512":
+		return blake2b.New(64, nil)
+	default:
+		return nil, fmt.Errorf("%w: %s", ErrNoSuchHashAlgo, opts.HashAlgorithm)
 	}
-	return nil, fmt.Errorf("%w: %s", ErrNoSuchHashAlgo, opts.HashAlgorithm)
 }
 
 // Manifest holds information about the type and name
