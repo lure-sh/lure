@@ -44,6 +44,9 @@ func Pip(w io.Writer, opts PipOptions) error {
 	if err != nil {
 		return err
 	}
+	if res.StatusCode != 200 {
+		return fmt.Errorf("pip: %s", res.Status)
+	}
 
 	dir := path.Dir(res.Request.URL.Path)
 	checksum := path.Base(dir)
