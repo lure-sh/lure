@@ -2,9 +2,12 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
+	"lure.sh/lure/internal/cpu"
 	"lure.sh/lure/internal/shutils/helpers"
+	"lure.sh/lure/pkg/distro"
 	"lure.sh/lure/pkg/loggerctx"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
@@ -30,13 +33,23 @@ var helperCmd = &cli.Command{
 			log.Fatal("Error getting working directory").Err(err).Send()
 		}
 
+		info, err := distro.ParseOSRelease(ctx)
+		if err != nil {
+			log.Fatal("Error getting working directory").Err(err).Send()
+		}
+
 		helper, ok := helpers.Helpers[c.Args().First()]
 		if !ok {
-			log.Fatal("No such helper command").Str("handler", c.Args().First()).Send()
+			log.Fatal("No such helper command").Str("name", c.Args().First()).Send()
 		}
 
 		hc := interp.HandlerContext{
-			Env:    expand.ListEnviron("pkgdir=" + c.String("dest-dir")),
+			Env: expand.ListEnviron(
+				"pkgdir="+c.String("dest-dir"),
+				"DISTRO_ID="+info.ID,
+				"DISTRO_ID_LIKE="+strings.Join(info.Like, " "),
+				"ARCH="+cpu.Arch(),
+			),
 			Dir:    wd,
 			Stdin:  os.Stdin,
 			Stdout: os.Stdout,
