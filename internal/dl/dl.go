@@ -209,9 +209,10 @@ func Download(ctx context.Context, opts Options) (err error) {
 			}
 
 			if ok && !updated {
-				log.Info("Source found in cache, linked to destination").Str("source", opts.Name).Stringer("type", t).Send()
+				log.Info("Source found in cache and linked to destination").Str("source", opts.Name).Stringer("type", t).Send()
 				return nil
 			} else if ok {
+				log.Info("Source updated and linked to destination").Str("source", opts.Name).Stringer("type", t).Send()
 				return nil
 			}
 		} else {

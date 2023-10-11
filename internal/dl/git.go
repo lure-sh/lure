@@ -177,11 +177,21 @@ func (GitDownloader) Update(opts Options) (bool, error) {
 		po.RecurseSubmodules = git.DefaultSubmoduleRecursionDepth
 	}
 
+	m, err := getManifest(opts.Destination)
+	manifestOK := err == nil
+
 	err = w.Pull(po)
 	if errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return false, nil
 	} else if err != nil {
 		return false, err
+	}
+
+	if manifestOK {
+		err = writeManifest(opts.Destination, m)
+		if err != nil {
+			return true, err
+		}
 	}
 
 	return true, nil
