@@ -33,7 +33,6 @@ var genPipCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "description",
 			Aliases: []string{"d"},
-			Value:   "A Python Pip module",
 		},
 	},
 	Action: func(c *cli.Context) error {

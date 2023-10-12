@@ -1,13 +1,13 @@
-name='{{.name | tolower}}'
-version='{{.version}}'
+name='{{.Info.Name | tolower}}'
+version='{{.Info.Version}}'
 release='1'
-desc='{{.description}}'
-homepage='https://pypi.org/project/{{.name}}/'
+desc='{{.Info.Summary}}'
+homepage='{{.Info.Homepage}}'
 maintainer='Example <user@example.com>'
 architectures=('all')
-license=('custom:Unknown')
-provides=('{{.name | tolower}}')
-conflicts=('{{.name | tolower}}')
+license=('{{if .Info.License | ne ""}}{{.Info.License}}{{else}}custom:Unknown{{end}}')
+provides=('{{.Info.Name | tolower}}')
+conflicts=('{{.Info.Name | tolower}}')
 
 deps=("python3")
 deps_arch=("python")
@@ -17,15 +17,15 @@ build_deps=("python3" "python3-setuptools")
 build_deps_arch=("python" "python-setuptools")
 build_deps_alpine=("python3" "py3-setuptools")
 
-sources=("https://files.pythonhosted.org/packages/source/{{.name | firstchar}}/{{.name}}/{{.name}}-${version}.tar.gz")
-checksums=('{{.checksum}}')
+sources=("https://files.pythonhosted.org/packages/source/{{.SourceURL.Filename | firstchar}}/{{.Info.Name}}/{{.SourceURL.Filename}}")
+checksums=('blake2b-256:{{.SourceURL.Digests.blake2b_256}}')
 
 build() {
-	cd "$srcdir/{{.name}}-${version}"
+	cd "$srcdir/{{.Info.Name}}-${version}"
 	python3 setup.py build
 }
 
 package() {
-	cd "$srcdir/{{.name}}-${version}"
+	cd "$srcdir/{{.Info.Name}}-${version}"
 	python3 setup.py install --root="${pkgdir}/" --optimize=1 || return 1
 }
