@@ -30,6 +30,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/goreleaser/nfpm/v2/apk"
 	_ "github.com/goreleaser/nfpm/v2/arch"
@@ -270,10 +271,11 @@ func getDirs(ctx context.Context, vars *types.BuildVars, script string) types.Di
 func executeSecondPass(ctx context.Context, info *distro.OSRelease, fl *syntax.File, dirs types.Directories) (*decoder.Decoder, error) {
 	env := createBuildEnvVars(info, dirs)
 
+	fakeroot := handlers.FakerootExecHandler(2 * time.Second)
 	runner, err := interp.New(
 		interp.Env(expand.ListEnviron(env...)),
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
-		interp.ExecHandler(helpers.Helpers.ExecHandler(nil)),
+		interp.ExecHandler(helpers.Helpers.ExecHandler(fakeroot)),
 	)
 	if err != nil {
 		return nil, err

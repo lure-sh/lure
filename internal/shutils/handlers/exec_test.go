@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"lure.sh/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils/handlers"
 	"lure.sh/lure/internal/shutils/decoder"
 	"lure.sh/lure/pkg/distro"
 	"mvdan.cc/sh/v3/interp"

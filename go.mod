@@ -1,6 +1,8 @@
 module lure.sh/lure
 
-go 1.18
+go 1.21
+
+toolchain go1.21.3
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
@@ -24,10 +26,12 @@ require (
 	go.elara.ws/logger v0.0.0-20230421022458-e80700db2090
 	go.elara.ws/translate v0.0.0-20230421025926-32ccfcd110e6
 	go.elara.ws/vercmp v0.0.0-20230622214216-0b2b067575c4
+	golang.org/x/crypto v0.13.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/sys v0.12.0
 	golang.org/x/text v0.13.0
 	gopkg.in/yaml.v3 v3.0.1
+	lure.sh/fakeroot v0.0.0-20231024000108-b130d64a68ee
 	modernc.org/sqlite v1.25.0
 	mvdan.cc/sh/v3 v3.7.0
 )
@@ -104,7 +108,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
 	go4.org v0.0.0-20200411211856-f5505b9728dd // indirect
-	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect

@@ -25,7 +25,7 @@ import (
 	"strings"
 	"testing"
 
-	"lure.sh/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils/handlers"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
 )
@@ -40,7 +40,7 @@ func TestNopExec(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	runner, err := interp.New(
-		interp.ExecHandler(shutils.NopExec),
+		interp.ExecHandler(handlers.NopExec),
 		interp.StdIO(os.Stdin, buf, buf),
 	)
 	if err != nil {
