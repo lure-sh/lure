@@ -33,7 +33,7 @@ import (
 
 	"github.com/mholt/archiver/v4"
 	"github.com/schollz/progressbar/v3"
-	"lure.sh/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils/handlers"
 )
 
 // FileDownloader downloads files using HTTP
@@ -125,7 +125,7 @@ func (FileDownloader) Download(opts Options) (Type, string, error) {
 		)
 		defer bar.Close()
 	} else {
-		bar = shutils.NopRWC{}
+		bar = handlers.NopRWC{}
 	}
 
 	h, err := opts.NewHash()

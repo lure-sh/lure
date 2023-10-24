@@ -37,8 +37,8 @@ import (
 	"go.elara.ws/vercmp"
 	"lure.sh/lure/internal/config"
 	"lure.sh/lure/internal/db"
-	"lure.sh/lure/internal/shutils"
 	"lure.sh/lure/internal/shutils/decoder"
+	"lure.sh/lure/internal/shutils/handlers"
 	"lure.sh/lure/internal/types"
 	"lure.sh/lure/pkg/distro"
 	"lure.sh/lure/pkg/loggerctx"
@@ -243,11 +243,11 @@ func processRepoChanges(ctx context.Context, repo types.Repo, r *git.Repository,
 		env := append(os.Environ(), "scriptdir="+filepath.Dir(filepath.Join(repoDir, action.File)))
 		runner, err := interp.New(
 			interp.Env(expand.ListEnviron(env...)),
-			interp.ExecHandler(shutils.NopExec),
-			interp.ReadDirHandler(shutils.RestrictedReadDir(repoDir)),
-			interp.StatHandler(shutils.RestrictedStat(repoDir)),
-			interp.OpenHandler(shutils.RestrictedOpen(repoDir)),
-			interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
+			interp.ExecHandler(handlers.NopExec),
+			interp.ReadDirHandler(handlers.RestrictedReadDir(repoDir)),
+			interp.StatHandler(handlers.RestrictedStat(repoDir)),
+			interp.OpenHandler(handlers.RestrictedOpen(repoDir)),
+			interp.StdIO(handlers.NopRWC{}, handlers.NopRWC{}, handlers.NopRWC{}),
 		)
 		if err != nil {
 			return err
@@ -349,11 +349,11 @@ func processRepoFull(ctx context.Context, repo types.Repo, repoDir string) error
 		env := append(os.Environ(), "scriptdir="+filepath.Dir(match))
 		runner, err := interp.New(
 			interp.Env(expand.ListEnviron(env...)),
-			interp.ExecHandler(shutils.NopExec),
-			interp.ReadDirHandler(shutils.RestrictedReadDir(repoDir)),
-			interp.StatHandler(shutils.RestrictedStat(repoDir)),
-			interp.OpenHandler(shutils.RestrictedOpen(repoDir)),
-			interp.StdIO(shutils.NopRWC{}, shutils.NopRWC{}, shutils.NopRWC{}),
+			interp.ExecHandler(handlers.NopExec),
+			interp.ReadDirHandler(handlers.RestrictedReadDir(repoDir)),
+			interp.StatHandler(handlers.RestrictedStat(repoDir)),
+			interp.OpenHandler(handlers.RestrictedOpen(repoDir)),
+			interp.StdIO(handlers.NopRWC{}, handlers.NopRWC{}, handlers.NopRWC{}),
 		)
 		if err != nil {
 			return err

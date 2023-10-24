@@ -43,8 +43,8 @@ import (
 	"lure.sh/lure/internal/cpu"
 	"lure.sh/lure/internal/db"
 	"lure.sh/lure/internal/dl"
-	"lure.sh/lure/internal/shutils"
 	"lure.sh/lure/internal/shutils/decoder"
+	"lure.sh/lure/internal/shutils/handlers"
 	"lure.sh/lure/internal/shutils/helpers"
 	"lure.sh/lure/internal/types"
 	"lure.sh/lure/pkg/distro"
@@ -229,10 +229,10 @@ func executeFirstPass(ctx context.Context, info *distro.OSRelease, fl *syntax.Fi
 	runner, err := interp.New(
 		interp.Env(expand.ListEnviron(env...)),
 		interp.StdIO(os.Stdin, os.Stdout, os.Stderr),
-		interp.ExecHandler(helpers.Restricted.ExecHandler(shutils.NopExec)),
-		interp.ReadDirHandler(shutils.RestrictedReadDir(scriptDir)),
-		interp.StatHandler(shutils.RestrictedStat(scriptDir)),
-		interp.OpenHandler(shutils.RestrictedOpen(scriptDir)),
+		interp.ExecHandler(helpers.Restricted.ExecHandler(handlers.NopExec)),
+		interp.ReadDirHandler(handlers.RestrictedReadDir(scriptDir)),
+		interp.StatHandler(handlers.RestrictedStat(scriptDir)),
+		interp.OpenHandler(handlers.RestrictedOpen(scriptDir)),
 	)
 	if err != nil {
 		return nil, err

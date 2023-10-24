@@ -30,8 +30,8 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"lure.sh/lure/internal/shutils"
 	"golang.org/x/exp/slices"
+	"lure.sh/lure/internal/shutils/handlers"
 	"mvdan.cc/sh/v3/interp"
 )
 
@@ -41,7 +41,7 @@ var (
 )
 
 // Helpers contains all the helper commands
-var Helpers = shutils.ExecFuncs{
+var Helpers = handlers.ExecFuncs{
 	"install-binary":       installHelperCmd("/usr/bin", 0o755),
 	"install-systemd-user": installHelperCmd("/usr/lib/systemd/user", 0o644),
 	"install-systemd":      installHelperCmd("/usr/lib/systemd/system", 0o644),
@@ -57,14 +57,14 @@ var Helpers = shutils.ExecFuncs{
 
 // Restricted contains restricted read-only helper commands
 // that don't modify any state
-var Restricted = shutils.ExecFuncs{
+var Restricted = handlers.ExecFuncs{
 	"git-version": gitVersionCmd,
 }
 
-func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
+func installHelperCmd(prefix string, perms os.FileMode) handlers.ExecFunc {
 	return func(hc interp.HandlerContext, cmd string, args []string) error {
 		if len(args) < 1 {
-			return shutils.InsufficientArgsError(cmd, 1, len(args))
+			return handlers.InsufficientArgsError(cmd, 1, len(args))
 		}
 
 		from := resolvePath(hc, args[0])
@@ -85,7 +85,7 @@ func installHelperCmd(prefix string, perms os.FileMode) shutils.ExecFunc {
 
 func installManualCmd(hc interp.HandlerContext, cmd string, args []string) error {
 	if len(args) < 1 {
-		return shutils.InsufficientArgsError(cmd, 1, len(args))
+		return handlers.InsufficientArgsError(cmd, 1, len(args))
 	}
 
 	from := resolvePath(hc, args[0])
@@ -115,7 +115,7 @@ func installCompletionCmd(hc interp.HandlerContext, cmd string, args []string) e
 	}
 
 	if len(args) < 2 {
-		return shutils.InsufficientArgsError(cmd, 2, len(args))
+		return handlers.InsufficientArgsError(cmd, 2, len(args))
 	}
 
 	shell := args[0]

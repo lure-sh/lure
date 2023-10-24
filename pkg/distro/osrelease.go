@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"lure.sh/lure/internal/shutils"
+	"lure.sh/lure/internal/shutils/handlers"
 	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
@@ -74,10 +74,10 @@ func ParseOSRelease(ctx context.Context) (*OSRelease, error) {
 	// as well as no environment variables in order to prevent vulnerabilities
 	// caused by changing the os-release file.
 	runner, err := interp.New(
-		interp.OpenHandler(shutils.NopOpen),
-		interp.ExecHandler(shutils.NopExec),
-		interp.ReadDirHandler(shutils.NopReadDir),
-		interp.StatHandler(shutils.NopStat),
+		interp.OpenHandler(handlers.NopOpen),
+		interp.ExecHandler(handlers.NopExec),
+		interp.ReadDirHandler(handlers.NopReadDir),
+		interp.StatHandler(handlers.NopStat),
 		interp.Env(expand.ListEnviron()),
 	)
 	if err != nil {

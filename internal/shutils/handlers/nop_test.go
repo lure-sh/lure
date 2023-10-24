@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package shutils_test
+package handlers_test
 
 import (
 	"bytes"
