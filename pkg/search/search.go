@@ -70,6 +70,7 @@ func convertPkg(p db.Package) Package {
 		Conflicts:     p.Conflicts.Val,
 		Replaces:      p.Replaces.Val,
 		Depends:       p.Depends.Val,
+		BuildDepends:  p.BuildDepends.Val,
 		OptDepends:    p.OptDepends.Val,
 		Repository:    p.Repository,
 	}
