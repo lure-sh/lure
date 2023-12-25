@@ -42,6 +42,7 @@ installPkg() {
   case $1 in
   pacman) $rootCmd pacman --noconfirm -U ${@:2} ;;
   apk) $rootCmd apk add --allow-untrusted ${@:2} ;;
+  zypper) $rootCmd zypper --no-gpg-checks install ${@:2} ;;
   *) $rootCmd $1 install -y ${@:2} ;;
   esac
 }
